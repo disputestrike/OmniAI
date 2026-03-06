@@ -178,6 +178,34 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
+      {/* Hero Visual Showcase */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/content')}>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-marketing-dashboard-Gj5mJgrtS26XPcJCaRrABK.webp" alt="AI Marketing Dashboard" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3">
+            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">All-in-One Dashboard</Badge>
+            <p className="text-white text-xs font-medium">22 content types, 21 platforms, one command center</p>
+          </div>
+        </div>
+        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/creatives')}>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-ai-content-creation-72bpDX2cFotaCeHHbSCMBe.webp" alt="AI Content Creation" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3">
+            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">AI Creative Engine</Badge>
+            <p className="text-white text-xs font-medium">Generate ads, visuals, videos, and copy with AI</p>
+          </div>
+        </div>
+        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/campaigns')}>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-viral-growth-fWB9JVZPqVMXssFX3Pmr8z.webp" alt="Viral Growth Engine" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3">
+            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">Viral Growth Engine</Badge>
+            <p className="text-white text-xs font-medium">Make anything go viral across every platform globally</p>
+          </div>
+        </div>
+      </div>
+
       {/* Goal Pipelines - Always Visible */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {goalPipelines.map(p => (

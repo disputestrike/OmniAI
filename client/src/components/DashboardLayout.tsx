@@ -38,6 +38,7 @@ import {
   Zap,
   Bot,
   UsersRound,
+  CreditCard,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -81,6 +82,12 @@ const menuSections = [
     items: [
       { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
       { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { icon: CreditCard, label: "Pricing & Plans", path: "/pricing" },
     ],
   },
 ];

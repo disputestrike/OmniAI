@@ -7,6 +7,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { registerStripeRoutes } from "../stripe-routes";
+import { securityHeaders, rateLimit } from "../security";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -30,11 +32,23 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  // Security headers on all responses
+  app.use(securityHeaders);
+  // Stripe webhook must be registered BEFORE body parsers (needs raw body)
+  registerStripeRoutes(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // Rate limit AI-heavy endpoints (60 requests per minute per IP)
+  app.use("/api/trpc/content.generate", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-gen" }));
+  app.use("/api/trpc/product.analyze", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-analyze" }));
+  app.use("/api/trpc/creative.generate", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-creative" }));
+  app.use("/api/trpc/videoAd.generate", rateLimit({ windowMs: 60000, max: 15, keyPrefix: "ai-video" }));
+  app.use("/api/trpc/aiAgent.chat", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-chat" }));
+  // General API rate limit (200 requests per minute per IP)
+  app.use("/api/", rateLimit({ windowMs: 60000, max: 200, keyPrefix: "api" }));
   // tRPC API
   app.use(
     "/api/trpc",

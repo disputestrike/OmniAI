@@ -950,6 +950,17 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
       return { insights: response.choices[0].message.content as string };
     }),
   }),
+
+  // ─── Subscription ────────────────────────────────────────────────
+  subscription: router({
+    status: protectedProcedure.query(async ({ ctx }) => {
+      return {
+        plan: ctx.user.subscriptionPlan || "free",
+        stripeCustomerId: ctx.user.stripeCustomerId || null,
+        stripeSubscriptionId: ctx.user.stripeSubscriptionId || null,
+      };
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
