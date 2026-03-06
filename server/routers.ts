@@ -397,17 +397,68 @@ Return a JSON object with these fields:
       url: z.string().min(1),
       depth: z.enum(["quick", "standard", "deep"]).default("standard"),
     })).mutation(async ({ ctx, input }) => {
+      // Real-time website scraping: fetch actual page data before AI analysis
+      let scrapedData = "";
+      try {
+        const targetUrl = input.url.startsWith("http") ? input.url : `https://${input.url}`;
+        const fetchResponse = await fetch(targetUrl, {
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; OmniMarketBot/1.0)" },
+          signal: AbortSignal.timeout(15000),
+        });
+        const html = await fetchResponse.text();
+        // Extract useful metadata from HTML
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+        const metaKeywordsMatch = html.match(/<meta[^>]*name=["']keywords["'][^>]*content=["']([^"']+)["']/i);
+        const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+        const ogDescMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+        const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+        const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
+        const h1Matches = html.match(/<h1[^>]*>([^<]+)<\/h1>/gi)?.map(h => h.replace(/<[^>]+>/g, "").trim()).slice(0, 5) || [];
+        const h2Matches = html.match(/<h2[^>]*>([^<]+)<\/h2>/gi)?.map(h => h.replace(/<[^>]+>/g, "").trim()).slice(0, 10) || [];
+        const linkCount = (html.match(/<a /gi) || []).length;
+        const imageCount = (html.match(/<img /gi) || []).length;
+        const scriptTags = html.match(/<script[^>]*src=["']([^"']+)["']/gi)?.map(s => s.match(/src=["']([^"']+)["']/)?.[1] || "").filter(Boolean).slice(0, 20) || [];
+        const hasAnalytics = /google-analytics|gtag|gtm|facebook.*pixel|hotjar|mixpanel|segment|amplitude/i.test(html);
+        const hasChat = /intercom|drift|crisp|zendesk|tawk|livechat|hubspot/i.test(html);
+        const hasCMS = /wordpress|shopify|wix|squarespace|webflow|ghost/i.test(html);
+        const techStack: string[] = [];
+        if (/react/i.test(html)) techStack.push("React");
+        if (/vue/i.test(html)) techStack.push("Vue.js");
+        if (/angular/i.test(html)) techStack.push("Angular");
+        if (/next/i.test(html)) techStack.push("Next.js");
+        if (/wordpress/i.test(html)) techStack.push("WordPress");
+        if (/shopify/i.test(html)) techStack.push("Shopify");
+        if (/wix/i.test(html)) techStack.push("Wix");
+        if (/squarespace/i.test(html)) techStack.push("Squarespace");
+        if (/webflow/i.test(html)) techStack.push("Webflow");
+        if (/tailwind/i.test(html)) techStack.push("Tailwind CSS");
+        if (/bootstrap/i.test(html)) techStack.push("Bootstrap");
+        if (/stripe/i.test(html)) techStack.push("Stripe");
+        if (/cloudflare/i.test(html)) techStack.push("Cloudflare");
+        if (hasAnalytics) techStack.push("Analytics (GA/GTM/etc)");
+        if (hasChat) techStack.push("Live Chat");
+        if (hasCMS) techStack.push("CMS Detected");
+        // Extract visible text (strip HTML tags, limit to ~3000 chars)
+        const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+        const bodyText = bodyMatch ? bodyMatch[1].replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 3000) : "";
+        scrapedData = `\n\n--- REAL SCRAPED DATA FROM WEBSITE ---\nTitle: ${titleMatch?.[1] || "N/A"}\nMeta Description: ${metaDescMatch?.[1] || "N/A"}\nMeta Keywords: ${metaKeywordsMatch?.[1] || "N/A"}\nOG Title: ${ogTitleMatch?.[1] || "N/A"}\nOG Description: ${ogDescMatch?.[1] || "N/A"}\nOG Image: ${ogImageMatch?.[1] || "N/A"}\nCanonical: ${canonicalMatch?.[1] || "N/A"}\nH1 Tags: ${h1Matches.join(", ") || "None"}\nH2 Tags: ${h2Matches.join(", ") || "None"}\nTotal Links: ${linkCount}\nTotal Images: ${imageCount}\nDetected Tech Stack: ${techStack.join(", ") || "Unknown"}\nHas Analytics: ${hasAnalytics}\nHas Live Chat: ${hasChat}\nHas CMS: ${hasCMS}\nKey Scripts: ${scriptTags.slice(0, 10).join(", ")}\nPage Content Preview: ${bodyText.slice(0, 2000)}\n--- END SCRAPED DATA ---`;
+      } catch (e) {
+        scrapedData = "\n\n[Note: Could not scrape website directly. Analysis based on URL and AI knowledge only.]";
+      }
+
       const response = await invokeLLM({
         messages: [
           {
             role: "system",
-            content: `You are a world-class competitive intelligence analyst and marketing strategist, similar to SimilarWeb's analysis engine. Given a website URL, provide an extremely comprehensive marketing intelligence report. Analyze everything: traffic patterns, audience demographics, SEO strategy, content strategy, social presence, technology stack, competitive landscape, and actionable recommendations. Be specific with numbers, percentages, and data-driven insights. Return JSON only.`
+            content: `You are a world-class competitive intelligence analyst and marketing strategist, similar to SimilarWeb's analysis engine. Given a website URL and real scraped data from the website (when available), provide an extremely comprehensive marketing intelligence report. Use the scraped data (title, meta tags, headings, tech stack, content preview) to make your analysis as accurate as possible. Analyze everything: traffic patterns, audience demographics, SEO strategy, content strategy, social presence, technology stack, competitive landscape, and actionable recommendations. Be specific with numbers, percentages, and data-driven insights. When real data is provided, use it to ground your estimates. Return JSON only.`
           },
           {
             role: "user",
             content: `Provide a comprehensive marketing intelligence report for: ${input.url}
 
 Analysis depth: ${input.depth}
+${scrapedData}
 
 Return JSON with:
 - overview: { domain, industry, estimatedMonthlyTraffic, globalRank, categoryRank, bounceRate, avgVisitDuration, pagesPerVisit }
@@ -701,17 +752,34 @@ Return JSON with:
         ],
       };
     }),
-    // Create custom AI avatar
+    // Create custom AI avatar with full diversity options
     createAvatar: protectedProcedure.input(z.object({
       name: z.string().min(1),
       description: z.string().min(1),
-      gender: z.string(),
-      ageRange: z.string(),
-      style: z.string(),
+      gender: z.enum(["male", "female", "non-binary"]),
+      ageRange: z.enum(["18-25", "25-35", "35-45", "45-55", "55-65", "65+"]),
+      style: z.enum(["professional", "casual", "creative", "corporate", "streetwear", "athletic", "luxury", "bohemian"]),
+      ethnicity: z.enum(["african", "african_american", "east_asian", "south_asian", "southeast_asian", "middle_eastern", "hispanic_latino", "caucasian", "indigenous", "pacific_islander", "mixed", "other"]).optional(),
+      skinTone: z.enum(["very_light", "light", "medium_light", "medium", "medium_dark", "dark", "very_dark"]).optional(),
+      hairStyle: z.enum(["straight", "wavy", "curly", "coily", "braids", "locs", "afro", "bald", "short", "long", "ponytail", "bun", "hijab", "turban"]).optional(),
+      hairColor: z.enum(["black", "dark_brown", "brown", "light_brown", "blonde", "red", "auburn", "gray", "white", "blue", "pink", "purple"]).optional(),
+      bodyType: z.enum(["slim", "average", "athletic", "curvy", "plus_size"]).optional(),
+      facialFeatures: z.string().optional(),
+      clothing: z.string().optional(),
+      background: z.enum(["studio_white", "studio_gray", "office", "outdoor", "home", "urban", "nature", "abstract"]).optional(),
       languages: z.array(z.string()),
     })).mutation(async ({ input }) => {
+      const ethnicityDesc = input.ethnicity ? `${input.ethnicity.replace(/_/g, " ")} ethnicity, ` : "";
+      const skinDesc = input.skinTone ? `${input.skinTone.replace(/_/g, " ")} skin tone, ` : "";
+      const hairStyleDesc = input.hairStyle ? `${input.hairStyle.replace(/_/g, " ")} hair, ` : "";
+      const hairColorDesc = input.hairColor ? `${input.hairColor.replace(/_/g, " ")} hair color, ` : "";
+      const bodyDesc = input.bodyType ? `${input.bodyType.replace(/_/g, " ")} build, ` : "";
+      const facialDesc = input.facialFeatures ? `${input.facialFeatures}, ` : "";
+      const clothingDesc = input.clothing ? `wearing ${input.clothing}, ` : "";
+      const bgDesc = input.background ? `${input.background.replace(/_/g, " ")} background` : "clean studio background";
+
       const avatarImage = await generateImage({
-        prompt: `Professional headshot portrait of a ${input.description}. ${input.gender}, ${input.ageRange} years old, ${input.style} style. Clean background, studio lighting, high quality, photorealistic.`
+        prompt: `Professional headshot portrait of a ${input.description}. ${input.gender}, ${input.ageRange} years old, ${ethnicityDesc}${skinDesc}${hairStyleDesc}${hairColorDesc}${bodyDesc}${facialDesc}${clothingDesc}${input.style} style. ${bgDesc}, studio lighting, high quality, photorealistic, 4K.`
       });
       return {
         ...input,

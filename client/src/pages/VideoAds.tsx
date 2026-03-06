@@ -90,12 +90,19 @@ export default function VideoAds() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [localizeLanguage, setLocalizeLanguage] = useState("Spanish");
 
-  // Avatar creation
+  // Avatar creation with full diversity
   const [avatarName, setAvatarName] = useState("");
   const [avatarDesc, setAvatarDesc] = useState("");
   const [avatarGender, setAvatarGender] = useState("female");
   const [avatarAge, setAvatarAge] = useState("25-35");
   const [avatarStyle, setAvatarStyle] = useState("professional");
+  const [avatarEthnicity, setAvatarEthnicity] = useState("");
+  const [avatarSkinTone, setAvatarSkinTone] = useState("");
+  const [avatarHairStyle, setAvatarHairStyle] = useState("");
+  const [avatarHairColor, setAvatarHairColor] = useState("");
+  const [avatarBodyType, setAvatarBodyType] = useState("");
+  const [avatarClothing, setAvatarClothing] = useState("");
+  const [avatarBackground, setAvatarBackground] = useState("studio_white");
 
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
   const actors = actorsData?.actors ?? [];
@@ -126,30 +133,158 @@ export default function VideoAds() {
             <DialogTrigger asChild>
               <Button variant="outline"><Users className="h-4 w-4 mr-2" />Create AI Avatar</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Create Custom AI Avatar</DialogTitle></DialogHeader>
+              <p className="text-sm text-muted-foreground">Design a unique AI avatar with full control over appearance, ethnicity, style, and more. The AI will generate a photorealistic portrait.</p>
               <div className="space-y-4">
-                <div><Label>Avatar Name</Label><Input value={avatarName} onChange={e => setAvatarName(e.target.value)} placeholder="e.g., Jessica" /></div>
-                <div><Label>Description</Label><Textarea value={avatarDesc} onChange={e => setAvatarDesc(e.target.value)} placeholder="Describe appearance: young woman with curly brown hair, warm smile, casual outfit..." rows={3} /></div>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div><Label>Avatar Name</Label><Input value={avatarName} onChange={e => setAvatarName(e.target.value)} placeholder="e.g., Jessica, Amir, Yuki" /></div>
                   <div><Label>Gender</Label>
                     <Select value={avatarGender} onValueChange={setAvatarGender}><SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="female">Female</SelectItem><SelectItem value="male">Male</SelectItem><SelectItem value="non_binary">Non-Binary</SelectItem></SelectContent>
+                      <SelectContent><SelectItem value="female">Female</SelectItem><SelectItem value="male">Male</SelectItem><SelectItem value="non-binary">Non-Binary</SelectItem></SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div><Label>Description</Label><Textarea value={avatarDesc} onChange={e => setAvatarDesc(e.target.value)} placeholder="Describe their look: warm smile, confident posture, friendly eyes..." rows={2} /></div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div><Label>Ethnicity / Heritage</Label>
+                    <Select value={avatarEthnicity} onValueChange={setAvatarEthnicity}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="african">African</SelectItem>
+                        <SelectItem value="african_american">African American</SelectItem>
+                        <SelectItem value="east_asian">East Asian</SelectItem>
+                        <SelectItem value="south_asian">South Asian</SelectItem>
+                        <SelectItem value="southeast_asian">Southeast Asian</SelectItem>
+                        <SelectItem value="middle_eastern">Middle Eastern</SelectItem>
+                        <SelectItem value="hispanic_latino">Hispanic / Latino</SelectItem>
+                        <SelectItem value="caucasian">Caucasian</SelectItem>
+                        <SelectItem value="indigenous">Indigenous</SelectItem>
+                        <SelectItem value="pacific_islander">Pacific Islander</SelectItem>
+                        <SelectItem value="mixed">Mixed Heritage</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Skin Tone</Label>
+                    <Select value={avatarSkinTone} onValueChange={setAvatarSkinTone}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="very_light">Very Light</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="medium_light">Medium Light</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="medium_dark">Medium Dark</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                        <SelectItem value="very_dark">Very Dark</SelectItem>
+                      </SelectContent>
                     </Select>
                   </div>
                   <div><Label>Age Range</Label>
                     <Select value={avatarAge} onValueChange={setAvatarAge}><SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="18-25">18-25</SelectItem><SelectItem value="25-35">25-35</SelectItem><SelectItem value="35-50">35-50</SelectItem><SelectItem value="50+">50+</SelectItem></SelectContent>
-                    </Select>
-                  </div>
-                  <div><Label>Style</Label>
-                    <Select value={avatarStyle} onValueChange={setAvatarStyle}><SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="professional">Professional</SelectItem><SelectItem value="casual">Casual</SelectItem><SelectItem value="influencer">Influencer</SelectItem><SelectItem value="corporate">Corporate</SelectItem></SelectContent>
+                      <SelectContent>
+                        <SelectItem value="18-25">18-25</SelectItem>
+                        <SelectItem value="25-35">25-35</SelectItem>
+                        <SelectItem value="35-45">35-45</SelectItem>
+                        <SelectItem value="45-55">45-55</SelectItem>
+                        <SelectItem value="55-65">55-65</SelectItem>
+                        <SelectItem value="65+">65+</SelectItem>
+                      </SelectContent>
                     </Select>
                   </div>
                 </div>
-                <Button className="w-full" disabled={createAvatarMut.isPending || !avatarName || !avatarDesc} onClick={() => createAvatarMut.mutate({ name: avatarName, description: avatarDesc, gender: avatarGender, ageRange: avatarAge, style: avatarStyle, languages: ["English"] })}>
-                  {createAvatarMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Creating...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Avatar</>}
+                <div className="grid grid-cols-3 gap-3">
+                  <div><Label>Hair Style</Label>
+                    <Select value={avatarHairStyle} onValueChange={setAvatarHairStyle}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="straight">Straight</SelectItem>
+                        <SelectItem value="wavy">Wavy</SelectItem>
+                        <SelectItem value="curly">Curly</SelectItem>
+                        <SelectItem value="coily">Coily</SelectItem>
+                        <SelectItem value="braids">Braids</SelectItem>
+                        <SelectItem value="locs">Locs</SelectItem>
+                        <SelectItem value="afro">Afro</SelectItem>
+                        <SelectItem value="bald">Bald</SelectItem>
+                        <SelectItem value="short">Short</SelectItem>
+                        <SelectItem value="long">Long</SelectItem>
+                        <SelectItem value="ponytail">Ponytail</SelectItem>
+                        <SelectItem value="bun">Bun</SelectItem>
+                        <SelectItem value="hijab">Hijab</SelectItem>
+                        <SelectItem value="turban">Turban</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Hair Color</Label>
+                    <Select value={avatarHairColor} onValueChange={setAvatarHairColor}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="black">Black</SelectItem>
+                        <SelectItem value="dark_brown">Dark Brown</SelectItem>
+                        <SelectItem value="brown">Brown</SelectItem>
+                        <SelectItem value="light_brown">Light Brown</SelectItem>
+                        <SelectItem value="blonde">Blonde</SelectItem>
+                        <SelectItem value="red">Red</SelectItem>
+                        <SelectItem value="auburn">Auburn</SelectItem>
+                        <SelectItem value="gray">Gray</SelectItem>
+                        <SelectItem value="white">White</SelectItem>
+                        <SelectItem value="blue">Blue</SelectItem>
+                        <SelectItem value="pink">Pink</SelectItem>
+                        <SelectItem value="purple">Purple</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Body Type</Label>
+                    <Select value={avatarBodyType} onValueChange={setAvatarBodyType}><SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="slim">Slim</SelectItem>
+                        <SelectItem value="average">Average</SelectItem>
+                        <SelectItem value="athletic">Athletic</SelectItem>
+                        <SelectItem value="curvy">Curvy</SelectItem>
+                        <SelectItem value="plus_size">Plus Size</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div><Label>Style</Label>
+                    <Select value={avatarStyle} onValueChange={setAvatarStyle}><SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="professional">Professional</SelectItem>
+                        <SelectItem value="casual">Casual</SelectItem>
+                        <SelectItem value="creative">Creative</SelectItem>
+                        <SelectItem value="corporate">Corporate</SelectItem>
+                        <SelectItem value="streetwear">Streetwear</SelectItem>
+                        <SelectItem value="athletic">Athletic</SelectItem>
+                        <SelectItem value="luxury">Luxury</SelectItem>
+                        <SelectItem value="bohemian">Bohemian</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div><Label>Background</Label>
+                    <Select value={avatarBackground} onValueChange={setAvatarBackground}><SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="studio_white">Studio White</SelectItem>
+                        <SelectItem value="studio_gray">Studio Gray</SelectItem>
+                        <SelectItem value="office">Office</SelectItem>
+                        <SelectItem value="outdoor">Outdoor</SelectItem>
+                        <SelectItem value="home">Home</SelectItem>
+                        <SelectItem value="urban">Urban</SelectItem>
+                        <SelectItem value="nature">Nature</SelectItem>
+                        <SelectItem value="abstract">Abstract</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div><Label>Clothing (optional)</Label><Input value={avatarClothing} onChange={e => setAvatarClothing(e.target.value)} placeholder="e.g., business suit, casual t-shirt, traditional dress, lab coat..." /></div>
+                <Button className="w-full" disabled={createAvatarMut.isPending || !avatarName || !avatarDesc} onClick={() => {
+                  const payload: any = { name: avatarName, description: avatarDesc, gender: avatarGender as any, ageRange: avatarAge as any, style: avatarStyle as any, languages: ["English"] };
+                  if (avatarEthnicity) payload.ethnicity = avatarEthnicity;
+                  if (avatarSkinTone) payload.skinTone = avatarSkinTone;
+                  if (avatarHairStyle) payload.hairStyle = avatarHairStyle;
+                  if (avatarHairColor) payload.hairColor = avatarHairColor;
+                  if (avatarBodyType) payload.bodyType = avatarBodyType;
+                  if (avatarClothing) payload.clothing = avatarClothing;
+                  if (avatarBackground) payload.background = avatarBackground as any;
+                  createAvatarMut.mutate(payload);
+                }}>
+                  {createAvatarMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Generating Avatar...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate AI Avatar</>}
                 </Button>
               </div>
             </DialogContent>
