@@ -40,6 +40,9 @@ import BrandVoice from "./pages/BrandVoice";
 import EmailMarketing from "./pages/EmailMarketing";
 import LandingPageBuilder from "./pages/LandingPageBuilder";
 import Automations from "./pages/Automations";
+import VideoStudio from "./pages/VideoStudio";
+import CompetitorIntel from "./pages/CompetitorIntel";
+import CustomerIntel from "./pages/CustomerIntel";
 
 function DashboardRouter() {
   return (
@@ -79,6 +82,9 @@ function DashboardRouter() {
         <Route path="/email-marketing" component={EmailMarketing} />
         <Route path="/landing-pages" component={LandingPageBuilder} />
         <Route path="/automations" component={Automations} />
+        <Route path="/video-studio" component={VideoStudio} />
+        <Route path="/competitor-intel" component={CompetitorIntel} />
+        <Route path="/customer-intel" component={CustomerIntel} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -125,6 +131,9 @@ function Router() {
       <Route path="/email-marketing" component={DashboardRouter} />
       <Route path="/landing-pages" component={DashboardRouter} />
       <Route path="/automations" component={DashboardRouter} />
+      <Route path="/video-studio" component={DashboardRouter} />
+      <Route path="/competitor-intel" component={DashboardRouter} />
+      <Route path="/customer-intel" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

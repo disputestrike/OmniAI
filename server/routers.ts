@@ -14,6 +14,7 @@ import { users, teamMembers, subscriptions } from "../drizzle/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { getDb } from "./db";
 import { brandVoiceRouter, emailMarketingRouter, landingPageRouter, automationRouter, socialPublishRouter, videoRenderRouter, webhookRouter, imageEditorRouter, multiLanguageRouter, competitorSpyRouter, bulkImportRouter } from "./gapRouters";
+import { personalVideoRouter, competitorIntelRouter, customerIntelRouter } from "./newFeatureRouters";
 
 export const appRouter = router({
   system: systemRouter,
@@ -2175,6 +2176,10 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
   multiLanguage: multiLanguageRouter,
   competitorSpy: competitorSpyRouter,
   bulkImport: bulkImportRouter,
+  // ─── New Features: Video Studio, Competitor Intel, Customer Intel ──
+  personalVideo: personalVideoRouter,
+  competitorIntel: competitorIntelRouter,
+  customerIntel: customerIntelRouter,
 });
 
 export type AppRouter = typeof appRouter;

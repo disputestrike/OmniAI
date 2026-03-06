@@ -594,3 +594,177 @@ export const webhookEndpoints = mysqlTable("webhook_endpoints", {
 
 export type WebhookEndpoint = typeof webhookEndpoints.$inferSelect;
 export type InsertWebhookEndpoint = typeof webhookEndpoints.$inferInsert;
+
+// ─── Personal Video Studio ────────────────────────────────────────
+export const personalVideos = mysqlTable("personal_videos", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  script: text("script"),
+  videoUrl: text("videoUrl"),
+  thumbnailUrl: text("thumbnailUrl"),
+  duration: int("duration"), // seconds
+  aspectRatio: varchar("aspectRatio", { length: 20 }).default("16:9"),
+  platform: varchar("platform", { length: 50 }),
+  shareToken: varchar("shareToken", { length: 64 }),
+  shareUrl: text("shareUrl"),
+  embedCode: text("embedCode"),
+  status: mysqlEnum("personalVideoStatus", ["draft", "recording", "processing", "ready", "shared"]).default("draft"),
+  viewCount: int("viewCount").default(0),
+  aiSuggestions: json("aiSuggestions").$type<{ hooks?: string[]; pacing?: string; cta?: string; improvements?: string[] }>(),
+  metadata: json("personalVideoMetadata").$type<{ width?: number; height?: number; fps?: number; format?: string }>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PersonalVideo = typeof personalVideos.$inferSelect;
+export type InsertPersonalVideo = typeof personalVideos.$inferInsert;
+
+// ─── Competitor Profiles (Tracked Over Time) ──────────────────────
+export const competitorProfiles = mysqlTable("competitor_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  domain: varchar("domain", { length: 255 }).notNull(),
+  logoUrl: text("logoUrl"),
+  industry: varchar("industry", { length: 100 }),
+  description: text("description"),
+  socialLinks: json("socialLinks").$type<{ facebook?: string; twitter?: string; linkedin?: string; instagram?: string; tiktok?: string; youtube?: string }>(),
+  metrics: json("competitorMetrics").$type<{
+    estimatedTraffic?: number; domainAuthority?: number; socialFollowers?: number;
+    adCount?: number; contentFrequency?: string; engagementRate?: number;
+  }>(),
+  threatLevel: mysqlEnum("threatLevel", ["low", "medium", "high", "critical"]).default("medium"),
+  lastAnalyzedAt: timestamp("lastAnalyzedAt"),
+  isMonitored: boolean("isMonitored").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CompetitorProfile = typeof competitorProfiles.$inferSelect;
+export type InsertCompetitorProfile = typeof competitorProfiles.$inferInsert;
+
+// ─── Competitor Snapshots (Point-in-Time Analysis) ────────────────
+export const competitorSnapshots = mysqlTable("competitor_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  competitorId: int("competitorId").notNull(),
+  userId: int("userId").notNull(),
+  snapshotType: mysqlEnum("snapshotType", ["full_analysis", "ad_scan", "seo_check", "social_check", "content_check"]).default("full_analysis"),
+  data: json("snapshotData").$type<{
+    strategies?: { category: string; name: string; description: string }[];
+    ads?: { platform: string; type: string; headline: string; description: string; imageUrl?: string }[];
+    seoKeywords?: { keyword: string; position?: number; volume?: number }[];
+    socialMetrics?: { platform: string; followers: number; engagement: number; postsPerWeek: number }[];
+    contentAnalysis?: { type: string; frequency: string; topPerforming: string[] }[];
+    swot?: { strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[] };
+    analysis?: string;
+    recommendations?: string[];
+  }>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CompetitorSnapshot = typeof competitorSnapshots.$inferSelect;
+export type InsertCompetitorSnapshot = typeof competitorSnapshots.$inferInsert;
+
+// ─── Competitor Alerts ────────────────────────────────────────────
+export const competitorAlerts = mysqlTable("competitor_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  competitorId: int("competitorId").notNull(),
+  userId: int("userId").notNull(),
+  alertType: mysqlEnum("alertType", ["new_ad", "seo_change", "social_spike", "content_change", "traffic_change", "new_campaign"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  severity: mysqlEnum("alertSeverity", ["info", "warning", "critical"]).default("info"),
+  isRead: boolean("isRead").default(false),
+  data: json("alertData").$type<Record<string, any>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CompetitorAlert = typeof competitorAlerts.$inferSelect;
+export type InsertCompetitorAlert = typeof competitorAlerts.$inferInsert;
+
+// ─── Customer Profiles (360-Degree View) ──────────────────────────
+export const customerProfiles = mysqlTable("customer_profiles", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // owner
+  leadId: int("leadId"), // link to existing lead
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  phone: varchar("phone", { length: 50 }),
+  company: varchar("company", { length: 255 }),
+  jobTitle: varchar("jobTitle", { length: 255 }),
+  avatarUrl: text("avatarUrl"),
+  demographics: json("demographics").$type<{
+    age?: number; gender?: string; location?: string; income?: string; education?: string;
+  }>(),
+  psychographics: json("psychographics").$type<{
+    interests?: string[]; values?: string[]; personality?: string; lifestyle?: string;
+    painPoints?: string[]; goals?: string[];
+  }>(),
+  behaviorData: json("behaviorData").$type<{
+    preferredChannels?: string[]; bestContactTime?: string; contentPreferences?: string[];
+    purchaseHistory?: { date: string; amount: number; product: string }[];
+    engagementHistory?: { date: string; type: string; channel: string; details: string }[];
+  }>(),
+  segment: varchar("segment", { length: 100 }),
+  engagementScore: int("engagementScore").default(0),
+  sentimentScore: int("sentimentScore").default(50), // 0-100
+  lifetimeValue: int("lifetimeValue").default(0), // cents
+  clvPrediction: int("clvPrediction").default(0), // predicted CLV in cents
+  temperature: mysqlEnum("temperature", ["hot", "warm", "cold", "dormant"]).default("warm"),
+  lastContactAt: timestamp("lastContactAt"),
+  nextBestAction: text("nextBestAction"),
+  tags: json("customerTags").$type<string[]>(),
+  notes: text("customerNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomerProfile = typeof customerProfiles.$inferSelect;
+export type InsertCustomerProfile = typeof customerProfiles.$inferInsert;
+
+// ─── Customer Interactions (Touchpoint Tracking) ──────────────────
+export const customerInteractions = mysqlTable("customer_interactions", {
+  id: int("id").autoincrement().primaryKey(),
+  customerId: int("customerId").notNull(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("interactionType", [
+    "email_sent", "email_opened", "email_clicked",
+    "call_made", "call_received", "meeting",
+    "social_interaction", "ad_click", "website_visit",
+    "purchase", "support_ticket", "feedback",
+    "content_viewed", "form_submitted", "chat_message"
+  ]).notNull(),
+  channel: varchar("channel", { length: 50 }),
+  subject: varchar("subject", { length: 255 }),
+  details: text("interactionDetails"),
+  sentiment: mysqlEnum("interactionSentiment", ["positive", "neutral", "negative"]),
+  campaignId: int("campaignId"),
+  contentId: int("contentId"),
+  metadata: json("interactionMeta").$type<Record<string, any>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CustomerInteraction = typeof customerInteractions.$inferSelect;
+export type InsertCustomerInteraction = typeof customerInteractions.$inferInsert;
+
+// ─── Customer Segments ────────────────────────────────────────────
+export const customerSegments = mysqlTable("customer_segments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("segmentDescription"),
+  type: mysqlEnum("segmentType", ["rfm", "behavioral", "demographic", "psychographic", "custom"]).default("custom"),
+  criteria: json("segmentCriteria").$type<{
+    rules: { field: string; operator: string; value: any }[];
+    logic: "and" | "or";
+  }>(),
+  customerCount: int("customerCount").default(0),
+  color: varchar("color", { length: 20 }).default("#6366f1"),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CustomerSegment = typeof customerSegments.$inferSelect;
+export type InsertCustomerSegment = typeof customerSegments.$inferInsert;

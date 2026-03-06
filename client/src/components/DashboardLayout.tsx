@@ -79,6 +79,7 @@ const menuSections = [
       { icon: Image, label: "Creative Engine", path: "/creatives" },
       { icon: Video, label: "Video Ads", path: "/video-ads" },
       { icon: Film, label: "Video Render", path: "/video-render" },
+      { icon: Video, label: "Video Studio", path: "/video-studio" },
       { icon: Scissors, label: "Image Editor", path: "/image-editor" },
       { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
       { icon: Languages, label: "Translate", path: "/translate" },
@@ -108,6 +109,8 @@ const menuSections = [
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
       { icon: Eye, label: "Competitor Spy", path: "/competitor-spy" },
+      { icon: Users, label: "Customer Intel", path: "/customer-intel" },
+      { icon: Search, label: "Competitor Intel", path: "/competitor-intel" },
     ],
   },
   {

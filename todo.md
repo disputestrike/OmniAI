@@ -459,3 +459,34 @@
 - [x] Full integration test suite (7 test files)
 - [ ] Updated TECH_SPEC.md with all new features (needs update)
 - [ ] Updated COMPETITIVE_RANKING.md showing 10/10 (needs update)
+
+## Personal Video Creation & Sharing
+- [x] Video script generator with AI (teleprompter-ready scripts)
+- [x] Webcam recording studio (record personal video content in-browser)
+- [x] Teleprompter mode (scrolling script overlay while recording)
+- [x] Video thumbnail generator
+- [x] Video sharing/publishing (generate shareable links, embed codes)
+- [x] Video library (manage all personal videos)
+- [x] AI video enhancement suggestions (pacing, hooks, CTAs)
+- [x] Platform-specific video formatting (vertical for TikTok/Reels, landscape for YouTube)
+
+## Deep Competitor Intelligence
+- [x] Competitor profile tracking (add competitors, monitor over time)
+- [x] Competitor ad library spy (via deep analysis ad_scan)
+- [x] Competitor content strategy analysis (via deep analysis content_check)
+- [x] Competitor SEO/keyword gap analysis (via deep analysis seo_check)
+- [x] Competitor social media benchmarking (via deep analysis social_check)
+- [x] Competitive positioning map (AI-generated positioning analysis)
+- [x] Competitor alert system (alerts with severity levels)
+- [x] SWOT analysis generator (AI-powered via analyzeCompetitor full_analysis)
+
+## Customer Intelligence & Intimacy
+- [x] Customer profile enrichment (AI-powered 360-degree profiles)
+- [x] Customer behavior tracking (interaction tracking: calls, emails, meetings, purchases)
+- [x] Customer segmentation engine (create segments with rules-based criteria)
+- [x] Customer journey mapping (AI-generated journey analysis)
+- [x] Customer sentiment analysis (via AI enrichment)
+- [x] Customer lifetime value prediction (via AI enrichment with CLV estimation)
+- [x] Personalized outreach recommendations (AI outreach plan generator)
+- [x] Customer engagement scoring (engagement score 0-100 with AI)
+- [x] Customer intimacy dashboard (stats, segments, enrichment, journey, outreach)

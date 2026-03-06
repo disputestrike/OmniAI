@@ -22,6 +22,13 @@ import {
   socialPublishQueue, InsertSocialPublishQueue, SocialPublishQueue,
   videoRenders, InsertVideoRender, VideoRender,
   webhookEndpoints, InsertWebhookEndpoint, WebhookEndpoint,
+  personalVideos, InsertPersonalVideo, PersonalVideo,
+  competitorProfiles, InsertCompetitorProfile, CompetitorProfile,
+  competitorSnapshots, InsertCompetitorSnapshot, CompetitorSnapshot,
+  competitorAlerts, InsertCompetitorAlert, CompetitorAlert,
+  customerProfiles, InsertCustomerProfile, CustomerProfile,
+  customerInteractions, InsertCustomerInteraction, CustomerInteraction,
+  customerSegments, InsertCustomerSegment, CustomerSegment,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -786,4 +793,142 @@ export async function updateWebhookEndpoint(id: number, data: Partial<InsertWebh
 export async function deleteWebhookEndpoint(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(webhookEndpoints).where(eq(webhookEndpoints.id, id));
+}
+
+// ─── Personal Videos ────────────────────────────────────────────────
+export async function createPersonalVideo(data: InsertPersonalVideo) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(personalVideos).values(data);
+  return { id: result[0].insertId };
+}
+export async function getPersonalVideosByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(personalVideos).where(eq(personalVideos.userId, userId)).orderBy(desc(personalVideos.createdAt));
+}
+export async function getPersonalVideoById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(personalVideos).where(eq(personalVideos.id, id)).limit(1);
+  return r[0];
+}
+export async function getPersonalVideoByShareToken(token: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(personalVideos).where(eq(personalVideos.shareToken, token)).limit(1);
+  return r[0];
+}
+export async function updatePersonalVideo(id: number, data: Partial<InsertPersonalVideo>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(personalVideos).set(data).where(eq(personalVideos.id, id));
+}
+export async function deletePersonalVideo(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(personalVideos).where(eq(personalVideos.id, id));
+}
+
+// ─── Competitor Profiles ────────────────────────────────────────────
+export async function createCompetitorProfile(data: InsertCompetitorProfile) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(competitorProfiles).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCompetitorProfilesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(competitorProfiles).where(eq(competitorProfiles.userId, userId)).orderBy(desc(competitorProfiles.createdAt));
+}
+export async function getCompetitorProfileById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(competitorProfiles).where(eq(competitorProfiles.id, id)).limit(1);
+  return r[0];
+}
+export async function updateCompetitorProfile(id: number, data: Partial<InsertCompetitorProfile>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(competitorProfiles).set(data).where(eq(competitorProfiles.id, id));
+}
+export async function deleteCompetitorProfile(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(competitorProfiles).where(eq(competitorProfiles.id, id));
+}
+
+// ─── Competitor Snapshots ───────────────────────────────────────────
+export async function createCompetitorSnapshot(data: InsertCompetitorSnapshot) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(competitorSnapshots).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCompetitorSnapshotsByCompetitor(competitorId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(competitorSnapshots).where(eq(competitorSnapshots.competitorId, competitorId)).orderBy(desc(competitorSnapshots.createdAt));
+}
+
+// ─── Competitor Alerts ──────────────────────────────────────────────
+export async function createCompetitorAlert(data: InsertCompetitorAlert) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(competitorAlerts).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCompetitorAlertsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(competitorAlerts).where(eq(competitorAlerts.userId, userId)).orderBy(desc(competitorAlerts.createdAt));
+}
+export async function markCompetitorAlertRead(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.update(competitorAlerts).set({ isRead: true }).where(eq(competitorAlerts.id, id));
+}
+
+// ─── Customer Profiles ──────────────────────────────────────────────
+export async function createCustomerProfile(data: InsertCustomerProfile) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(customerProfiles).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCustomerProfilesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(customerProfiles).where(eq(customerProfiles.userId, userId)).orderBy(desc(customerProfiles.updatedAt));
+}
+export async function getCustomerProfileById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(customerProfiles).where(eq(customerProfiles.id, id)).limit(1);
+  return r[0];
+}
+export async function updateCustomerProfile(id: number, data: Partial<InsertCustomerProfile>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(customerProfiles).set(data).where(eq(customerProfiles.id, id));
+}
+export async function deleteCustomerProfile(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(customerProfiles).where(eq(customerProfiles.id, id));
+}
+
+// ─── Customer Interactions ──────────────────────────────────────────
+export async function createCustomerInteraction(data: InsertCustomerInteraction) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(customerInteractions).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCustomerInteractionsByCustomer(customerId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(customerInteractions).where(eq(customerInteractions.customerId, customerId)).orderBy(desc(customerInteractions.createdAt));
+}
+
+// ─── Customer Segments ──────────────────────────────────────────────
+export async function createCustomerSegment(data: InsertCustomerSegment) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(customerSegments).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCustomerSegmentsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(customerSegments).where(eq(customerSegments.userId, userId)).orderBy(desc(customerSegments.createdAt));
+}
+export async function getCustomerSegmentById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(customerSegments).where(eq(customerSegments.id, id)).limit(1);
+  return r[0];
+}
+export async function updateCustomerSegment(id: number, data: Partial<InsertCustomerSegment>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(customerSegments).set(data).where(eq(customerSegments.id, id));
+}
+export async function deleteCustomerSegment(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(customerSegments).where(eq(customerSegments.id, id));
 }
