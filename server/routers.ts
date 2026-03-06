@@ -8,6 +8,11 @@ import { generateImage } from "./_core/imageGeneration";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
 import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
+import { transcribeAudio } from "./_core/voiceTranscription";
+import { storagePut } from "./storage";
+import { users, teamMembers, subscriptions } from "../drizzle/schema";
+import { eq, desc, count } from "drizzle-orm";
+import { getDb } from "./db";
 
 export const appRouter = router({
   system: systemRouter,
@@ -1976,6 +1981,90 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
       }
 
       return { variations: savedVariations, scalingStrategy: result.scalingStrategy };
+    }),
+  }),
+
+  // ─── Voice Transcription ──────────────────────────────────────────
+  voice: router({
+    transcribe: protectedProcedure.input(z.object({
+      audioUrl: z.string(),
+      language: z.string().optional(),
+      prompt: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const result = await transcribeAudio(input);
+      if ('error' in result) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: (result as any).error });
+      }
+      return result;
+    }),
+    uploadAndTranscribe: protectedProcedure.input(z.object({
+      audioBase64: z.string(),
+      mimeType: z.string().default("audio/webm"),
+      language: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      // Decode base64 audio, upload to S3, then transcribe
+      const buffer = Buffer.from(input.audioBase64, 'base64');
+      const ext = input.mimeType.includes('webm') ? 'webm' : input.mimeType.includes('wav') ? 'wav' : 'mp3';
+      const key = `voice/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { url } = await storagePut(key, buffer, input.mimeType);
+      const result = await transcribeAudio({ audioUrl: url, language: input.language });
+      if ('error' in result) {
+        throw new TRPCError({ code: 'BAD_REQUEST', message: (result as any).error });
+      }
+      return result;
+    }),
+  }),
+
+  // ─── Admin Panel ─────────────────────────────────────────────────────
+  admin: router({
+    // Get all users (admin only)
+    users: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
+      const allUsers = await drizzleDb.select().from(users).orderBy(desc(users.createdAt));
+      return allUsers;
+    }),
+    // Get platform stats
+    stats: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin access required' });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
+      const [userCount] = await drizzleDb.select({ count: count() }).from(users);
+      const [teamCount] = await drizzleDb.select({ count: count() }).from(teamMembers);
+      const [subCount] = await drizzleDb.select({ count: count() }).from(subscriptions).where(eq(subscriptions.status, 'active'));
+      const planBreakdown = await drizzleDb.select({
+        plan: users.subscriptionPlan,
+        count: count(),
+      }).from(users).groupBy(users.subscriptionPlan);
+      return {
+        totalUsers: userCount.count,
+        totalTeamMembers: teamCount.count,
+        activeSubscriptions: subCount.count,
+        planBreakdown,
+      };
+    }),
+    // Update user role
+    updateUserRole: protectedProcedure.input(z.object({
+      userId: z.number(),
+      role: z.enum(['user', 'admin']),
+    })).mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
+      await drizzleDb.update(users).set({ role: input.role }).where(eq(users.id, input.userId));
+      return { success: true };
+    }),
+    // Update user subscription plan
+    updateUserPlan: protectedProcedure.input(z.object({
+      userId: z.number(),
+      plan: z.enum(['free', 'starter', 'professional', 'business', 'enterprise']),
+    })).mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== 'admin') throw new TRPCError({ code: 'FORBIDDEN' });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'DB unavailable' });
+      await drizzleDb.update(users).set({ subscriptionPlan: input.plan }).where(eq(users.id, input.userId));
+      return { success: true };
     }),
   }),
 

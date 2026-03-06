@@ -52,7 +52,7 @@ export function registerStripeRoutes(app: express.Application) {
               await db.update(users).set({
                 stripeCustomerId: customerId,
                 stripeSubscriptionId: subscriptionId,
-                subscriptionPlan: "pro", // Default to pro on checkout
+                subscriptionPlan: (session.metadata?.plan as any) || "starter", // Set plan from checkout metadata
               }).where(eq(users.id, parseInt(userId)));
 
               // Fetch subscription details from Stripe
@@ -86,7 +86,7 @@ export function registerStripeRoutes(app: express.Application) {
             const existingSub = await db.select().from(subscriptions)
               .where(eq(subscriptions.stripeSubscriptionId, subId)).limit(1);
             if (existingSub.length > 0) {
-              const plan = sub.status === "active" ? "pro" : "free";
+              const plan = sub.status === "active" ? (existingSub[0] as any).plan || "starter" : "free";
               await db.update(users).set({ subscriptionPlan: plan as any })
                 .where(eq(users.id, existingSub[0].userId));
             }

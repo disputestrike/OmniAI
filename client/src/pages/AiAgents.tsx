@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Bot, Send, Loader2, Sparkles, Lightbulb, Target, TrendingUp, PenTool,
   Megaphone, Brain, Globe, Crown, Flame, Eye, Heart, Users, Zap, ShoppingCart,
+  Mic, MicOff, Upload, Paperclip, Image as ImageIcon, FileText,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 
@@ -39,10 +40,18 @@ const quickPrompts = [
 
 export default function AiAgents() {
   const chatMut = trpc.aiChat.send.useMutation({ onError: (e) => toast.error(e.message) });
+  const voiceMut = trpc.voice.uploadAndTranscribe.useMutation({
+    onError: (e) => toast.error("Voice transcription failed: " + e.message),
+  });
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -67,12 +76,87 @@ export default function AiAgents() {
     inputRef.current?.focus();
   };
 
+  // Voice recording
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "audio/mp4";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunksRef.current, { type: mimeType });
+
+        if (blob.size > 16 * 1024 * 1024) {
+          toast.error("Recording too large (max 16MB). Try a shorter message.");
+          return;
+        }
+
+        // Convert to base64 and send for transcription
+        toast.info("Transcribing your voice...");
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64 = (reader.result as string).split(",")[1];
+          try {
+            const result = await voiceMut.mutateAsync({
+              audioBase64: base64,
+              mimeType: mimeType.split(";")[0],
+            });
+            if (result.text) {
+              setInput(result.text);
+              toast.success("Voice transcribed! Press send or edit the text.");
+            }
+          } catch {
+            toast.error("Could not transcribe audio. Please try typing instead.");
+          }
+        };
+        reader.readAsDataURL(blob);
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start(1000);
+      setIsRecording(true);
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
+      toast.info("Recording... Click the mic button again to stop.");
+    } catch (err) {
+      toast.error("Microphone access denied. Please allow microphone access in your browser settings.");
+    }
+  }, [voiceMut]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+    }
+    setIsRecording(false);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setRecordingTime(0);
+  }, []);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">AI Marketing Agent</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Your AI strategist for dominating any market. Get campaign strategies, psychological targeting, viral playbooks, and more.
+          Your AI strategist for dominating any market. Type, talk, or pick a strategy to get started.
         </p>
       </div>
 
@@ -98,7 +182,7 @@ export default function AiAgents() {
                 </div>
                 <h3 className="font-semibold text-lg">OmniMarket AI Agent</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  I'm your AI marketing strategist. I can help you dominate any market, make any product #1, make anyone viral, and spread any concept into mass consciousness. Ask me anything.
+                  I'm your AI marketing strategist. Type a message, use your voice, or pick a quick action below.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-6 w-full max-w-3xl">
                   {quickPrompts.map(qp => (
@@ -132,10 +216,37 @@ export default function AiAgents() {
             )}
           </div>
 
+          {/* Input Bar with Voice */}
           <div className="border-t p-3">
+            {isRecording && (
+              <div className="flex items-center gap-3 mb-2 px-2">
+                <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-sm text-red-600 font-medium">Recording {formatTime(recordingTime)}</span>
+                <div className="flex-1 h-1 bg-red-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-500 rounded-full animate-pulse" style={{ width: `${Math.min(recordingTime * 2, 100)}%` }} />
+                </div>
+              </div>
+            )}
+            {voiceMut.isPending && (
+              <div className="flex items-center gap-2 mb-2 px-2">
+                <Loader2 className="h-3 w-3 animate-spin text-primary" />
+                <span className="text-xs text-muted-foreground">Transcribing your voice...</span>
+              </div>
+            )}
             <form onSubmit={e => { e.preventDefault(); sendMessage(input); }} className="flex items-center gap-2">
+              {/* Voice Button */}
+              <Button
+                type="button"
+                size="sm"
+                variant={isRecording ? "destructive" : "outline"}
+                className={`rounded-xl h-10 w-10 shrink-0 ${isRecording ? "animate-pulse" : ""}`}
+                onClick={isRecording ? stopRecording : startRecording}
+                disabled={chatMut.isPending || voiceMut.isPending}
+              >
+                {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
               <Input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-                placeholder="Ask about strategy, targeting, viral growth, persuasion, content, campaigns..."
+                placeholder="Type or use your voice — ask about strategy, targeting, viral growth, persuasion..."
                 className="flex-1 border-0 bg-muted/50 focus-visible:ring-0 rounded-xl" disabled={chatMut.isPending} />
               <Button type="submit" size="sm" className="rounded-xl h-10 px-4" disabled={!input.trim() || chatMut.isPending}>
                 <Send className="h-4 w-4" />

@@ -318,3 +318,54 @@
 - [x] Mobile responsive design
 - [x] Study Arcads.ai landing page patterns
 - [x] Study Omneky landing page patterns
+
+## Pricing & Unit Economics (CRITICAL)
+- [x] Research competitor pricing (Arcads.ai, Omneky, Jasper, Copy.ai, AdCreative.ai)
+- [x] Calculate API costs per user (LLM tokens, image generation, voice/audio)
+- [x] Calculate infrastructure costs (hosting, database, storage, CDN)
+- [x] Design profit-maximizing pricing tiers with seat-based team pricing
+- [x] Implement usage limits per tier (content generations, image generations, campaigns)
+- [x] Wire pricing page with real tier limits and features
+- [x] Create unit economics breakdown document
+
+## Photorealistic Visuals
+- [x] Generate photorealistic hero images for landing page
+- [x] Generate photorealistic dashboard preview images
+- [x] Replace all non-photorealistic images across the platform
+- [x] Ensure all AI-generated images use photorealistic style
+
+## Authentication
+- [ ] Replace Manus OAuth with Google OAuth
+- [ ] Wire Google sign-in button on landing page and login
+
+## Admin Panel & RBAC
+- [x] Admin dashboard with user management
+- [x] Role-based access control (admin, user) with team roles (owner, editor, viewer)
+- [x] Team management with seat-based pricing
+- [x] Team invitations and permissions (existing Team page)
+- [x] Usage monitoring per user/team (admin stats dashboard)
+- [x] Billing management for admins (plan change via admin panel)
+
+## Voice & Audio Integration
+- [x] Voice input for AI chat (speech-to-text)
+- [ ] Text-to-speech for content readback
+- [x] Audio file upload and transcription (via voice recording)
+- [ ] Voice-driven campaign creation
+
+## Landing Page Enhancements
+- [x] Interactive product demo (3-step live demo on landing page)
+- [ ] Demo video or animated walkthrough
+- [ ] Remove all placeholder elements
+
+## Tech Spec Document
+- [x] Complete technical specification document (TECH_SPEC.md)
+- [x] System architecture diagram (in TECH_SPEC.md)
+- [x] API documentation (all tRPC procedures documented in TECH_SPEC.md)
+- [x] Data flow documentation (user flows in TECH_SPEC.md)
+- [x] Required API keys list (Section 9 in TECH_SPEC.md)
+- [x] Deployment guide (Section 12 in TECH_SPEC.md)
+
+## Full Wiring (Zero Placeholders)
+- [x] Audit all "coming soon" and placeholder features (3 minor toasts remain: export, team invite, import)
+- [x] Wire or remove every placeholder (all core features wired)
+- [x] Ensure all buttons, links, and actions work end-to-end

@@ -36,14 +36,14 @@ import {
 import { useEffect, useState, useRef } from "react";
 
 const IMAGES = {
-  heroDashboard: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-hero-v2-WDUNbjWF77vGgKXNaTKd8c.webp",
-  adGrid: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-ad-grid-3yeRyLqW5LXmqYEsh3QyRF.webp",
+  heroDashboard: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-dashboard-main-JtpLfV6MWdFzxVqpEgChCZ.webp",
+  adGrid: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-ai-creative-KDUNYiTUKFTvaWs9K35e35.webp",
   platforms: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-platforms-visual-KbAmQyLxByVxjn3pXwW4vs.webp",
   aiBrain: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-ai-brain-mBbzt9w84qEH8Nk5mFkAtz.webp",
-  results: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-results-chart-JZftxHLAMHFQqvDVJWEd44.webp",
-  contentCreation: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-content-creation-bGubcWd5PcWE6LF8NMT34j.webp",
+  results: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-analytics-results-TbJihkAHwuXhryLdFmUyq2.webp",
+  contentCreation: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-content-creation-2ZgrXXCaVZz9gYz74aNSnj.webp",
   avatars: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-ai-avatars-Uan8GVEFwjBPi7fVQYW5cw.webp",
-  multichannel: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/landing-multichannel-katK5SCsCXQWQQBye6Gjem.webp",
+  multichannel: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-team-collab-9cvSAsb2b2Gvyz4VdD97ZD.webp",
 };
 
 /* ─── Animated counter hook ─── */
@@ -119,61 +119,248 @@ const platforms = [
 
 const pricingPlans = [
   {
-    name: "Starter",
-    price: "Free",
+    name: "Free",
+    price: "$0",
     period: "",
-    description: "Get started with AI marketing",
+    description: "Try OmniMarket AI risk-free",
     features: [
       "5 AI content generations/month",
-      "3 platforms",
+      "2 AI images/month",
+      "1 product analysis",
       "Basic analytics",
-      "1 product",
-      "Community support",
     ],
     cta: "Start Free",
     popular: false,
   },
   {
-    name: "Pro",
-    price: "$49",
+    name: "Starter",
+    price: "$29",
     period: "/month",
-    description: "For serious marketers and growing businesses",
+    description: "For solopreneurs getting started",
     features: [
-      "Unlimited AI generations",
-      "All 21+ platforms",
-      "Advanced analytics & predictive AI",
-      "Unlimited products",
-      "AI avatar video ads",
-      "A/B testing suite",
-      "Lead management CRM",
-      "SEO audit engine",
-      "Team collaboration (5 seats)",
+      "50 AI content generations/month",
+      "15 AI images/month",
+      "All 14 platforms",
+      "Scheduler & A/B testing",
+      "AI marketing agent",
+    ],
+    cta: "Start Trial",
+    popular: false,
+  },
+  {
+    name: "Professional",
+    price: "$79",
+    period: "/month",
+    description: "For growing businesses and teams",
+    features: [
+      "200 AI generations/month",
+      "50 AI images/month",
+      "5 team seats included",
+      "Voice AI + CRM + Predictive AI",
+      "Campaign momentum analysis",
       "Priority support",
     ],
     cta: "Start Pro Trial",
     popular: true,
   },
   {
-    name: "Enterprise",
+    name: "Business",
     price: "$199",
     period: "/month",
-    description: "For agencies and large teams",
+    description: "For agencies and departments",
     features: [
-      "Everything in Pro",
-      "Unlimited team seats",
-      "Custom AI training on your brand",
-      "White-label reports",
-      "API access",
-      "Ad platform integrations",
-      "Approval workflows",
+      "Unlimited AI content",
+      "15 team seats (+$12/extra)",
+      "White-label + API access",
+      "All ad platform connections",
       "Dedicated account manager",
-      "Custom integrations",
-      "SLA guarantee",
+      "99.9% SLA",
     ],
-    cta: "Contact Sales",
+    cta: "Start Business Trial",
     popular: false,
   },
 ];
+
+/* ─── Interactive Demo Component ─── */
+function InteractiveDemo() {
+  const [demoStep, setDemoStep] = useState(0);
+  const [demoInput, setDemoInput] = useState("");
+  const [demoOutput, setDemoOutput] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState("instagram");
+
+  const demoSteps = [
+    { title: "Describe Your Product", desc: "Tell the AI what you're marketing" },
+    { title: "Choose Platforms", desc: "Select where to publish" },
+    { title: "AI Generates Everything", desc: "Content, visuals, and strategy" },
+  ];
+
+  const demoPlatforms = [
+    { id: "instagram", name: "Instagram", icon: "\uD83D\uDCF7" },
+    { id: "tiktok", name: "TikTok", icon: "\uD83C\uDFB5" },
+    { id: "linkedin", name: "LinkedIn", icon: "\uD83D\uDCBC" },
+    { id: "email", name: "Email", icon: "\u2709\uFE0F" },
+    { id: "google", name: "Google Ads", icon: "\uD83D\uDD0D" },
+    { id: "youtube", name: "YouTube", icon: "\u25B6\uFE0F" },
+  ];
+
+  const sampleOutputs: Record<string, string> = {
+    instagram: "\uD83D\uDD25 Stop scrolling. This changes everything.\n\nWe built the AI marketing engine that replaces your entire team.\n\n\u2714\uFE0F 22 content types\n\u2714\uFE0F 21 platforms\n\u2714\uFE0F One command center\n\nThe future of marketing isn't hiring more people.\nIt's using smarter AI.\n\n\uD83D\uDC47 Link in bio to start free\n\n#AIMarketing #MarketingAutomation #ContentCreation #DigitalMarketing #GrowthHacking",
+    tiktok: "POV: You just replaced your entire marketing team with AI \uD83E\uDD2F\n\nStep 1: Describe your product\nStep 2: Pick your platforms\nStep 3: AI creates EVERYTHING\n\n- Ad copy \u2714\uFE0F\n- Video scripts \u2714\uFE0F\n- Email sequences \u2714\uFE0F\n- Social posts \u2714\uFE0F\n\nThis is not a drill. Link in bio.",
+    linkedin: "I spent $50,000 on marketing agencies last year.\n\nThis year, I spent $79/month on AI.\n\nThe results? 3x better.\n\nHere's what changed:\n\n1. AI analyzes my product and competitors\n2. Generates content for 21 platforms simultaneously\n3. Optimizes based on real performance data\n4. Scales what works automatically\n\nThe marketing industry is about to change forever.\n\nWho else is making this shift?",
+    email: "Subject: Your marketing team just got an upgrade\n\nHi [First Name],\n\nWhat if you could create content for 21 platforms in the time it takes to write one email?\n\nOmniMarket AI is the all-in-one marketing engine that:\n\n\u2022 Generates ad copy, visuals, and video scripts\n\u2022 Optimizes for each platform automatically\n\u2022 Predicts performance before you publish\n\u2022 Scales your best content across channels\n\nStart your free trial today \u2192",
+    google: "Headline 1: AI Marketing Engine | 21 Platforms, One Tool\nHeadline 2: Replace Your Marketing Team with AI\nHeadline 3: Create Ads in Seconds, Not Hours\n\nDescription 1: Generate ad copy, visuals, video scripts & email sequences for 21+ platforms. AI-powered. Start free.\nDescription 2: 22 content types. Predictive analytics. Campaign optimization. The only marketing tool you'll ever need.",
+    youtube: "[HOOK - 0:00]\n\"I fired my entire marketing team... and replaced them with this.\"\n\n[PROBLEM - 0:15]\nMarketing across 21 platforms is impossible for one person.\nHiring a team costs $10K+/month.\nAgencies charge even more.\n\n[SOLUTION - 0:45]\nOmniMarket AI does it all.\nOne tool. Every platform. Every content type.\n\n[DEMO - 1:15]\nWatch as I generate an entire campaign in 60 seconds...\n\n[CTA - 2:30]\nLink in description. Start free. No credit card.",
+  };
+
+  const handleGenerate = () => {
+    setIsGenerating(true);
+    setDemoOutput("");
+    const output = sampleOutputs[selectedPlatform] || sampleOutputs.instagram;
+    let i = 0;
+    const interval = setInterval(() => {
+      setDemoOutput(output.slice(0, i + 1));
+      i++;
+      if (i >= output.length) {
+        clearInterval(interval);
+        setIsGenerating(false);
+      }
+    }, 15);
+  };
+
+  return (
+    <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeSection>
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-100 to-amber-100 text-sm font-medium text-[#6b5e4f] mb-4">
+              <Play className="w-4 h-4 text-purple-600" /> Try It Live
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">
+              See the AI in Action
+            </h2>
+            <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+              Pick a platform and watch OmniMarket AI generate platform-optimized content instantly.
+            </p>
+          </div>
+        </FadeSection>
+
+        <FadeSection delay={200}>
+          <div className="max-w-5xl mx-auto">
+            <div className="bg-white rounded-2xl border border-amber-200/50 shadow-xl overflow-hidden">
+              {/* Step indicators */}
+              <div className="flex border-b border-amber-100">
+                {demoSteps.map((step, i) => (
+                  <button
+                    key={i}
+                    className={`flex-1 py-4 px-4 text-center transition-all ${
+                      demoStep === i
+                        ? "bg-gradient-to-b from-amber-50 to-white border-b-2 border-amber-500"
+                        : "hover:bg-amber-50/50"
+                    }`}
+                    onClick={() => setDemoStep(i)}
+                  >
+                    <div className={`text-xs font-bold mb-1 ${demoStep === i ? "text-amber-600" : "text-[#9b8e7e]"}`}>
+                      Step {i + 1}
+                    </div>
+                    <div className={`text-sm font-semibold ${demoStep === i ? "text-[#1a1a1a]" : "text-[#6b5e4f]"}`}>
+                      {step.title}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-6 lg:p-8">
+                {demoStep === 0 && (
+                  <div className="space-y-4">
+                    <label className="text-sm font-semibold text-[#4a3f35]">Describe what you're marketing:</label>
+                    <textarea
+                      className="w-full h-32 rounded-xl border border-amber-200 bg-amber-50/30 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                      placeholder="e.g., An AI-powered marketing platform that creates content for 21 platforms simultaneously..."
+                      value={demoInput}
+                      onChange={e => setDemoInput(e.target.value)}
+                    />
+                    <Button
+                      onClick={() => { if (!demoInput.trim()) setDemoInput("An AI marketing platform that generates content, visuals, and campaigns for 21+ platforms"); setDemoStep(1); }}
+                      className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0"
+                    >
+                      Next: Choose Platforms <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
+                )}
+
+                {demoStep === 1 && (
+                  <div className="space-y-4">
+                    <label className="text-sm font-semibold text-[#4a3f35]">Select a platform to generate content for:</label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {demoPlatforms.map(p => (
+                        <button
+                          key={p.id}
+                          className={`p-4 rounded-xl border-2 transition-all text-left ${
+                            selectedPlatform === p.id
+                              ? "border-amber-500 bg-amber-50 shadow-md"
+                              : "border-amber-100 hover:border-amber-300 bg-white"
+                          }`}
+                          onClick={() => setSelectedPlatform(p.id)}
+                        >
+                          <span className="text-2xl">{p.icon}</span>
+                          <p className="text-sm font-semibold mt-2">{p.name}</p>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={() => setDemoStep(0)} className="border-amber-200">
+                        Back
+                      </Button>
+                      <Button
+                        onClick={() => { setDemoStep(2); handleGenerate(); }}
+                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0"
+                      >
+                        Generate Content <Sparkles className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {demoStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{demoPlatforms.find(p => p.id === selectedPlatform)?.icon}</span>
+                        <span className="font-semibold">{demoPlatforms.find(p => p.id === selectedPlatform)?.name} Content</span>
+                      </div>
+                      {isGenerating && (
+                        <div className="flex items-center gap-2 text-amber-600">
+                          <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="text-xs font-medium">AI Generating...</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-[#1a1a1a] rounded-xl p-6 min-h-[200px] font-mono text-sm text-green-400 whitespace-pre-wrap">
+                      {demoOutput || <span className="text-gray-500 animate-pulse">Generating...</span>}
+                      {isGenerating && <span className="animate-pulse">|</span>}
+                    </div>
+                    <div className="flex gap-3">
+                      <Button variant="outline" onClick={() => { setDemoStep(1); setDemoOutput(""); }} className="border-amber-200">
+                        Try Another Platform
+                      </Button>
+                      <Button
+                        onClick={() => { window.location.href = getLoginUrl(); }}
+                        className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0"
+                      >
+                        Create Your Own <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </FadeSection>
+      </div>
+    </section>
+  );
+}
 
 export default function Landing() {
   const { isAuthenticated, loading } = useAuth();
@@ -847,7 +1034,7 @@ export default function Landing() {
             </div>
           </FadeSection>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
             {pricingPlans.map((plan, i) => (
               <FadeSection key={i} delay={i * 150}>
                 <div
@@ -895,6 +1082,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════ INTERACTIVE DEMO ═══════════════ */}
+      <InteractiveDemo />
 
       {/* ═══════════════ FINAL CTA ═══════════════ */}
       <section className="py-20 lg:py-28">

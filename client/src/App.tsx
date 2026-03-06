@@ -29,6 +29,7 @@ import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
 import PlatformIntel from "./pages/PlatformIntel";
 import Momentum from "./pages/Momentum";
+import AdminPanel from "./pages/AdminPanel";
 
 function DashboardRouter() {
   return (
@@ -57,6 +58,7 @@ function DashboardRouter() {
         <Route path="/team" component={Team} />
         <Route path="/platform-intel" component={PlatformIntel} />
         <Route path="/momentum" component={Momentum} />
+        <Route path="/admin" component={AdminPanel} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -92,6 +94,7 @@ function Router() {
       <Route path="/team" component={DashboardRouter} />
       <Route path="/platform-intel" component={DashboardRouter} />
       <Route path="/momentum" component={DashboardRouter} />
+      <Route path="/admin" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

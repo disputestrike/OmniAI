@@ -47,6 +47,7 @@ import {
   TrendingUp,
   Layers,
   Flame,
+  Shield,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -104,6 +105,12 @@ const menuSections = [
     label: "Account",
     items: [
       { icon: CreditCard, label: "Pricing & Plans", path: "/pricing" },
+    ],
+  },
+  {
+    label: "Admin",
+    items: [
+      { icon: Shield, label: "Admin Panel", path: "/admin" },
     ],
   },
 ];
@@ -223,7 +230,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
           </SidebarHeader>
 
           <SidebarContent className="gap-0 px-2">
-            {menuSections.map((section, sIdx) => (
+            {menuSections.filter(section => section.label !== "Admin" || user?.role === "admin").map((section, sIdx) => (
               <div key={section.label} className={sIdx > 0 ? "mt-4" : ""}>
                 {!isCollapsed && (
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1">
