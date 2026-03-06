@@ -12,6 +12,16 @@ import {
   scheduledPosts, InsertScheduledPost, ScheduledPost,
   leads, InsertLead, Lead,
   analyticsEvents, InsertAnalyticsEvent, AnalyticsEvent,
+  brandVoices, InsertBrandVoice, BrandVoice,
+  emailCampaigns, InsertEmailCampaign, EmailCampaign,
+  emailLists, InsertEmailList, EmailList,
+  emailContacts, InsertEmailContact, EmailContact,
+  landingPages, InsertLandingPage, LandingPage,
+  formSubmissions, InsertFormSubmission, FormSubmission,
+  automationWorkflows, InsertAutomationWorkflow, AutomationWorkflow,
+  socialPublishQueue, InsertSocialPublishQueue, SocialPublishQueue,
+  videoRenders, InsertVideoRender, VideoRender,
+  webhookEndpoints, InsertWebhookEndpoint, WebhookEndpoint,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -564,4 +574,216 @@ export async function getSeoAuditById(id: number) {
   const db = await getDb(); if (!db) return undefined;
   const result = await db.select().from(seoAudits).where(eq(seoAudits.id, id)).limit(1);
   return result[0];
+}
+
+
+// ─── Brand Voices ──────────────────────────────────────────────────
+export async function createBrandVoice(data: InsertBrandVoice) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(brandVoices).values(data);
+  return { id: result[0].insertId };
+}
+export async function getBrandVoicesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(brandVoices).where(eq(brandVoices.userId, userId)).orderBy(desc(brandVoices.createdAt));
+}
+export async function getBrandVoiceById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(brandVoices).where(eq(brandVoices.id, id)).limit(1);
+  return r[0];
+}
+export async function updateBrandVoice(id: number, data: Partial<InsertBrandVoice>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(brandVoices).set(data).where(eq(brandVoices.id, id));
+}
+export async function deleteBrandVoice(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(brandVoices).where(eq(brandVoices.id, id));
+}
+export async function getDefaultBrandVoice(userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(brandVoices).where(and(eq(brandVoices.userId, userId), eq(brandVoices.isDefault, true))).limit(1);
+  return r[0];
+}
+
+// ─── Email Lists ───────────────────────────────────────────────────
+export async function createEmailList(data: InsertEmailList) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(emailLists).values(data);
+  return { id: result[0].insertId };
+}
+export async function getEmailListsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(emailLists).where(eq(emailLists.userId, userId)).orderBy(desc(emailLists.createdAt));
+}
+export async function getEmailListById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(emailLists).where(eq(emailLists.id, id)).limit(1);
+  return r[0];
+}
+export async function deleteEmailList(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(emailLists).where(eq(emailLists.id, id));
+}
+
+// ─── Email Contacts ────────────────────────────────────────────────
+export async function createEmailContact(data: InsertEmailContact) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(emailContacts).values(data);
+  return { id: result[0].insertId };
+}
+export async function getEmailContactsByList(listId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(emailContacts).where(eq(emailContacts.listId, listId));
+}
+export async function deleteEmailContact(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(emailContacts).where(eq(emailContacts.id, id));
+}
+export async function bulkCreateEmailContacts(contacts: InsertEmailContact[]) {
+  const db = await getDb(); if (!db) return;
+  if (contacts.length === 0) return;
+  await db.insert(emailContacts).values(contacts);
+}
+
+// ─── Email Campaigns ───────────────────────────────────────────────
+export async function createEmailCampaign(data: InsertEmailCampaign) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(emailCampaigns).values(data);
+  return { id: result[0].insertId };
+}
+export async function getEmailCampaignsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(emailCampaigns).where(eq(emailCampaigns.userId, userId)).orderBy(desc(emailCampaigns.createdAt));
+}
+export async function getEmailCampaignById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(emailCampaigns).where(eq(emailCampaigns.id, id)).limit(1);
+  return r[0];
+}
+export async function updateEmailCampaign(id: number, data: Partial<InsertEmailCampaign>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(emailCampaigns).set(data).where(eq(emailCampaigns.id, id));
+}
+export async function deleteEmailCampaign(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(emailCampaigns).where(eq(emailCampaigns.id, id));
+}
+
+// ─── Landing Pages ─────────────────────────────────────────────────
+export async function createLandingPage(data: InsertLandingPage) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(landingPages).values(data);
+  return { id: result[0].insertId };
+}
+export async function getLandingPagesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(landingPages).where(eq(landingPages.userId, userId)).orderBy(desc(landingPages.createdAt));
+}
+export async function getLandingPageById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(landingPages).where(eq(landingPages.id, id)).limit(1);
+  return r[0];
+}
+export async function updateLandingPage(id: number, data: Partial<InsertLandingPage>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(landingPages).set(data).where(eq(landingPages.id, id));
+}
+export async function deleteLandingPage(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(landingPages).where(eq(landingPages.id, id));
+}
+
+// ─── Form Submissions ──────────────────────────────────────────────
+export async function createFormSubmission(data: InsertFormSubmission) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(formSubmissions).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFormSubmissionsByPage(landingPageId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(formSubmissions).where(eq(formSubmissions.landingPageId, landingPageId)).orderBy(desc(formSubmissions.createdAt));
+}
+
+// ─── Automation Workflows ──────────────────────────────────────────
+export async function createAutomationWorkflow(data: InsertAutomationWorkflow) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(automationWorkflows).values(data);
+  return { id: result[0].insertId };
+}
+export async function getAutomationWorkflowsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(automationWorkflows).where(eq(automationWorkflows.userId, userId)).orderBy(desc(automationWorkflows.createdAt));
+}
+export async function getAutomationWorkflowById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(automationWorkflows).where(eq(automationWorkflows.id, id)).limit(1);
+  return r[0];
+}
+export async function updateAutomationWorkflow(id: number, data: Partial<InsertAutomationWorkflow>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(automationWorkflows).set(data).where(eq(automationWorkflows.id, id));
+}
+export async function deleteAutomationWorkflow(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(automationWorkflows).where(eq(automationWorkflows.id, id));
+}
+
+// ─── Social Publish Queue ──────────────────────────────────────────
+export async function createSocialPublish(data: InsertSocialPublishQueue) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(socialPublishQueue).values(data);
+  return { id: result[0].insertId };
+}
+export async function getSocialPublishByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(socialPublishQueue).where(eq(socialPublishQueue.userId, userId)).orderBy(desc(socialPublishQueue.createdAt));
+}
+export async function updateSocialPublish(id: number, data: Partial<InsertSocialPublishQueue>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(socialPublishQueue).set(data).where(eq(socialPublishQueue.id, id));
+}
+
+// ─── Video Renders ─────────────────────────────────────────────────
+export async function createVideoRender(data: InsertVideoRender) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(videoRenders).values(data);
+  return { id: result[0].insertId };
+}
+export async function getVideoRendersByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(videoRenders).where(eq(videoRenders.userId, userId)).orderBy(desc(videoRenders.createdAt));
+}
+export async function getVideoRenderById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(videoRenders).where(eq(videoRenders.id, id)).limit(1);
+  return r[0];
+}
+export async function updateVideoRender(id: number, data: Partial<InsertVideoRender>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(videoRenders).set(data).where(eq(videoRenders.id, id));
+}
+
+// ─── Webhook Endpoints ─────────────────────────────────────────────
+export async function createWebhookEndpoint(data: InsertWebhookEndpoint) {
+  const db = await getDb(); if (!db) return { id: 0 };
+  const result = await db.insert(webhookEndpoints).values(data);
+  return { id: result[0].insertId };
+}
+export async function getWebhookEndpointsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(webhookEndpoints).where(eq(webhookEndpoints.userId, userId)).orderBy(desc(webhookEndpoints.createdAt));
+}
+export async function getWebhookEndpointById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(webhookEndpoints).where(eq(webhookEndpoints.id, id)).limit(1);
+  return r[0];
+}
+export async function updateWebhookEndpoint(id: number, data: Partial<InsertWebhookEndpoint>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(webhookEndpoints).set(data).where(eq(webhookEndpoints.id, id));
+}
+export async function deleteWebhookEndpoint(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(webhookEndpoints).where(eq(webhookEndpoints.id, id));
 }

@@ -43,6 +43,13 @@
       "when": 1772804527917,
       "tag": "0005_nebulous_warbound",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1772807801120,
+      "tag": "0006_daily_richard_fisk",
+      "breakpoints": true
     }
   ]
 }

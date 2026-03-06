@@ -13,6 +13,7 @@ import { storagePut } from "./storage";
 import { users, teamMembers, subscriptions } from "../drizzle/schema";
 import { eq, desc, count } from "drizzle-orm";
 import { getDb } from "./db";
+import { brandVoiceRouter, emailMarketingRouter, landingPageRouter, automationRouter, socialPublishRouter, videoRenderRouter, webhookRouter, imageEditorRouter, multiLanguageRouter, competitorSpyRouter, bulkImportRouter } from "./gapRouters";
 
 export const appRouter = router({
   system: systemRouter,
@@ -2161,6 +2162,19 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
       return JSON.parse(response.choices[0].message.content as string);
     }),
   }),
+
+  // ─── Gap Closure Features ──────────────────────────────────────────
+  brandVoice: brandVoiceRouter,
+  emailMarketing: emailMarketingRouter,
+  landingPageBuilder: landingPageRouter,
+  automation: automationRouter,
+  socialPublish: socialPublishRouter,
+  videoRender: videoRenderRouter,
+  webhooks: webhookRouter,
+  imageEditor: imageEditorRouter,
+  multiLanguage: multiLanguageRouter,
+  competitorSpy: competitorSpyRouter,
+  bulkImport: bulkImportRouter,
 });
 
 export type AppRouter = typeof appRouter;

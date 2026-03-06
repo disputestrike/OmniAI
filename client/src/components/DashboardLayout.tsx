@@ -48,6 +48,16 @@ import {
   Layers,
   Flame,
   Shield,
+  Send,
+  Film,
+  Scissors,
+  Eye,
+  Webhook,
+  Languages,
+  Mic,
+  Mail,
+  FileCode,
+  Workflow,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -68,6 +78,10 @@ const menuSections = [
       { icon: PenTool, label: "Content Studio", path: "/content" },
       { icon: Image, label: "Creative Engine", path: "/creatives" },
       { icon: Video, label: "Video Ads", path: "/video-ads" },
+      { icon: Film, label: "Video Render", path: "/video-render" },
+      { icon: Scissors, label: "Image Editor", path: "/image-editor" },
+      { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
+      { icon: Languages, label: "Translate", path: "/translate" },
     ],
   },
   {
@@ -80,6 +94,8 @@ const menuSections = [
       { icon: Handshake, label: "CRM Deals", path: "/deals" },
       { icon: Share2, label: "Ad Platforms", path: "/ad-platforms" },
       { icon: Flame, label: "Momentum", path: "/momentum" },
+      { icon: Send, label: "Social Publish", path: "/social-publish" },
+      { icon: Mail, label: "Email Marketing", path: "/email-marketing" },
     ],
   },
   {
@@ -91,6 +107,7 @@ const menuSections = [
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
+      { icon: Eye, label: "Competitor Spy", path: "/competitor-spy" },
     ],
   },
   {
@@ -99,6 +116,9 @@ const menuSections = [
       { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
       { icon: CheckCircle, label: "Approvals", path: "/approvals" },
       { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
+      { icon: Webhook, label: "Webhooks", path: "/webhooks" },
+      { icon: FileCode, label: "Landing Pages", path: "/landing-pages" },
+      { icon: Workflow, label: "Automations", path: "/automations" },
     ],
   },
   {

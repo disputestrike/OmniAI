@@ -30,6 +30,16 @@ import Team from "./pages/Team";
 import PlatformIntel from "./pages/PlatformIntel";
 import Momentum from "./pages/Momentum";
 import AdminPanel from "./pages/AdminPanel";
+import SocialPublish from "./pages/SocialPublish";
+import VideoRender from "./pages/VideoRender";
+import ImageEditor from "./pages/ImageEditor";
+import CompetitorSpy from "./pages/CompetitorSpy";
+import Webhooks from "./pages/Webhooks";
+import Translate from "./pages/Translate";
+import BrandVoice from "./pages/BrandVoice";
+import EmailMarketing from "./pages/EmailMarketing";
+import LandingPageBuilder from "./pages/LandingPageBuilder";
+import Automations from "./pages/Automations";
 
 function DashboardRouter() {
   return (
@@ -59,6 +69,16 @@ function DashboardRouter() {
         <Route path="/platform-intel" component={PlatformIntel} />
         <Route path="/momentum" component={Momentum} />
         <Route path="/admin" component={AdminPanel} />
+        <Route path="/social-publish" component={SocialPublish} />
+        <Route path="/video-render" component={VideoRender} />
+        <Route path="/image-editor" component={ImageEditor} />
+        <Route path="/competitor-spy" component={CompetitorSpy} />
+        <Route path="/webhooks" component={Webhooks} />
+        <Route path="/translate" component={Translate} />
+        <Route path="/brand-voice" component={BrandVoice} />
+        <Route path="/email-marketing" component={EmailMarketing} />
+        <Route path="/landing-pages" component={LandingPageBuilder} />
+        <Route path="/automations" component={Automations} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -95,6 +115,16 @@ function Router() {
       <Route path="/platform-intel" component={DashboardRouter} />
       <Route path="/momentum" component={DashboardRouter} />
       <Route path="/admin" component={DashboardRouter} />
+      <Route path="/social-publish" component={DashboardRouter} />
+      <Route path="/video-render" component={DashboardRouter} />
+      <Route path="/image-editor" component={DashboardRouter} />
+      <Route path="/competitor-spy" component={DashboardRouter} />
+      <Route path="/webhooks" component={DashboardRouter} />
+      <Route path="/translate" component={DashboardRouter} />
+      <Route path="/brand-voice" component={DashboardRouter} />
+      <Route path="/email-marketing" component={DashboardRouter} />
+      <Route path="/landing-pages" component={DashboardRouter} />
+      <Route path="/automations" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

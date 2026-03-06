@@ -397,3 +397,200 @@ export const seoAudits = mysqlTable("seo_audits", {
 
 export type SeoAudit = typeof seoAudits.$inferSelect;
 export type InsertSeoAudit = typeof seoAudits.$inferInsert;
+
+
+// ─── Brand Voices ──────────────────────────────────────────────────
+export const brandVoices = mysqlTable("brand_voices", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  documentUrls: json("documentUrls").$type<string[]>(),
+  voiceProfile: json("voiceProfile").$type<{ tone: string; style: string; vocabulary: string[]; avoidWords: string[]; samplePhrases: string[]; personality: string; formality: string }>(),
+  isDefault: boolean("isDefault").default(false),
+  status: mysqlEnum("status", ["processing", "ready", "failed"]).default("processing").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BrandVoice = typeof brandVoices.$inferSelect;
+export type InsertBrandVoice = typeof brandVoices.$inferInsert;
+
+// ─── Email Campaigns ───────────────────────────────────────────────
+export const emailCampaigns = mysqlTable("email_campaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  campaignId: int("campaignId"),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  htmlBody: text("htmlBody"),
+  textBody: text("textBody"),
+  fromName: varchar("fromName", { length: 128 }),
+  replyTo: varchar("replyTo", { length: 320 }),
+  recipientListId: int("recipientListId"),
+  status: mysqlEnum("status", ["draft", "scheduled", "sending", "sent", "failed"]).default("draft").notNull(),
+  scheduledAt: timestamp("scheduledAt"),
+  sentAt: timestamp("sentAt"),
+  totalRecipients: int("totalRecipients").default(0),
+  delivered: int("delivered").default(0),
+  opened: int("opened").default(0),
+  clicked: int("clicked").default(0),
+  bounced: int("bounced").default(0),
+  unsubscribed: int("unsubscribed").default(0),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = typeof emailCampaigns.$inferInsert;
+
+// ─── Email Lists ───────────────────────────────────────────────────
+export const emailLists = mysqlTable("email_lists", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  contactCount: int("contactCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EmailList = typeof emailLists.$inferSelect;
+export type InsertEmailList = typeof emailLists.$inferInsert;
+
+// ─── Email Contacts ────────────────────────────────────────────────
+export const emailContacts = mysqlTable("email_contacts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  listId: int("listId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  tags: json("tags").$type<string[]>(),
+  unsubscribed: boolean("unsubscribed").default(false),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EmailContact = typeof emailContacts.$inferSelect;
+export type InsertEmailContact = typeof emailContacts.$inferInsert;
+
+// ─── Landing Pages ─────────────────────────────────────────────────
+export const landingPages = mysqlTable("landing_pages", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  campaignId: int("campaignId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  templateId: varchar("templateId", { length: 64 }),
+  components: json("components").$type<{ type: string; props: Record<string, unknown>; order: number }[]>(),
+  customCss: text("customCss"),
+  status: mysqlEnum("status", ["draft", "published", "archived"]).default("draft").notNull(),
+  publishedUrl: text("publishedUrl"),
+  visits: int("visits").default(0),
+  conversions: int("conversions").default(0),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type LandingPage = typeof landingPages.$inferSelect;
+export type InsertLandingPage = typeof landingPages.$inferInsert;
+
+// ─── Form Submissions ──────────────────────────────────────────────
+export const formSubmissions = mysqlTable("form_submissions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  landingPageId: int("landingPageId").notNull(),
+  data: json("data").$type<Record<string, string>>(),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FormSubmission = typeof formSubmissions.$inferSelect;
+export type InsertFormSubmission = typeof formSubmissions.$inferInsert;
+
+// ─── Automation Workflows ──────────────────────────────────────────
+export const automationWorkflows = mysqlTable("automation_workflows", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  triggerType: mysqlEnum("triggerType", ["form_submission", "lead_status_change", "campaign_event", "schedule", "manual"]).notNull(),
+  triggerConfig: json("triggerConfig").$type<Record<string, unknown>>(),
+  actions: json("actions").$type<{ type: string; config: Record<string, unknown>; order: number }[]>(),
+  isActive: boolean("isActive").default(false),
+  lastRunAt: timestamp("lastRunAt"),
+  runCount: int("runCount").default(0),
+  status: mysqlEnum("status", ["draft", "active", "paused", "error"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AutomationWorkflow = typeof automationWorkflows.$inferSelect;
+export type InsertAutomationWorkflow = typeof automationWorkflows.$inferInsert;
+
+// ─── Social Publishing Queue ───────────────────────────────────────
+export const socialPublishQueue = mysqlTable("social_publish_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  scheduledPostId: int("scheduledPostId"),
+  contentId: int("contentId"),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  connectionId: int("connectionId"),
+  postContent: text("postContent"),
+  mediaUrls: json("mediaUrls").$type<string[]>(),
+  status: mysqlEnum("status", ["queued", "publishing", "published", "failed", "cancelled"]).default("queued").notNull(),
+  publishedAt: timestamp("publishedAt"),
+  externalPostId: varchar("externalPostId", { length: 255 }),
+  externalPostUrl: text("externalPostUrl"),
+  errorMessage: text("errorMessage"),
+  retryCount: int("retryCount").default(0),
+  scheduledFor: timestamp("scheduledFor"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SocialPublishQueue = typeof socialPublishQueue.$inferSelect;
+export type InsertSocialPublishQueue = typeof socialPublishQueue.$inferInsert;
+
+// ─── Video Renders ─────────────────────────────────────────────────
+export const videoRenders = mysqlTable("video_renders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  videoAdId: int("videoAdId"),
+  platform: varchar("platform", { length: 64 }),
+  status: mysqlEnum("status", ["queued", "rendering", "completed", "failed"]).default("queued").notNull(),
+  videoUrl: text("videoUrl"),
+  thumbnailUrl: text("thumbnailUrl"),
+  duration: int("duration"),
+  resolution: varchar("resolution", { length: 32 }),
+  format: varchar("format", { length: 16 }).default("mp4"),
+  frames: json("frames").$type<{ imageUrl: string; duration: number; text?: string }[]>(),
+  audioUrl: text("audioUrl"),
+  errorMessage: text("errorMessage"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type VideoRender = typeof videoRenders.$inferSelect;
+export type InsertVideoRender = typeof videoRenders.$inferInsert;
+
+// ─── Webhook Endpoints (Zapier/Make) ───────────────────────────────
+export const webhookEndpoints = mysqlTable("webhook_endpoints", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  url: text("url").notNull(),
+  events: json("events").$type<string[]>(),
+  secret: varchar("secret", { length: 128 }),
+  isActive: boolean("isActive").default(true),
+  lastTriggeredAt: timestamp("lastTriggeredAt"),
+  failureCount: int("failureCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type WebhookEndpoint = typeof webhookEndpoints.$inferSelect;
+export type InsertWebhookEndpoint = typeof webhookEndpoints.$inferInsert;
