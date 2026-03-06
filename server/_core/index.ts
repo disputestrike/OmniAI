@@ -4,6 +4,7 @@ import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
+import { registerGoogleOAuthRoutes } from "../google-oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -41,6 +42,8 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  // Google OAuth (requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in env)
+  registerGoogleOAuthRoutes(app);
   // Rate limit AI-heavy endpoints (60 requests per minute per IP)
   app.use("/api/trpc/content.generate", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-gen" }));
   app.use("/api/trpc/product.analyze", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-analyze" }));

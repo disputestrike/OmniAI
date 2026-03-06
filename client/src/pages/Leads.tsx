@@ -87,7 +87,17 @@ export default function Leads() {
             {statusOptions.map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Button variant="outline" size="sm" className="rounded-lg" onClick={() => toast.info("Export feature coming soon")}><Download className="h-3.5 w-3.5 mr-1" />Export</Button>
+        <Button variant="outline" size="sm" className="rounded-lg" onClick={() => {
+          if (!leads?.length) return toast.error("No leads to export");
+          const headers = ["Name", "Email", "Phone", "Source", "Status", "Score", "Created"];
+          const rows = leads.map((l: any) => [l.name, l.email || "", l.phone || "", l.source || "", l.status, l.score || 0, new Date(l.createdAt).toLocaleDateString()]);
+          const csv = [headers.join(","), ...rows.map(r => r.map((v: any) => `"${String(v).replace(/"/g, '""')}"`).join(","))].join("\n");
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a"); a.href = url; a.download = `leads-${Date.now()}.csv`; a.click();
+          URL.revokeObjectURL(url);
+          toast.success(`Exported ${leads.length} leads as CSV`);
+        }}><Download className="h-3.5 w-3.5 mr-1" />Export</Button>
       </div>
 
       {isLoading ? (

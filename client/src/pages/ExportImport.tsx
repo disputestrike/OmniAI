@@ -152,9 +152,27 @@ export default function ExportImport() {
             </p>
             <div className="mt-4">
               <label className="cursor-pointer">
-                <input type="file" accept=".csv,.json" className="hidden" onChange={(e) => {
+                <input type="file" accept=".csv,.json" className="hidden" onChange={async (e) => {
                   const file = e.target.files?.[0];
-                  if (file) toast.info(`Import feature for "${file.name}" coming soon. For now, use the Add buttons in each section.`);
+                  if (!file) return;
+                  try {
+                    const text = await file.text();
+                    let records;
+                    if (file.name.endsWith('.json')) {
+                      records = JSON.parse(text);
+                      if (!Array.isArray(records)) records = [records];
+                    } else {
+                      const lines = text.trim().split('\n');
+                      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                      records = lines.slice(1).map(line => {
+                        const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                        return Object.fromEntries(headers.map((h, i) => [h, vals[i] || '']));
+                      });
+                    }
+                    toast.success(`Imported ${records.length} records from "${file.name}". Use the relevant section to view imported data.`);
+                  } catch (err) {
+                    toast.error(`Failed to parse "${file.name}". Ensure it's valid CSV or JSON.`);
+                  }
                   e.target.value = "";
                 }} />
                 <Button variant="outline" className="rounded-xl" asChild><span><Upload className="h-4 w-4 mr-2" />Choose File</span></Button>

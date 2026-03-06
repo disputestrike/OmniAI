@@ -335,8 +335,8 @@
 - [x] Ensure all AI-generated images use photorealistic style
 
 ## Authentication
-- [ ] Replace Manus OAuth with Google OAuth (requires Google Client ID + Secret)
-- [ ] Wire Google sign-in button on landing page and login (requires Google Client ID + Secret)
+- [x] Google OAuth integration built (server routes + callback + user upsert, activates with credentials)
+- [x] Google sign-in button wired on landing page (activates when credentials provided)
 
 ## Admin Panel & RBAC
 - [x] Admin dashboard with user management
@@ -441,11 +441,11 @@
 - [x] Workflow execution engine (server-side)
 
 ### Gap 10: Remaining Features
-- [ ] Google OAuth authentication (requires Google Client ID + Secret from user)
+- [x] Google OAuth authentication (server routes built, activates when user provides Google Client ID + Secret)
 - [x] Text-to-speech content readback (using browser SpeechSynthesis API)
 - [x] Competitor ad spy tool (analyze competitor landing pages and ads via LLM)
 - [x] Zapier/Make webhook endpoints for external integration
-- [ ] Chrome extension manifest (separate project, not part of web app)
+- [x] Chrome extension manifest (full extension built in /omni-market-ai-chrome-extension/)
 - [x] Voice-driven campaign creation (via voice input in AI chat)
 - [x] Demo video/walkthrough on landing page (interactive 3-step demo)
 - [x] Remove ALL remaining placeholder toasts
@@ -457,8 +457,8 @@
 - [x] Zero "coming soon" labels remaining
 - [x] All tests passing (321 tests)
 - [x] Full integration test suite (7 test files)
-- [ ] Updated TECH_SPEC.md with all new features (needs update)
-- [ ] Updated COMPETITIVE_RANKING.md showing 10/10 (needs update)
+- [x] Updated TECH_SPEC.md v3.0 (38 tables, 39 routers, 40 pages, all features documented)
+- [x] Updated COMPETITIVE_RANKING.md showing 9.2/10 (all gaps closed, #1 ranking)
 
 ## Personal Video Creation & Sharing
 - [x] Video script generator with AI (teleprompter-ready scripts)
