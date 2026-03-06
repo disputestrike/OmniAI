@@ -17,35 +17,35 @@ OmniMarket AI is now the **most comprehensive AI marketing platform available un
 
 ### 2.1 Content Generation
 
-| Capability | OmniMarket AI | Jasper | Copy.ai | AdCreative.ai | Arcads | Omneky |
-|-----------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Short-form ad copy | 9/10 | 9/10 | 8/10 | 9/10 | 6/10 | 8/10 |
-| Long-form content (blogs, articles) | 9/10 | 10/10 | 8/10 | 3/10 | 0/10 | 0/10 |
-| Email campaigns (with sending) | **9/10** | 8/10 | 7/10 | 5/10 | 0/10 | 0/10 |
-| Social media posts | 9/10 | 8/10 | 8/10 | 7/10 | 5/10 | 7/10 |
-| Video scripts | 8/10 | 6/10 | 5/10 | 3/10 | 9/10 | 7/10 |
-| SMS / WhatsApp | 8/10 | 3/10 | 3/10 | 0/10 | 0/10 | 0/10 |
-| Podcast / radio scripts | 7/10 | 4/10 | 3/10 | 0/10 | 0/10 | 0/10 |
-| Product descriptions | 8/10 | 8/10 | 7/10 | 6/10 | 0/10 | 0/10 |
-| Multi-language (30+ languages) | **9/10** | 8/10 | 6/10 | 4/10 | 3/10 | 5/10 |
-| Brand voice training | **8/10** | 9/10 | 5/10 | 3/10 | 0/10 | 0/10 |
-| **Content types count** | **22** | **~12** | **~10** | **~6** | **~3** | **~4** |
-| **Content generation score** | **9.0/10** | **8/10** | **7/10** | **5/10** | **4/10** | **5/10** |
+| Capability | OmniMarket AI | Jasper | Copy.ai | AdCreative.ai | Arcads | Omneky | Predis.ai |
+|-----------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Short-form ad copy | 9/10 | 9/10 | 8/10 | 9/10 | 6/10 | 8/10 | 8/10 |
+| Long-form content (blogs, articles) | 9/10 | 10/10 | 8/10 | 3/10 | 0/10 | 0/10 | 5/10 |
+| Email campaigns (with sending) | **9/10** | 8/10 | 7/10 | 5/10 | 0/10 | 0/10 | 3/10 |
+| Social media posts | 9/10 | 8/10 | 8/10 | 7/10 | 5/10 | 7/10 | **9/10** |
+| Video scripts | 8/10 | 6/10 | 5/10 | 3/10 | 9/10 | 7/10 | 7/10 |
+| SMS / WhatsApp | 8/10 | 3/10 | 3/10 | 0/10 | 0/10 | 0/10 | 0/10 |
+| Podcast / radio scripts | 7/10 | 4/10 | 3/10 | 0/10 | 0/10 | 0/10 | 0/10 |
+| Product descriptions | 8/10 | 8/10 | 7/10 | 6/10 | 0/10 | 0/10 | 6/10 |
+| Multi-language (30+ languages) | **9/10** | 8/10 | 6/10 | 4/10 | 3/10 | 5/10 | 5/10 |
+| Brand voice training | **8/10** | 9/10 | 5/10 | 3/10 | 0/10 | 0/10 | 3/10 |
+| **Content types count** | **22** | **~12** | **~10** | **~6** | **~3** | **~4** | **~8** |
+| **Content generation score** | **9.0/10** | **8/10** | **7/10** | **5/10** | **4/10** | **5/10** | **5.5/10** |
 
-OmniMarket AI leads in content breadth with 22 content types, 30+ language support, and brand voice training. The addition of multi-language generation and brand voice profiles closes the gap with Jasper, which was previously the only competitor offering both.
+OmniMarket AI leads in content breadth with 22 content types, 30+ language support, and brand voice training. The addition of multi-language generation and brand voice profiles closes the gap with Jasper, which was previously the only competitor offering both. Predis.ai (3K followers, 930 posts, $19-249/month) focuses heavily on social media post generation and AI ad creatives but lacks long-form content, email campaigns, SMS/WhatsApp, podcast scripts, and brand voice training. Their strength is in social media post generation speed ("30-second ads") but OmniMarket covers 2.75x more content types.
 
 ### 2.2 Visual and Creative Generation
 
-| Capability | OmniMarket AI | AdCreative.ai | Arcads | Omneky | Canva AI |
-|-----------|:---:|:---:|:---:|:---:|:---:|
-| AI image generation | 8/10 | 9/10 | 3/10 | 8/10 | 7/10 |
-| AI video rendering (actual MP4) | **8/10** | 5/10 | **10/10** | **9/10** | 4/10 |
-| AI avatars / actors | 7/10 | 3/10 | **10/10** | 6/10 | 0/10 |
-| Background removal | **7/10** | 9/10 | 0/10 | 5/10 | 9/10 |
-| Image editing (resize, upscale, filter) | **7/10** | 6/10 | 0/10 | 4/10 | 10/10 |
-| Personal video studio (webcam) | **8/10** | 0/10 | 3/10 | 0/10 | 0/10 |
-| Batch generation | 5/10 | 8/10 | 9/10 | 8/10 | 6/10 |
-| **Creative score** | **7.5/10** | **7/10** | **8/10** | **7/10** | **7/10** |
+| Capability | OmniMarket AI | AdCreative.ai | Arcads | Omneky | Canva AI | Predis.ai |
+|-----------|:---:|:---:|:---:|:---:|:---:|:---:|
+| AI image generation | 8/10 | 9/10 | 3/10 | 8/10 | 7/10 | 7/10 |
+| AI video rendering (actual MP4) | **8/10** | 5/10 | **10/10** | **9/10** | 4/10 | 7/10 |
+| AI avatars / actors | 7/10 | 3/10 | **10/10** | 6/10 | 0/10 | 6/10 |
+| Background removal | **7/10** | 9/10 | 0/10 | 5/10 | 9/10 | 5/10 |
+| Image editing (resize, upscale, filter) | **7/10** | 6/10 | 0/10 | 4/10 | 10/10 | 6/10 |
+| Personal video studio (webcam) | **8/10** | 0/10 | 3/10 | 0/10 | 0/10 | 0/10 |
+| Batch generation | 5/10 | 8/10 | 9/10 | 8/10 | 6/10 | 7/10 |
+| **Creative score** | **7.5/10** | **7/10** | **8/10** | **7/10** | **7/10** | **5.5/10** |
 
 The video rendering engine now produces actual MP4 video files by generating AI image frames and assembling them. The image editor provides background removal, resize, upscale, and filter capabilities. The Personal Video Studio with webcam recording, teleprompter, and AI script generation is a unique feature no competitor offers. The gap with Arcads (which uses real AI actor lip-sync) remains, but OmniMarket now delivers functional video output rather than scripts only.
 
@@ -128,17 +128,17 @@ The AI capabilities have been extended with text-to-speech readback (browser Spe
 
 ## 3. Composite Ranking
 
-| Category | Weight | OmniMarket AI | Jasper | AdCreative.ai | Arcads | Omneky | HubSpot |
-|----------|--------|:---:|:---:|:---:|:---:|:---:|:---:|
-| Content Generation | 20% | **9.0** | 8.0 | 5.0 | 4.0 | 5.0 | 6.0 |
-| Creative/Visual | 15% | **7.5** | 2.0 | 7.0 | 8.0 | 7.0 | 3.0 |
-| Distribution | 25% | **7.5** | 1.0 | 4.0 | 3.0 | 6.0 | 9.0 |
-| Analytics/Intel | 15% | **8.5** | 3.0 | 4.0 | 2.0 | 5.0 | 7.0 |
-| CRM/Leads | 10% | **7.5** | 1.0 | 1.0 | 0.0 | 1.0 | 10.0 |
-| Team/Collab | 5% | **8.5** | 6.5 | 6.5 | 4.0 | 5.0 | 9.0 |
-| AI Chat/Voice | 5% | **8.0** | 4.0 | 2.0 | 1.0 | 2.0 | 4.5 |
-| Pricing Value | 5% | **9.5** | 6.0 | 7.0 | 4.0 | 5.0 | 2.0 |
-| **Weighted Total** | **100%** | **8.1** | **3.9** | **4.6** | **3.7** | **5.1** | **7.0** |
+| Category | Weight | OmniMarket AI | Jasper | AdCreative.ai | Arcads | Omneky | HubSpot | Predis.ai |
+|----------|--------|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Content Generation | 20% | **9.0** | 8.0 | 5.0 | 4.0 | 5.0 | 6.0 | 5.5 |
+| Creative/Visual | 15% | **7.5** | 2.0 | 7.0 | 8.0 | 7.0 | 3.0 | 5.5 |
+| Distribution | 25% | **7.5** | 1.0 | 4.0 | 3.0 | 6.0 | 9.0 | 7.0 |
+| Analytics/Intel | 15% | **8.5** | 3.0 | 4.0 | 2.0 | 5.0 | 7.0 | 5.0 |
+| CRM/Leads | 10% | **7.5** | 1.0 | 1.0 | 0.0 | 1.0 | 10.0 | 1.0 |
+| Team/Collab | 5% | **8.5** | 6.5 | 6.5 | 4.0 | 5.0 | 9.0 | 5.0 |
+| AI Chat/Voice | 5% | **8.0** | 4.0 | 2.0 | 1.0 | 2.0 | 4.5 | 3.0 |
+| Pricing Value | 5% | **9.5** | 6.0 | 7.0 | 4.0 | 5.0 | 2.0 | 8.0 |
+| **Weighted Total** | **100%** | **8.1** | **3.9** | **4.6** | **3.7** | **5.1** | **7.0** | **5.3** |
 
 ### Ranking (out of 10):
 
@@ -146,12 +146,15 @@ The AI capabilities have been extended with text-to-speech readback (browser Spe
 |------|----------|-------|-------------|----------|
 | 1 | **OmniMarket AI** | **8.1/10** | $0-499/mo | Broadest features, best value, full execution |
 | 2 | **HubSpot** | 7.0/10 | $3,600/mo | Mature ecosystem, enterprise reliability |
-| 3 | **Omneky** | 5.1/10 | $99-249/mo | Real video + direct ad publishing |
-| 4 | **AdCreative.ai** | 4.6/10 | $25-359/mo | Strong creative tools + ad integration |
-| 5 | **Jasper** | 3.9/10 | $49-125/mo | Best text content, nothing else |
-| 6 | **Arcads** | 3.7/10 | $110-500/mo | Best video ads, very narrow |
+| 3 | **Predis.ai** | 5.3/10 | $19-249/mo | Fast social post generation, good publishing |
+| 4 | **Omneky** | 5.1/10 | $99-249/mo | Real video + direct ad publishing |
+| 5 | **AdCreative.ai** | 4.6/10 | $25-359/mo | Strong creative tools + ad integration |
+| 6 | **Jasper** | 3.9/10 | $49-125/mo | Best text content, nothing else |
+| 7 | **Arcads** | 3.7/10 | $110-500/mo | Best video ads, very narrow |
 
 OmniMarket AI has moved from #3 to #1 in the weighted ranking. The platform now surpasses HubSpot in the sub-$500/month category by offering comparable breadth at a fraction of the price. HubSpot retains advantages in enterprise reliability, depth of CRM, and years of battle-tested integrations, but at 18-72x the price.
+
+**Predis.ai** enters the ranking at #3 with a 5.3/10 weighted score. Predis.ai (3K followers on Facebook, 930 posts, "The Ultimate AI Ad & Content Tool") is a strong social media content generator that excels at rapid ad creative generation ("Make Ads in 30 Seconds") and social publishing. Their pricing ($19-249/month) is competitive and they offer UGC video generation, competitor analysis, and social scheduling. However, they lack: long-form content (blogs, articles), email marketing, SMS/WhatsApp, CRM/lead management, customer intelligence, brand voice training, landing page builder, automation workflows, and the depth of analytics that OmniMarket provides. OmniMarket offers 2.75x more content types, 5x more intelligence features, and a full CRM that Predis.ai does not have. Predis.ai is a focused social media tool; OmniMarket is a comprehensive marketing execution platform.
 
 ---
 

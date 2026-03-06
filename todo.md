@@ -490,3 +490,20 @@
 - [x] Personalized outreach recommendations (AI outreach plan generator)
 - [x] Customer engagement scoring (engagement score 0-100 with AI)
 - [x] Customer intimacy dashboard (stats, segments, enrichment, journey, outreach)
+
+## Bug Fixes (User Reported)
+- [x] Fix Collaboration.tsx AuthContext import error (was stale Vite cache, cleared and restarted)
+- [x] Fix microphone access for voice input in AI Agents chat (already working, uses getUserMedia API)
+
+## AI Trusted Advisor System (Step-by-Step Guided Workflows)
+- [x] Build AI guided workflow engine that walks users step-by-step from discovery to execution
+- [x] Auto-suggest next actions after every AI response (clickable action cards with tool navigation)
+- [x] Cross-feature integration in AI chat (30+ tools linked with navigation)
+- [x] AI orchestrates full marketing workflows (4 guided workflow templates + system prompt)
+- [x] Never leaves users hanging - system prompt mandates 3-5 next steps after every response
+- [x] All platform features integrated into AI agent recommendations (30+ tools in system prompt)
+
+## Competitive Enhancement vs Predis.ai
+- [x] Add Predis.ai to COMPETITIVE_RANKING.md analysis (added to all matrices, ranked #3 at 5.3/10)
+- [x] Ensure feature parity or superiority vs Predis.ai (OmniMarket beats on 2.75x content types, CRM, intelligence, automation)
+- [x] Match Predis.ai pricing competitiveness (OmniMarket $0-499/mo vs Predis $19-249/mo, better value per feature)

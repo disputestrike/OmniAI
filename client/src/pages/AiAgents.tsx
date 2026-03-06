@@ -6,13 +6,79 @@ import { Badge } from "@/components/ui/badge";
 import {
   Bot, Send, Loader2, Sparkles, Lightbulb, Target, TrendingUp, PenTool,
   Megaphone, Brain, Globe, Crown, Flame, Eye, Heart, Users, Zap, ShoppingCart,
-  Mic, MicOff, Upload, Paperclip, Image as ImageIcon, FileText,
+  Mic, MicOff, Volume2, VolumeX, ArrowRight, ExternalLink, Play,
+  Rocket, BarChart3, Mail, Video, Image as ImageIcon, FileText, Search,
+  Layout, Workflow, Calendar, Share2, Shield, Palette,
 } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { useLocation } from "wouter";
 
 type Message = { role: "user" | "assistant"; content: string };
+
+// Map tool paths to icons and labels for the action cards
+const toolMap: Record<string, { icon: any; label: string; color: string }> = {
+  "/products": { icon: ShoppingCart, label: "Product Analyzer", color: "bg-blue-500/10 text-blue-600" },
+  "/content": { icon: PenTool, label: "Content Studio", color: "bg-purple-500/10 text-purple-600" },
+  "/creatives": { icon: Palette, label: "Creative Engine", color: "bg-pink-500/10 text-pink-600" },
+  "/video-ads": { icon: Video, label: "Video Ads", color: "bg-red-500/10 text-red-600" },
+  "/video-render": { icon: Play, label: "Video Render", color: "bg-red-500/10 text-red-600" },
+  "/video-studio": { icon: Video, label: "Video Studio", color: "bg-red-500/10 text-red-600" },
+  "/image-editor": { icon: ImageIcon, label: "Image Editor", color: "bg-orange-500/10 text-orange-600" },
+  "/brand-voice": { icon: Volume2, label: "Brand Voice", color: "bg-teal-500/10 text-teal-600" },
+  "/translate": { icon: Globe, label: "Translate", color: "bg-cyan-500/10 text-cyan-600" },
+  "/campaigns": { icon: Megaphone, label: "Campaigns", color: "bg-indigo-500/10 text-indigo-600" },
+  "/ab-testing": { icon: BarChart3, label: "A/B Testing", color: "bg-amber-500/10 text-amber-600" },
+  "/scheduler": { icon: Calendar, label: "Scheduler", color: "bg-green-500/10 text-green-600" },
+  "/leads": { icon: Users, label: "Lead Manager", color: "bg-violet-500/10 text-violet-600" },
+  "/deals": { icon: Target, label: "CRM Deals", color: "bg-emerald-500/10 text-emerald-600" },
+  "/ad-platforms": { icon: Layout, label: "Ad Platforms", color: "bg-sky-500/10 text-sky-600" },
+  "/momentum": { icon: TrendingUp, label: "Momentum", color: "bg-lime-500/10 text-lime-600" },
+  "/social-publish": { icon: Share2, label: "Social Publish", color: "bg-fuchsia-500/10 text-fuchsia-600" },
+  "/email-marketing": { icon: Mail, label: "Email Marketing", color: "bg-rose-500/10 text-rose-600" },
+  "/intelligence": { icon: Search, label: "Website Intel", color: "bg-slate-500/10 text-slate-600" },
+  "/platform-intel": { icon: Lightbulb, label: "Platform Intel", color: "bg-yellow-500/10 text-yellow-600" },
+  "/seo-audits": { icon: Search, label: "SEO Audits", color: "bg-green-500/10 text-green-600" },
+  "/analytics": { icon: BarChart3, label: "Analytics", color: "bg-blue-500/10 text-blue-600" },
+  "/predictive": { icon: Brain, label: "Predictive AI", color: "bg-purple-500/10 text-purple-600" },
+  "/competitor-spy": { icon: Eye, label: "Competitor Spy", color: "bg-red-500/10 text-red-600" },
+  "/customer-intel": { icon: Users, label: "Customer Intel", color: "bg-teal-500/10 text-teal-600" },
+  "/competitor-intel": { icon: Shield, label: "Competitor Intel", color: "bg-orange-500/10 text-orange-600" },
+  "/landing-pages": { icon: Layout, label: "Landing Pages", color: "bg-indigo-500/10 text-indigo-600" },
+  "/automations": { icon: Workflow, label: "Automations", color: "bg-cyan-500/10 text-cyan-600" },
+  "/webhooks": { icon: Zap, label: "Webhooks", color: "bg-amber-500/10 text-amber-600" },
+  "/collaboration": { icon: Users, label: "Collaboration", color: "bg-violet-500/10 text-violet-600" },
+  "/approvals": { icon: Shield, label: "Approvals", color: "bg-emerald-500/10 text-emerald-600" },
+};
+
+// Parse next steps from AI response and extract tool links
+function parseNextSteps(content: string): Array<{ text: string; path?: string; toolLabel?: string }> {
+  const steps: Array<{ text: string; path?: string; toolLabel?: string }> = [];
+  // Look for the "Next Steps" section
+  const nextStepsMatch = content.match(/##\s*🎯\s*Your Next Steps([\s\S]*?)(?=##|$)/i)
+    || content.match(/##\s*Next Steps([\s\S]*?)(?=##|$)/i)
+    || content.match(/\*\*Next Steps\*\*([\s\S]*?)(?=\*\*|##|$)/i);
+
+  if (!nextStepsMatch) return steps;
+
+  const section = nextStepsMatch[1];
+  const lines = section.split("\n").filter(l => l.trim().match(/^\d+[\.\)]/));
+
+  for (const line of lines) {
+    const text = line.replace(/^\d+[\.\)]\s*/, "").trim();
+    // Find tool path references like (/products) or (/content)
+    const pathMatch = text.match(/\(\/([a-z-]+)\)/);
+    if (pathMatch) {
+      const path = `/${pathMatch[1]}`;
+      const tool = toolMap[path];
+      steps.push({ text: text.replace(/\(\/[a-z-]+\)/g, "").trim(), path, toolLabel: tool?.label || path });
+    } else {
+      steps.push({ text });
+    }
+  }
+  return steps;
+}
 
 const agentModes = [
   { id: "strategist", label: "Campaign Strategist", icon: Target, desc: "Full campaign strategy, targeting, and channel planning" },
@@ -38,7 +104,36 @@ const quickPrompts = [
   { label: "Full funnel blueprint", icon: Megaphone, prompt: "Design a complete marketing funnel from awareness to advocacy. Cover each stage: awareness, interest, consideration, intent, evaluation, purchase, retention, and advocacy with specific tactics and content for each." },
 ];
 
+// Workflow templates - complete guided journeys
+const workflows = [
+  {
+    label: "Product Launch",
+    icon: Rocket,
+    color: "bg-gradient-to-r from-blue-500 to-purple-500",
+    prompt: "I'm launching a new product. Walk me through the COMPLETE launch workflow step by step: product analysis, competitor research, content creation (all 22 types), creative assets, video production, campaign setup, A/B testing, scheduling, publishing, and post-launch analytics. Start by asking me about my product.",
+  },
+  {
+    label: "Go Viral in 7 Days",
+    icon: Flame,
+    color: "bg-gradient-to-r from-orange-500 to-red-500",
+    prompt: "I want to go viral in 7 days. Walk me through a day-by-day workflow using ALL the OmniMarket tools: Day 1 - Brand Voice setup + Content creation, Day 2 - Creative assets + Video production, Day 3 - A/B test variations, Day 4 - Schedule + Publish, Day 5-7 - Monitor momentum + Optimize. Start by asking what I want to make viral.",
+  },
+  {
+    label: "Competitor Takedown",
+    icon: Shield,
+    color: "bg-gradient-to-r from-red-500 to-pink-500",
+    prompt: "I want to analyze my competitors and create a strategy to beat them. Walk me through the complete competitive intelligence workflow: Competitor Spy analysis, Competitor Intel deep dive, SEO audit comparison, content gap analysis, then guide me to create counter-content and ads that outperform them. Start by asking who my competitors are.",
+  },
+  {
+    label: "Content Machine",
+    icon: PenTool,
+    color: "bg-gradient-to-r from-purple-500 to-pink-500",
+    prompt: "Help me set up a content machine that produces content for ALL platforms automatically. Walk me through: Brand Voice training, Content Studio setup for all 22 content types, Creative Engine for visuals, Video Studio for personal videos, Scheduler for auto-publishing, and Automations for workflows. Start by asking about my brand.",
+  },
+];
+
 export default function AiAgents() {
+  const [, navigate] = useLocation();
   const chatMut = trpc.aiChat.send.useMutation({ onError: (e) => toast.error(e.message) });
   const voiceMut = trpc.voice.uploadAndTranscribe.useMutation({
     onError: (e) => toast.error("Voice transcription failed: " + e.message),
@@ -47,11 +142,13 @@ export default function AiAgents() {
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -75,6 +172,36 @@ export default function AiAgents() {
     }
     inputRef.current?.focus();
   };
+
+  // Text-to-speech readback
+  const speakText = useCallback((text: string) => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    // Strip markdown formatting for cleaner speech
+    const cleanText = text
+      .replace(/#{1,6}\s/g, "")
+      .replace(/\*\*/g, "")
+      .replace(/\*/g, "")
+      .replace(/`[^`]*`/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/\(\/[a-z-]+\)/g, "")
+      .replace(/---/g, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ")
+      .trim();
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    speechRef.current = utterance;
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  }, [isSpeaking]);
 
   // Voice recording
   const startRecording = useCallback(async () => {
@@ -101,7 +228,6 @@ export default function AiAgents() {
           return;
         }
 
-        // Convert to base64 and send for transcription
         toast.info("Transcribing your voice...");
         const reader = new FileReader();
         reader.onloadend = async () => {
@@ -151,14 +277,80 @@ export default function AiAgents() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Navigate to a tool page
+  const goToTool = (path: string) => {
+    navigate(path);
+  };
+
+  // Render action cards for next steps extracted from AI response
+  const renderNextStepCards = (content: string) => {
+    const steps = parseNextSteps(content);
+    if (steps.length === 0) return null;
+
+    return (
+      <div className="mt-3 space-y-1.5">
+        <div className="flex items-center gap-1.5 mb-2">
+          <Rocket className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-semibold text-primary uppercase tracking-wider">Quick Actions</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {steps.map((step, idx) => {
+            const tool = step.path ? toolMap[step.path] : null;
+            const ToolIcon = tool?.icon || ArrowRight;
+            return (
+              <button
+                key={idx}
+                onClick={() => step.path ? goToTool(step.path) : undefined}
+                className={`flex items-center gap-2 p-2 rounded-lg text-left text-xs transition-all ${
+                  step.path
+                    ? "bg-primary/5 hover:bg-primary/10 cursor-pointer border border-primary/20 hover:border-primary/40"
+                    : "bg-muted/50 cursor-default"
+                }`}
+              >
+                <div className={`h-6 w-6 rounded-md flex items-center justify-center shrink-0 ${tool?.color || "bg-muted text-muted-foreground"}`}>
+                  <ToolIcon className="h-3 w-3" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  {step.toolLabel && (
+                    <span className="font-semibold text-primary block text-[10px] uppercase tracking-wider">{step.toolLabel}</span>
+                  )}
+                  <span className="text-muted-foreground line-clamp-2">{step.text.slice(0, 80)}{step.text.length > 80 ? "..." : ""}</span>
+                </div>
+                {step.path && <ExternalLink className="h-3 w-3 text-primary/50 shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">AI Marketing Agent</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Your AI strategist for dominating any market. Type, talk, or pick a strategy to get started.
+          Your AI strategist and trusted advisor. I'll walk you step-by-step from discovery to execution.
         </p>
       </div>
+
+      {/* Guided Workflow Buttons */}
+      {messages.length === 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {workflows.map(wf => (
+            <button
+              key={wf.label}
+              onClick={() => sendMessage(wf.prompt)}
+              className="relative overflow-hidden rounded-xl p-4 text-left group transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <div className={`absolute inset-0 ${wf.color} opacity-10 group-hover:opacity-20 transition-opacity`} />
+              <wf.icon className="h-6 w-6 text-primary mb-2" />
+              <p className="text-sm font-bold">{wf.label}</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">Complete guided workflow</p>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Agent Modes */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
@@ -174,7 +366,7 @@ export default function AiAgents() {
 
       <Card className="border-0 shadow-sm">
         <CardContent className="p-0">
-          <div ref={scrollRef} className="h-[480px] overflow-y-auto p-4 space-y-4">
+          <div ref={scrollRef} className="h-[520px] overflow-y-auto p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -182,7 +374,7 @@ export default function AiAgents() {
                 </div>
                 <h3 className="font-semibold text-lg">OmniMarket AI Agent</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-                  I'm your AI marketing strategist. Type a message, use your voice, or pick a quick action below.
+                  I'm your trusted marketing advisor. I'll walk you step-by-step from idea to execution, connecting you to the right tools at every stage. Pick a workflow above or ask me anything.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-6 w-full max-w-3xl">
                   {quickPrompts.map(qp => (
@@ -196,9 +388,25 @@ export default function AiAgents() {
             ) : (
               messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-sm max-w-none text-foreground"><Streamdown>{msg.content}</Streamdown></div>
+                      <>
+                        <div className="prose prose-sm max-w-none text-foreground"><Streamdown>{msg.content}</Streamdown></div>
+                        {/* Text-to-speech button */}
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary"
+                            onClick={() => speakText(msg.content)}
+                          >
+                            {isSpeaking ? <VolumeX className="h-3 w-3 mr-1" /> : <Volume2 className="h-3 w-3 mr-1" />}
+                            {isSpeaking ? "Stop" : "Read aloud"}
+                          </Button>
+                        </div>
+                        {/* Clickable next step action cards */}
+                        {renderNextStepCards(msg.content)}
+                      </>
                     ) : (
                       <p className="text-sm">{msg.content}</p>
                     )}
