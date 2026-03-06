@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniMarket AI</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <span class="logo-text">OmniMarket AI</span>
+      </div>
+      <div id="auth-status" class="auth-badge disconnected">Not Connected</div>
+    </header>
+
+    <div id="not-connected" class="section">
+      <p class="info-text">Connect to your OmniMarket AI account to use the extension.</p>
+      <button id="connect-btn" class="btn btn-primary">Connect Account</button>
+    </div>
+
+    <div id="connected" class="section hidden">
+      <div class="quick-actions">
+        <h3>Quick Actions</h3>
+        <button id="analyze-page" class="btn btn-action">
+          <span class="btn-icon">🔍</span>
+          Analyze This Page
+        </button>
+        <button id="extract-product" class="btn btn-action">
+          <span class="btn-icon">📦</span>
+          Extract Product Data
+        </button>
+        <button id="competitor-spy" class="btn btn-action">
+          <span class="btn-icon">🕵️</span>
+          Competitor Intelligence
+        </button>
+        <button id="generate-content" class="btn btn-action">
+          <span class="btn-icon">✍️</span>
+          Generate Content
+        </button>
+        <button id="seo-audit" class="btn btn-action">
+          <span class="btn-icon">📊</span>
+          SEO Quick Audit
+        </button>
+        <button id="save-lead" class="btn btn-action">
+          <span class="btn-icon">👤</span>
+          Save as Lead
+        </button>
+      </div>
+
+      <div class="selected-text-section hidden" id="selected-text-section">
+        <h3>Selected Text</h3>
+        <p id="selected-text-preview" class="text-preview"></p>
+        <div class="text-actions">
+          <button id="remix-text" class="btn btn-sm">Remix Content</button>
+          <button id="translate-text" class="btn btn-sm">Translate</button>
+          <button id="improve-text" class="btn btn-sm">Improve with AI</button>
+        </div>
+      </div>
+
+      <div class="recent-section">
+        <h3>Recent Activity</h3>
+        <div id="recent-activity" class="activity-list">
+          <p class="empty-state">No recent activity</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <a href="#" id="open-dashboard">Open Dashboard</a>
+      <a href="#" id="open-settings">Settings</a>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
