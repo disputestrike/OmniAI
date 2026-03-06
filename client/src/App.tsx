@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ContentStudio from "./pages/ContentStudio";
@@ -26,12 +27,14 @@ import SeoAudits from "./pages/SeoAudits";
 import Predictive from "./pages/Predictive";
 import Approvals from "./pages/Approvals";
 import Team from "./pages/Team";
+import PlatformIntel from "./pages/PlatformIntel";
+import Momentum from "./pages/Momentum";
 
-function Router() {
+function DashboardRouter() {
   return (
     <DashboardLayout>
       <Switch>
-        <Route path="/" component={Home} />
+        <Route path="/dashboard" component={Home} />
         <Route path="/products" component={Products} />
         <Route path="/content" component={ContentStudio} />
         <Route path="/creatives" component={Creatives} />
@@ -52,9 +55,46 @@ function Router() {
         <Route path="/predictive" component={Predictive} />
         <Route path="/approvals" component={Approvals} />
         <Route path="/team" component={Team} />
+        <Route path="/platform-intel" component={PlatformIntel} />
+        <Route path="/momentum" component={Momentum} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
+  );
+}
+
+function Router() {
+  return (
+    <Switch>
+      {/* Public landing page */}
+      <Route path="/" component={Landing} />
+      {/* All dashboard routes */}
+      <Route path="/dashboard" component={DashboardRouter} />
+      <Route path="/products" component={DashboardRouter} />
+      <Route path="/content" component={DashboardRouter} />
+      <Route path="/creatives" component={DashboardRouter} />
+      <Route path="/video-ads" component={DashboardRouter} />
+      <Route path="/campaigns" component={DashboardRouter} />
+      <Route path="/ab-testing" component={DashboardRouter} />
+      <Route path="/scheduler" component={DashboardRouter} />
+      <Route path="/leads" component={DashboardRouter} />
+      <Route path="/analytics" component={DashboardRouter} />
+      <Route path="/ai-agents" component={DashboardRouter} />
+      <Route path="/collaboration" component={DashboardRouter} />
+      <Route path="/export-import" component={DashboardRouter} />
+      <Route path="/pricing" component={DashboardRouter} />
+      <Route path="/intelligence" component={DashboardRouter} />
+      <Route path="/deals" component={DashboardRouter} />
+      <Route path="/ad-platforms" component={DashboardRouter} />
+      <Route path="/seo-audits" component={DashboardRouter} />
+      <Route path="/predictive" component={DashboardRouter} />
+      <Route path="/approvals" component={DashboardRouter} />
+      <Route path="/team" component={DashboardRouter} />
+      <Route path="/platform-intel" component={DashboardRouter} />
+      <Route path="/momentum" component={DashboardRouter} />
+      <Route path="/404" component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 

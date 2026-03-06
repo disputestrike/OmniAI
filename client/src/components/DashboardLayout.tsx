@@ -45,6 +45,8 @@ import {
   Share2,
   CheckCircle,
   TrendingUp,
+  Layers,
+  Flame,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -55,7 +57,7 @@ const menuSections = [
   {
     label: "Overview",
     items: [
-      { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     ],
   },
   {
@@ -76,12 +78,14 @@ const menuSections = [
       { icon: Users, label: "Lead Manager", path: "/leads" },
       { icon: Handshake, label: "CRM Deals", path: "/deals" },
       { icon: Share2, label: "Ad Platforms", path: "/ad-platforms" },
+      { icon: Flame, label: "Momentum", path: "/momentum" },
     ],
   },
   {
     label: "Intelligence",
     items: [
       { icon: Globe, label: "Website Intel", path: "/intelligence" },
+      { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
       { icon: Search, label: "SEO Audits", path: "/seo" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },

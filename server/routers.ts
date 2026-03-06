@@ -7,6 +7,7 @@ import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
+import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
 
 export const appRouter = router({
   system: systemRouter,
@@ -1602,6 +1603,379 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
         response_format: { type: "json_schema", json_schema: { name: "budget", strict: true, schema: { type: "object", properties: { allocations: { type: "array", items: { type: "object", properties: { platform: { type: "string" }, percentage: { type: "number" }, amount: { type: "string" }, expectedRoi: { type: "string" }, risk: { type: "string" } }, required: ["platform", "percentage", "amount", "expectedRoi", "risk"], additionalProperties: false } }, overallExpectedRoi: { type: "string" }, optimizationTips: { type: "array", items: { type: "string" } }, riskAssessment: { type: "string" } }, required: ["allocations", "overallExpectedRoi", "optimizationTips", "riskAssessment"], additionalProperties: false } } }
       });
       return JSON.parse(response.choices[0].message.content as string);
+    }),
+  }),
+
+  // ─── Platform Intelligence ────────────────────────────────────────
+  platformIntel: router({
+    // Get all platform specs
+    allSpecs: protectedProcedure.query(async () => {
+      return getAllPlatformSpecs();
+    }),
+    // Get spec for a single platform
+    getSpec: protectedProcedure.input(z.object({ platformId: z.string() })).query(async ({ input }) => {
+      const spec = PLATFORM_SPECS[input.platformId];
+      if (!spec) throw new TRPCError({ code: "NOT_FOUND", message: "Platform not found" });
+      return spec;
+    }),
+    // Auto-format content for a platform
+    formatContent: protectedProcedure.input(z.object({
+      content: z.string().min(1),
+      platformId: z.string(),
+    })).mutation(async ({ input }) => {
+      return autoFormatContent(input.content, input.platformId);
+    }),
+    // Get best posting time for a platform today
+    bestTimeToday: protectedProcedure.input(z.object({ platformId: z.string() })).query(async ({ input }) => {
+      const result = getTodayBestTime(input.platformId);
+      if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "Platform not found" });
+      return result;
+    }),
+    // Get best posting time for a platform on a specific day
+    bestTimeForDay: protectedProcedure.input(z.object({
+      platformId: z.string(),
+      day: z.string(),
+    })).query(async ({ input }) => {
+      const result = getBestPostingTime(input.platformId, input.day);
+      if (!result) throw new TRPCError({ code: "NOT_FOUND" });
+      return result;
+    }),
+    // Get recommended aspect ratio
+    aspectRatio: protectedProcedure.input(z.object({
+      platformId: z.string(),
+      contentType: z.enum(["feed", "story", "video"]),
+    })).query(async ({ input }) => {
+      return { ratio: getRecommendedAspectRatio(input.platformId, input.contentType) };
+    }),
+    // Multi-platform content formatter — takes content and formats for multiple platforms at once
+    multiFormat: protectedProcedure.input(z.object({
+      content: z.string().min(1),
+      platformIds: z.array(z.string()).min(1),
+    })).mutation(async ({ input }) => {
+      const results: Record<string, ReturnType<typeof autoFormatContent>> = {};
+      for (const pid of input.platformIds) {
+        results[pid] = autoFormatContent(input.content, pid);
+      }
+      return results;
+    }),
+    // AI-powered platform-specific content adaptation
+    adaptContent: protectedProcedure.input(z.object({
+      content: z.string().min(1),
+      sourcePlatform: z.string(),
+      targetPlatform: z.string(),
+    })).mutation(async ({ input }) => {
+      const sourceSpec = PLATFORM_SPECS[input.sourcePlatform];
+      const targetSpec = PLATFORM_SPECS[input.targetPlatform];
+      if (!sourceSpec || !targetSpec) throw new TRPCError({ code: "NOT_FOUND", message: "Platform not found" });
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `You are a cross-platform content adaptation expert. Adapt content from one platform's format to another while maintaining the core message but optimizing for the target platform's best practices.`
+          },
+          {
+            role: "user",
+            content: `Adapt this content from ${sourceSpec.name} to ${targetSpec.name}.
+
+Original content (${sourceSpec.name}):
+${input.content}
+
+Target platform specs:
+- Character limit: ${targetSpec.characterLimits.post}
+- Best format: ${targetSpec.formatRecommendations[0]?.type || "standard"}
+- Hashtag strategy: ${targetSpec.hashtagStrategy.tips}
+- Content tips: ${targetSpec.contentTips.join("; ")}
+
+Adapt the content to be native-feeling on ${targetSpec.name}. Maintain the core message but adjust tone, length, hashtags, and format for maximum engagement on ${targetSpec.name}.`
+          }
+        ],
+      });
+
+      return {
+        adapted: response.choices[0].message.content as string,
+        targetPlatform: targetSpec.name,
+        characterLimit: targetSpec.characterLimits.post,
+        hashtagStrategy: targetSpec.hashtagStrategy,
+      };
+    }),
+  }),
+
+  // ─── Campaign Continuity & Momentum ──────────────────────────────
+  momentum: router({
+    // Analyze a campaign and suggest next steps for momentum
+    analyze: protectedProcedure.input(z.object({
+      campaignId: z.number(),
+    })).mutation(async ({ ctx, input }) => {
+      const campaign = await db.getCampaignById(input.campaignId);
+      if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+
+      // Gather all related data
+      const contents = await db.getContentsByCampaign(input.campaignId);
+      const analytics = await db.getAnalyticsByCampaign(input.campaignId);
+      const leads = await db.getLeadsByCampaign(input.campaignId);
+
+      let productContext = "";
+      if (campaign.productId) {
+        const product = await db.getProductById(campaign.productId);
+        if (product) productContext = `Product: ${product.name} - ${product.description || ""}\nFeatures: ${(product.features as string[] || []).join(", ")}`;
+      }
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: "You are a campaign momentum strategist. Analyze campaign performance and recommend the next wave of content, optimizations, and scaling strategies. Your goal is to maintain and accelerate campaign momentum. Return JSON."
+          },
+          {
+            role: "user",
+            content: `Analyze this campaign and recommend next steps for momentum:
+
+Campaign: ${campaign.name}
+Objective: ${campaign.objective}
+Platforms: ${(campaign.platforms as string[] || []).join(", ")}
+Status: ${campaign.status}
+${productContext}
+
+Content pieces created: ${contents?.length || 0}
+Analytics events: ${analytics?.length || 0}
+Leads generated: ${leads?.length || 0}
+
+Recent content: ${JSON.stringify((contents || []).slice(0, 5).map((c: any) => ({ type: c.type, title: c.title, status: c.status })))}
+Recent analytics: ${JSON.stringify((analytics || []).slice(0, 10))}
+
+Provide:
+1. Campaign health score (0-100)
+2. What's working (top performers)
+3. What needs improvement
+4. Next 5 content pieces to create (with type, platform, and brief)
+5. Scaling recommendations
+6. A/B test suggestions
+7. Budget reallocation advice
+8. Timeline for next 2 weeks`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "momentum_analysis",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                healthScore: { type: "integer" },
+                whatsWorking: { type: "array", items: { type: "string" } },
+                needsImprovement: { type: "array", items: { type: "string" } },
+                nextContentPieces: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      type: { type: "string" },
+                      platform: { type: "string" },
+                      brief: { type: "string" },
+                      priority: { type: "string" },
+                    },
+                    required: ["type", "platform", "brief", "priority"],
+                    additionalProperties: false,
+                  },
+                },
+                scalingRecommendations: { type: "array", items: { type: "string" } },
+                abTestSuggestions: { type: "array", items: { type: "string" } },
+                budgetAdvice: { type: "string" },
+                twoWeekTimeline: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      week: { type: "string" },
+                      actions: { type: "array", items: { type: "string" } },
+                    },
+                    required: ["week", "actions"],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ["healthScore", "whatsWorking", "needsImprovement", "nextContentPieces", "scalingRecommendations", "abTestSuggestions", "budgetAdvice", "twoWeekTimeline"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+
+    // Generate a full content calendar for campaign continuity
+    contentCalendar: protectedProcedure.input(z.object({
+      campaignId: z.number(),
+      weeks: z.number().min(1).max(12).default(4),
+    })).mutation(async ({ ctx, input }) => {
+      const campaign = await db.getCampaignById(input.campaignId);
+      if (!campaign) throw new TRPCError({ code: "NOT_FOUND" });
+
+      let productContext = "";
+      if (campaign.productId) {
+        const product = await db.getProductById(campaign.productId);
+        if (product) productContext = `Product: ${product.name} - ${product.description || ""}`;
+      }
+
+      // Get platform specs for the campaign's platforms
+      const platformTips = (campaign.platforms as string[] || []).map(p => {
+        const spec = PLATFORM_SPECS[p];
+        return spec ? `${spec.name}: Best times ${spec.peakEngagement.timeRange} on ${spec.peakEngagement.days.join(", ")}. ${spec.peakEngagement.notes}` : "";
+      }).filter(Boolean).join("\n");
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: "You are a content calendar strategist. Create a detailed content calendar that maintains campaign momentum with consistent posting, varied content types, and strategic timing. Return JSON."
+          },
+          {
+            role: "user",
+            content: `Create a ${input.weeks}-week content calendar for:
+
+Campaign: ${campaign.name}
+Objective: ${campaign.objective}
+Platforms: ${(campaign.platforms as string[] || []).join(", ")}
+${productContext}
+
+Platform timing intelligence:
+${platformTips}
+
+For each day, specify: platform, content type, topic/brief, optimal posting time, and hashtag suggestions.`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "content_calendar",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                weeks: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      weekNumber: { type: "integer" },
+                      theme: { type: "string" },
+                      posts: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            day: { type: "string" },
+                            platform: { type: "string" },
+                            contentType: { type: "string" },
+                            topic: { type: "string" },
+                            postingTime: { type: "string" },
+                            hashtags: { type: "array", items: { type: "string" } },
+                          },
+                          required: ["day", "platform", "contentType", "topic", "postingTime", "hashtags"],
+                          additionalProperties: false,
+                        },
+                      },
+                    },
+                    required: ["weekNumber", "theme", "posts"],
+                    additionalProperties: false,
+                  },
+                },
+                strategy: { type: "string" },
+              },
+              required: ["weeks", "strategy"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+
+    // Double down on what works — analyze top performers and create variations
+    doubleDown: protectedProcedure.input(z.object({
+      campaignId: z.number(),
+      contentId: z.number(),
+    })).mutation(async ({ ctx, input }) => {
+      const content = await db.getContentById(input.contentId);
+      if (!content) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const campaign = await db.getCampaignById(input.campaignId);
+      const platforms = campaign?.platforms as string[] || [];
+
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: "You are a content scaling expert. Take a high-performing piece of content and create variations for different platforms and angles to maximize its reach. Return JSON."
+          },
+          {
+            role: "user",
+            content: `This content is performing well. Create variations to scale its impact:
+
+Original (${content.type} for ${content.platform || "general"}):
+${content.body}
+
+Target platforms: ${platforms.join(", ")}
+
+Create 5 variations: same core message, different angles/formats/platforms. Include platform-specific optimizations.`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "scaled_content",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                variations: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      platform: { type: "string" },
+                      contentType: { type: "string" },
+                      angle: { type: "string" },
+                      content: { type: "string" },
+                      whyItWorks: { type: "string" },
+                    },
+                    required: ["platform", "contentType", "angle", "content", "whyItWorks"],
+                    additionalProperties: false,
+                  },
+                },
+                scalingStrategy: { type: "string" },
+              },
+              required: ["variations", "scalingStrategy"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      const result = JSON.parse(response.choices[0].message.content as string);
+
+      // Save each variation as new content
+      const savedVariations = [];
+      for (const v of result.variations) {
+        const saved = await db.createContent({
+          userId: ctx.user.id,
+          productId: content.productId ?? null,
+          campaignId: input.campaignId,
+          type: v.contentType as any || "copywriting",
+          platform: v.platform,
+          title: `[Scaled] ${v.angle} - ${v.platform}`,
+          body: v.content,
+          status: "draft",
+          metadata: { scaledFrom: input.contentId, angle: v.angle, whyItWorks: v.whyItWorks },
+        });
+        savedVariations.push({ id: saved.id, ...v });
+      }
+
+      return { variations: savedVariations, scalingStrategy: result.scalingStrategy };
     }),
   }),
 

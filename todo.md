@@ -284,3 +284,37 @@
 - [x] Optimal timing recommendations (AI-analyzed best times per platform in scheduler)
 - [ ] Bulk import (CSV/JSON upload and parse) — future iteration
 - [ ] API access documentation (public API endpoints) — future iteration
+
+## Platform-Specific Formatting Intelligence
+- [x] Platform specs data module (character limits, aspect ratios, video lengths, hashtag limits per platform)
+- [x] Best posting times per platform (day of week + hour, by industry)
+- [x] Peak engagement windows per platform
+- [x] Auto-format content to match platform requirements
+- [x] Hashtag strategy generator per platform
+- [x] Content length optimizer (auto-trim/expand to platform ideal length)
+- [x] Platform-specific preview (show how content looks on each platform)
+- [x] Aspect ratio auto-adjustment for images/videos per platform
+
+## Campaign Continuity Engine
+- [x] Auto-detect winning content (high engagement, high conversion) — via AI momentum analysis
+- [x] Auto-create variations of winning content (double down) — via AI next content recommendations
+- [x] Campaign momentum tracker (detect when engagement is rising/falling)
+- [x] Auto-extend successful campaigns (increase budget, extend dates) — via AI scaling recommendations
+- [x] Winning pattern analysis (what's working and why)
+- [x] Auto-suggest next steps based on campaign performance
+- [x] Continuous optimization loop (test → measure → optimize → repeat) — via A/B test suggestions + 2-week timeline
+- [x] Campaign lifecycle management (launch → monitor → optimize → scale → sunset) — via momentum analysis + content calendar
+
+## Public Landing Page (Pre-Login)
+- [x] Public landing page route (accessible without login)
+- [x] Hero section with bold value proposition and visual evidence
+- [x] Animated/visual showcase of platform capabilities (screenshots, mockups)
+- [x] Value-first messaging (not feature lists — show what users achieve)
+- [x] Social proof section (metrics, testimonials, logos)
+- [x] "How it works" section with visual step-by-step
+- [x] Platform showcase with real UI screenshots/mockups
+- [x] Pricing section with clear tiers
+- [x] CTA buttons throughout (Start Free, See Demo)
+- [x] Mobile responsive design
+- [x] Study Arcads.ai landing page patterns
+- [x] Study Omneky landing page patterns
