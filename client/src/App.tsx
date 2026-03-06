@@ -19,6 +19,7 @@ import AiAgents from "./pages/AiAgents";
 import Collaboration from "./pages/Collaboration";
 import ExportImport from "./pages/ExportImport";
 import Pricing from "./pages/Pricing";
+import Intelligence from "./pages/Intelligence";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function Router() {
         <Route path="/collaboration" component={Collaboration} />
         <Route path="/export-import" component={ExportImport} />
         <Route path="/pricing" component={Pricing} />
+        <Route path="/intelligence" component={Intelligence} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>

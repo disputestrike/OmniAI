@@ -39,6 +39,7 @@ import {
   Bot,
   UsersRound,
   CreditCard,
+  Globe,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -73,6 +74,7 @@ const menuSections = [
   {
     label: "Intelligence",
     items: [
+      { icon: Globe, label: "Website Intel", path: "/intelligence" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
     ],

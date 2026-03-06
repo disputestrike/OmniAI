@@ -391,7 +391,178 @@ Return a JSON object with these fields:
     }),
   }),
 
-  // ─── Video Ad Generation ──────────────────────────────────────────
+  // ─── Website Intelligence Analyzer (SimilarWeb Competitor) ────────
+  intelligence: router({
+    analyzeWebsite: protectedProcedure.input(z.object({
+      url: z.string().min(1),
+      depth: z.enum(["quick", "standard", "deep"]).default("standard"),
+    })).mutation(async ({ ctx, input }) => {
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `You are a world-class competitive intelligence analyst and marketing strategist, similar to SimilarWeb's analysis engine. Given a website URL, provide an extremely comprehensive marketing intelligence report. Analyze everything: traffic patterns, audience demographics, SEO strategy, content strategy, social presence, technology stack, competitive landscape, and actionable recommendations. Be specific with numbers, percentages, and data-driven insights. Return JSON only.`
+          },
+          {
+            role: "user",
+            content: `Provide a comprehensive marketing intelligence report for: ${input.url}
+
+Analysis depth: ${input.depth}
+
+Return JSON with:
+- overview: { domain, industry, estimatedMonthlyTraffic, globalRank, categoryRank, bounceRate, avgVisitDuration, pagesPerVisit }
+- trafficSources: { organic, paid, social, direct, referral, email } (percentages)
+- audienceDemographics: { topCountries: [{country, percentage}], ageDistribution: [{range, percentage}], genderSplit: {male, female}, interests: [string] }
+- seoAnalysis: { domainAuthority, topKeywords: [{keyword, position, volume}], backlinks, organicTraffic, contentGaps: [string] }
+- socialPresence: [{platform, followers, engagement, postFrequency}]
+- contentStrategy: { blogFrequency, topContent: [{title, estimatedViews}], contentTypes: [string], tone }
+- competitors: [{name, url, overlapScore, strengths: [string]}]
+- technologyStack: [string]
+- marketingChannels: [{channel, effectiveness, recommendation}]
+- swotAnalysis: { strengths: [string], weaknesses: [string], opportunities: [string], threats: [string] }
+- actionableRecommendations: [{priority, category, recommendation, expectedImpact}]
+- marketingBudgetSuggestion: { monthly, breakdown: [{channel, amount, percentage}] }`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "website_intelligence",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                overview: {
+                  type: "object",
+                  properties: {
+                    domain: { type: "string" },
+                    industry: { type: "string" },
+                    estimatedMonthlyTraffic: { type: "string" },
+                    globalRank: { type: "string" },
+                    categoryRank: { type: "string" },
+                    bounceRate: { type: "string" },
+                    avgVisitDuration: { type: "string" },
+                    pagesPerVisit: { type: "string" },
+                  },
+                  required: ["domain", "industry", "estimatedMonthlyTraffic", "globalRank", "categoryRank", "bounceRate", "avgVisitDuration", "pagesPerVisit"],
+                  additionalProperties: false,
+                },
+                trafficSources: {
+                  type: "object",
+                  properties: {
+                    organic: { type: "string" },
+                    paid: { type: "string" },
+                    social: { type: "string" },
+                    direct: { type: "string" },
+                    referral: { type: "string" },
+                    email: { type: "string" },
+                  },
+                  required: ["organic", "paid", "social", "direct", "referral", "email"],
+                  additionalProperties: false,
+                },
+                audienceDemographics: {
+                  type: "object",
+                  properties: {
+                    topCountries: { type: "array", items: { type: "object", properties: { country: { type: "string" }, percentage: { type: "string" } }, required: ["country", "percentage"], additionalProperties: false } },
+                    ageDistribution: { type: "array", items: { type: "object", properties: { range: { type: "string" }, percentage: { type: "string" } }, required: ["range", "percentage"], additionalProperties: false } },
+                    genderSplit: { type: "object", properties: { male: { type: "string" }, female: { type: "string" } }, required: ["male", "female"], additionalProperties: false },
+                    interests: { type: "array", items: { type: "string" } },
+                  },
+                  required: ["topCountries", "ageDistribution", "genderSplit", "interests"],
+                  additionalProperties: false,
+                },
+                seoAnalysis: {
+                  type: "object",
+                  properties: {
+                    domainAuthority: { type: "string" },
+                    topKeywords: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, position: { type: "string" }, volume: { type: "string" } }, required: ["keyword", "position", "volume"], additionalProperties: false } },
+                    backlinks: { type: "string" },
+                    organicTraffic: { type: "string" },
+                    contentGaps: { type: "array", items: { type: "string" } },
+                  },
+                  required: ["domainAuthority", "topKeywords", "backlinks", "organicTraffic", "contentGaps"],
+                  additionalProperties: false,
+                },
+                socialPresence: { type: "array", items: { type: "object", properties: { platform: { type: "string" }, followers: { type: "string" }, engagement: { type: "string" }, postFrequency: { type: "string" } }, required: ["platform", "followers", "engagement", "postFrequency"], additionalProperties: false } },
+                contentStrategy: {
+                  type: "object",
+                  properties: {
+                    blogFrequency: { type: "string" },
+                    topContent: { type: "array", items: { type: "object", properties: { title: { type: "string" }, estimatedViews: { type: "string" } }, required: ["title", "estimatedViews"], additionalProperties: false } },
+                    contentTypes: { type: "array", items: { type: "string" } },
+                    tone: { type: "string" },
+                  },
+                  required: ["blogFrequency", "topContent", "contentTypes", "tone"],
+                  additionalProperties: false,
+                },
+                competitors: { type: "array", items: { type: "object", properties: { name: { type: "string" }, url: { type: "string" }, overlapScore: { type: "string" }, strengths: { type: "array", items: { type: "string" } } }, required: ["name", "url", "overlapScore", "strengths"], additionalProperties: false } },
+                technologyStack: { type: "array", items: { type: "string" } },
+                marketingChannels: { type: "array", items: { type: "object", properties: { channel: { type: "string" }, effectiveness: { type: "string" }, recommendation: { type: "string" } }, required: ["channel", "effectiveness", "recommendation"], additionalProperties: false } },
+                swotAnalysis: {
+                  type: "object",
+                  properties: {
+                    strengths: { type: "array", items: { type: "string" } },
+                    weaknesses: { type: "array", items: { type: "string" } },
+                    opportunities: { type: "array", items: { type: "string" } },
+                    threats: { type: "array", items: { type: "string" } },
+                  },
+                  required: ["strengths", "weaknesses", "opportunities", "threats"],
+                  additionalProperties: false,
+                },
+                actionableRecommendations: { type: "array", items: { type: "object", properties: { priority: { type: "string" }, category: { type: "string" }, recommendation: { type: "string" }, expectedImpact: { type: "string" } }, required: ["priority", "category", "recommendation", "expectedImpact"], additionalProperties: false } },
+                marketingBudgetSuggestion: {
+                  type: "object",
+                  properties: {
+                    monthly: { type: "string" },
+                    breakdown: { type: "array", items: { type: "object", properties: { channel: { type: "string" }, amount: { type: "string" }, percentage: { type: "string" } }, required: ["channel", "amount", "percentage"], additionalProperties: false } },
+                  },
+                  required: ["monthly", "breakdown"],
+                  additionalProperties: false,
+                },
+              },
+              required: ["overview", "trafficSources", "audienceDemographics", "seoAnalysis", "socialPresence", "contentStrategy", "competitors", "technologyStack", "marketingChannels", "swotAnalysis", "actionableRecommendations", "marketingBudgetSuggestion"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+    generateHookVariations: protectedProcedure.input(z.object({
+      topic: z.string().min(1),
+      platform: z.string().optional(),
+      count: z.number().min(1).max(20).default(10),
+    })).mutation(async ({ input }) => {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a viral content hook specialist. Generate attention-grabbing hooks that stop people from scrolling. Return JSON only." },
+          {
+            role: "user",
+            content: `Generate ${input.count} viral hooks for: ${input.topic}\nPlatform: ${input.platform || "all"}\n\nReturn JSON: { hooks: [{ text: string, type: string, psychologicalTrigger: string }] }`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "hooks",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                hooks: { type: "array", items: { type: "object", properties: { text: { type: "string" }, type: { type: "string" }, psychologicalTrigger: { type: "string" } }, required: ["text", "type", "psychologicalTrigger"], additionalProperties: false } },
+              },
+              required: ["hooks"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+  }),
+
+  // ─── Video Ad Generation (Arcads-level) ──────────────────────────────
   videoAd: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       return db.getVideoAdsByUser(ctx.user.id);
@@ -402,9 +573,16 @@ Return a JSON object with these fields:
     generate: protectedProcedure.input(z.object({
       productId: z.number().optional(),
       campaignId: z.number().optional(),
-      platform: z.enum(["tiktok", "youtube_shorts", "instagram_reels", "youtube"]),
+      platform: z.enum(["tiktok", "youtube_shorts", "instagram_reels", "youtube", "facebook", "snapchat", "pinterest"]),
       duration: z.number().min(5).max(180).default(30),
       avatarStyle: z.string().optional(),
+      avatarName: z.string().optional(),
+      emotion: z.enum(["neutral", "happy", "excited", "urgent", "calm", "surprised", "empathetic", "authoritative"]).default("neutral"),
+      language: z.string().default("English"),
+      adPreset: z.enum(["ugc_testimonial", "product_demo", "before_after", "problem_solution", "listicle", "unboxing", "tutorial", "comparison", "trending_sound", "custom"]).default("custom"),
+      includeSubtitles: z.boolean().default(true),
+      includeBroll: z.boolean().default(true),
+      musicStyle: z.string().optional(),
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
       let productContext = "";
@@ -505,6 +683,93 @@ Return JSON with:
       });
 
       return { id: result.id, ...videoData, thumbnailUrl };
+    }),
+    // AI Actor library
+    getActors: protectedProcedure.query(async () => {
+      return {
+        actors: [
+          { id: "actor_1", name: "Sarah", style: "professional", gender: "female", age: "25-35", ethnicity: "caucasian", languages: ["English", "Spanish", "French"] },
+          { id: "actor_2", name: "Marcus", style: "casual", gender: "male", age: "25-35", ethnicity: "african_american", languages: ["English", "French"] },
+          { id: "actor_3", name: "Yuki", style: "energetic", gender: "female", age: "20-30", ethnicity: "asian", languages: ["English", "Japanese", "Korean", "Mandarin"] },
+          { id: "actor_4", name: "Diego", style: "authoritative", gender: "male", age: "30-45", ethnicity: "hispanic", languages: ["English", "Spanish", "Portuguese"] },
+          { id: "actor_5", name: "Priya", style: "warm", gender: "female", age: "25-35", ethnicity: "south_asian", languages: ["English", "Hindi", "Tamil"] },
+          { id: "actor_6", name: "Alex", style: "gen_z", gender: "non_binary", age: "18-25", ethnicity: "mixed", languages: ["English", "German"] },
+          { id: "actor_7", name: "Fatima", style: "elegant", gender: "female", age: "25-40", ethnicity: "middle_eastern", languages: ["English", "Arabic", "French"] },
+          { id: "actor_8", name: "James", style: "corporate", gender: "male", age: "35-50", ethnicity: "caucasian", languages: ["English", "German", "Dutch"] },
+          { id: "actor_9", name: "Amara", style: "influencer", gender: "female", age: "20-30", ethnicity: "african", languages: ["English", "Swahili", "French"] },
+          { id: "actor_10", name: "Chen", style: "tech_savvy", gender: "male", age: "25-35", ethnicity: "asian", languages: ["English", "Mandarin", "Cantonese"] },
+        ],
+      };
+    }),
+    // Create custom AI avatar
+    createAvatar: protectedProcedure.input(z.object({
+      name: z.string().min(1),
+      description: z.string().min(1),
+      gender: z.string(),
+      ageRange: z.string(),
+      style: z.string(),
+      languages: z.array(z.string()),
+    })).mutation(async ({ input }) => {
+      const avatarImage = await generateImage({
+        prompt: `Professional headshot portrait of a ${input.description}. ${input.gender}, ${input.ageRange} years old, ${input.style} style. Clean background, studio lighting, high quality, photorealistic.`
+      });
+      return {
+        ...input,
+        id: `custom_${Date.now()}`,
+        imageUrl: avatarImage.url,
+      };
+    }),
+    // Localize video to another language
+    localize: protectedProcedure.input(z.object({
+      videoAdId: z.number(),
+      targetLanguage: z.string().min(1),
+    })).mutation(async ({ ctx, input }) => {
+      const original = await db.getVideoAdById(input.videoAdId);
+      if (!original) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: `You are a professional translator and cultural adaptation specialist. Translate and culturally adapt video ad scripts. Return JSON only.` },
+          {
+            role: "user",
+            content: `Translate and culturally adapt this video ad to ${input.targetLanguage}:\n\nOriginal script: ${original.script}\nOriginal voiceover: ${original.voiceoverText}\n\nReturn JSON with: { script: string, voiceoverText: string, culturalNotes: string }`
+          }
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "localized_video",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                script: { type: "string" },
+                voiceoverText: { type: "string" },
+                culturalNotes: { type: "string" },
+              },
+              required: ["script", "voiceoverText", "culturalNotes"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      const localized = JSON.parse(response.choices[0].message.content as string);
+      const result = await db.createVideoAd({
+        userId: ctx.user.id,
+        productId: original.productId,
+        campaignId: original.campaignId,
+        platform: original.platform,
+        script: localized.script,
+        storyboard: original.storyboard,
+        voiceoverText: localized.voiceoverText,
+        avatarStyle: original.avatarStyle,
+        duration: original.duration,
+        thumbnailUrl: original.thumbnailUrl,
+        status: "completed",
+        metadata: { language: input.targetLanguage, culturalNotes: localized.culturalNotes, originalId: input.videoAdId },
+      });
+      return { id: result.id, ...localized };
     }),
     delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
       await db.deleteVideoAd(input.id);

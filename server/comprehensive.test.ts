@@ -1015,3 +1015,332 @@ describe("Chaos Tests - Stability", () => {
     }
   });
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// 12. WEBSITE INTELLIGENCE ANALYZER TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Website Intelligence Analyzer", () => {
+  it("analyzes website with quick depth", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as any).mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            overview: {
+              domain: "example.com",
+              industry: "Technology",
+              estimatedMonthlyTraffic: "500K",
+              globalRank: "15000",
+              bounceRate: "45%",
+              avgVisitDuration: "3:20",
+              pagesPerVisit: "4.2",
+            },
+            trafficSources: { organic: "40%", paid: "20%", social: "15%", direct: "15%", referral: "10%" },
+            audienceDemographics: {
+              topCountries: [{ country: "USA", percentage: "45%" }],
+              ageDistribution: [{ range: "25-34", percentage: "35%" }],
+              genderSplit: { male: "55%", female: "45%" },
+              interests: ["Technology", "Business"],
+            },
+            seoAnalysis: {
+              domainAuthority: "65",
+              backlinks: "12K",
+              organicTraffic: "200K",
+              topKeywords: [{ keyword: "marketing tools", position: "3", volume: "12K" }],
+              contentGaps: ["AI marketing", "Video ads"],
+            },
+            socialPresence: [{ platform: "Instagram", followers: "50K", engagement: "3.2%", postFrequency: "Daily" }],
+            contentStrategy: {
+              blogFrequency: "3x/week",
+              contentTypes: ["Blog", "Video"],
+              tone: "Professional",
+              topContent: [{ title: "Marketing Guide", estimatedViews: "50K" }],
+            },
+            competitors: [{ name: "Competitor A", url: "https://competitor.com", overlapScore: "72%", strengths: ["SEO", "Content"] }],
+            swotAnalysis: {
+              strengths: ["Strong brand"],
+              weaknesses: ["Limited social"],
+              opportunities: ["AI adoption"],
+              threats: ["New competitors"],
+            },
+            actionableRecommendations: [
+              { priority: "High", category: "SEO", recommendation: "Improve backlinks", expectedImpact: "20% traffic increase" },
+            ],
+            marketingBudgetSuggestion: {
+              monthly: "$10,000",
+              breakdown: [{ channel: "SEO", percentage: "30%", amount: "$3,000" }],
+            },
+            technologyStack: ["React", "Node.js"],
+            marketingChannels: [{ channel: "SEO", effectiveness: "High", recommendation: "Increase content" }],
+          }),
+        },
+      }],
+    });
+
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.intelligence.analyzeWebsite({ url: "https://example.com", depth: "quick" });
+    expect(result).toHaveProperty("overview");
+    expect(result.overview).toHaveProperty("domain");
+    expect(result).toHaveProperty("trafficSources");
+    expect(result).toHaveProperty("seoAnalysis");
+    expect(result).toHaveProperty("swotAnalysis");
+    expect(result).toHaveProperty("competitors");
+    expect(result).toHaveProperty("actionableRecommendations");
+  });
+
+  it("analyzes website with deep depth", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as any).mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            overview: { domain: "deep.com", industry: "SaaS", estimatedMonthlyTraffic: "1M", globalRank: "5000", bounceRate: "35%", avgVisitDuration: "5:00", pagesPerVisit: "6" },
+            trafficSources: { organic: "50%", paid: "15%", social: "20%", direct: "10%", referral: "5%" },
+            audienceDemographics: { topCountries: [], ageDistribution: [], genderSplit: { male: "50%", female: "50%" }, interests: [] },
+            seoAnalysis: { domainAuthority: "80", backlinks: "100K", organicTraffic: "500K", topKeywords: [], contentGaps: [] },
+            socialPresence: [],
+            contentStrategy: { blogFrequency: "Daily", contentTypes: [], tone: "Casual", topContent: [] },
+            competitors: [],
+            swotAnalysis: { strengths: [], weaknesses: [], opportunities: [], threats: [] },
+            actionableRecommendations: [],
+            marketingBudgetSuggestion: { monthly: "$50,000", breakdown: [] },
+            technologyStack: [],
+            marketingChannels: [],
+          }),
+        },
+      }],
+    });
+
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.intelligence.analyzeWebsite({ url: "https://deep.com", depth: "deep" });
+    expect(result.overview.domain).toBe("deep.com");
+  });
+
+  it("generates hook variations", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as any).mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            hooks: [
+              { hook: "Stop scrolling!", angle: "curiosity", platform: "TikTok" },
+              { hook: "You won't believe this", angle: "shock", platform: "Instagram" },
+            ],
+          }),
+        },
+      }],
+    });
+
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.intelligence.generateHookVariations({
+      topic: "AI marketing tools",
+      platform: "tiktok",
+      count: 5,
+    });
+    expect(result).toHaveProperty("hooks");
+    expect(Array.isArray(result.hooks)).toBe(true);
+  });
+
+  it("rejects intelligence analysis without URL", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.intelligence.analyzeWebsite({ url: "", depth: "quick" })).rejects.toThrow();
+  });
+
+  it("rejects unauthenticated intelligence access", async () => {
+    const caller = appRouter.createCaller(createUnauthContext());
+    await expect(caller.intelligence.analyzeWebsite({ url: "https://example.com", depth: "quick" })).rejects.toThrow();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// 13. EXPANDED VIDEO AD FEATURES TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Video Ad - Expanded Features", () => {
+  it("gets AI actor library", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.videoAd.getActors();
+    expect(result).toHaveProperty("actors");
+    expect(Array.isArray(result.actors)).toBe(true);
+    expect(result.actors.length).toBeGreaterThan(0);
+    expect(result.actors[0]).toHaveProperty("name");
+    expect(result.actors[0]).toHaveProperty("style");
+    expect(result.actors[0]).toHaveProperty("languages");
+  });
+
+  it("creates custom AI avatar", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.videoAd.createAvatar({
+      name: "TestAvatar",
+      description: "Young professional woman with dark hair",
+      gender: "female",
+      ageRange: "25-35",
+      style: "professional",
+      languages: ["English", "Spanish"],
+    });
+    expect(result).toHaveProperty("id");
+    expect(result).toHaveProperty("imageUrl");
+    expect(result.name).toBe("TestAvatar");
+  });
+
+  it("generates video ad with emotion and preset", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as any).mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            script: "Hey! You need to see this amazing product...",
+            voiceoverText: "Introducing the revolutionary new product...",
+            storyboard: [
+              { scene: "Scene 1", description: "Avatar speaks to camera with excited expression", duration: "5s" },
+              { scene: "Scene 2", description: "Product demo with B-roll", duration: "10s" },
+            ],
+            hook: "This changed everything for me!",
+            cta: "Link in bio - grab yours now!",
+          }),
+        },
+      }],
+    });
+
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.videoAd.generate({
+      platform: "instagram_reels",
+      duration: 30,
+      emotion: "excited",
+      adPreset: "ugc_testimonial",
+      language: "English",
+      avatarName: "Sarah",
+      includeSubtitles: true,
+      includeBroll: true,
+    });
+    expect(result).toHaveProperty("id");
+    expect(result).toHaveProperty("script");
+    expect(result).toHaveProperty("hook");
+  });
+
+  it("localizes video ad to another language", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as any).mockResolvedValueOnce({
+      choices: [{
+        message: {
+          content: JSON.stringify({
+            translatedScript: "¡Oye! Necesitas ver este producto increíble...",
+            translatedVoiceover: "Presentamos el nuevo producto revolucionario...",
+            culturalNotes: "Adjusted for Latin American Spanish market",
+          }),
+        },
+      }],
+    });
+
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.videoAd.localize({
+      videoAdId: 1,
+      targetLanguage: "Spanish",
+    });
+    expect(result).toHaveProperty("id");
+    expect(result).toHaveProperty("translatedScript");
+  });
+
+  it("generates video ad for all supported platforms", async () => {
+    const platforms = ["tiktok", "youtube_shorts", "instagram_reels", "youtube"] as const;
+    const { invokeLLM } = await import("./_core/llm");
+
+    for (const platform of platforms) {
+      (invokeLLM as any).mockResolvedValueOnce({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              script: `Script for ${platform}`,
+              voiceoverText: `Voiceover for ${platform}`,
+              storyboard: [{ scene: "Scene 1", description: "Opening", duration: "3s" }],
+              hook: `Hook for ${platform}`,
+              cta: "Buy now!",
+            }),
+          },
+        }],
+      });
+
+      const caller = appRouter.createCaller(createAuthContext());
+      const result = await caller.videoAd.generate({ platform, duration: 30 });
+      expect(result).toHaveProperty("id");
+    }
+  });
+
+  it("rejects video ad with invalid duration", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.videoAd.generate({ platform: "tiktok", duration: 0 })).rejects.toThrow();
+  });
+
+  it("rejects unauthenticated actor access", async () => {
+    const caller = appRouter.createCaller(createUnauthContext());
+    await expect(caller.videoAd.getActors()).rejects.toThrow();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// 14. AI CHAT AGENT TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("AI Chat Agent", () => {
+  it("sends message and gets response", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.aiChat.send({ message: "Help me create a marketing plan for my SaaS product" });
+    expect(result).toHaveProperty("reply");
+    expect(typeof result.reply).toBe("string");
+    expect(result.reply.length).toBeGreaterThan(0);
+  });
+
+  it("sends message with conversation history", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.aiChat.send({
+      message: "Now make it more aggressive",
+      history: [
+        { role: "user", content: "Help me with marketing" },
+        { role: "assistant", content: "Here's a marketing plan..." },
+      ],
+    });
+    expect(result).toHaveProperty("reply");
+  });
+
+  it("handles empty message gracefully", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    await expect(caller.aiChat.send({ message: "" })).rejects.toThrow();
+  });
+
+  it("rejects unauthenticated chat", async () => {
+    const caller = appRouter.createCaller(createUnauthContext());
+    await expect(caller.aiChat.send({ message: "hello" })).rejects.toThrow();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// 15. SUBSCRIPTION ROUTER TESTS
+// ═══════════════════════════════════════════════════════════════════════
+
+describe("Subscription Router", () => {
+  it("returns subscription status for free user", async () => {
+    const caller = appRouter.createCaller(createAuthContext());
+    const result = await caller.subscription.status();
+    expect(result).toHaveProperty("plan", "free");
+    expect(result).toHaveProperty("stripeCustomerId");
+    expect(result).toHaveProperty("stripeSubscriptionId");
+  });
+
+  it("returns subscription status for pro user", async () => {
+    const caller = appRouter.createCaller(createAuthContext({ subscriptionPlan: "pro" }));
+    const result = await caller.subscription.status();
+    expect(result).toHaveProperty("plan", "pro");
+  });
+
+  it("returns subscription status for enterprise user", async () => {
+    const caller = appRouter.createCaller(createAuthContext({ subscriptionPlan: "enterprise" }));
+    const result = await caller.subscription.status();
+    expect(result).toHaveProperty("plan", "enterprise");
+  });
+
+  it("rejects unauthenticated subscription status", async () => {
+    const caller = appRouter.createCaller(createUnauthContext());
+    await expect(caller.subscription.status()).rejects.toThrow();
+  });
+});
