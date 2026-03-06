@@ -1294,6 +1294,410 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
       };
     }),
   }),
+
+  // ─── CRM Deals (Pipeline Automation) ──────────────────────────────
+  deal: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getDealsByUser(ctx.user.id);
+    }),
+    getById: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+      return db.getDealById(input.id);
+    }),
+    create: protectedProcedure.input(z.object({
+      title: z.string().min(1).max(255),
+      leadId: z.number().optional(),
+      campaignId: z.number().optional(),
+      value: z.string().optional(),
+      currency: z.string().default("USD"),
+      stage: z.enum(["prospecting", "qualification", "proposal", "negotiation", "closed_won", "closed_lost"]).default("prospecting"),
+      probability: z.number().min(0).max(100).default(0),
+      expectedCloseDate: z.string().optional(),
+      notes: z.string().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      return db.createDeal({
+        userId: ctx.user.id,
+        title: input.title,
+        leadId: input.leadId,
+        campaignId: input.campaignId,
+        value: input.value,
+        currency: input.currency,
+        stage: input.stage,
+        probability: input.probability,
+        expectedCloseDate: input.expectedCloseDate ? new Date(input.expectedCloseDate) : undefined,
+        notes: input.notes,
+      });
+    }),
+    update: protectedProcedure.input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      stage: z.enum(["prospecting", "qualification", "proposal", "negotiation", "closed_won", "closed_lost"]).optional(),
+      value: z.string().optional(),
+      probability: z.number().min(0).max(100).optional(),
+      notes: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const { id, ...data } = input;
+      await db.updateDeal(id, data as any);
+      return { success: true };
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteDeal(input.id);
+      return { success: true };
+    }),
+    pipeline: protectedProcedure.query(async ({ ctx }) => {
+      return db.getDealPipelineSummary(ctx.user.id);
+    }),
+    aiForecasting: protectedProcedure.mutation(async ({ ctx }) => {
+      const deals = await db.getDealsByUser(ctx.user.id);
+      const pipeline = await db.getDealPipelineSummary(ctx.user.id);
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a sales forecasting AI. Analyze the deal pipeline and provide revenue forecasts, win probability analysis, and recommendations. Return JSON with: { forecast30d: string, forecast90d: string, winRate: string, avgDealSize: string, bottlenecks: string[], recommendations: string[], riskDeals: string[] }" },
+          { role: "user", content: `Pipeline summary: ${JSON.stringify(pipeline)}\nActive deals: ${JSON.stringify(deals.slice(0, 50))}` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "forecast", strict: true, schema: { type: "object", properties: { forecast30d: { type: "string" }, forecast90d: { type: "string" }, winRate: { type: "string" }, avgDealSize: { type: "string" }, bottlenecks: { type: "array", items: { type: "string" } }, recommendations: { type: "array", items: { type: "string" } }, riskDeals: { type: "array", items: { type: "string" } } }, required: ["forecast30d", "forecast90d", "winRate", "avgDealSize", "bottlenecks", "recommendations", "riskDeals"], additionalProperties: false } } }
+      });
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+  }),
+
+  // ─── CRM Activities ───────────────────────────────────────────────
+  activity: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getActivitiesByUser(ctx.user.id);
+    }),
+    byDeal: protectedProcedure.input(z.object({ dealId: z.number() })).query(async ({ input }) => {
+      return db.getActivitiesByDeal(input.dealId);
+    }),
+    byLead: protectedProcedure.input(z.object({ leadId: z.number() })).query(async ({ input }) => {
+      return db.getActivitiesByLead(input.leadId);
+    }),
+    create: protectedProcedure.input(z.object({
+      dealId: z.number().optional(),
+      leadId: z.number().optional(),
+      type: z.enum(["call", "email", "meeting", "note", "task", "follow_up"]).default("note"),
+      title: z.string().min(1).max(255),
+      description: z.string().optional(),
+      dueDate: z.string().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      return db.createActivity({
+        userId: ctx.user.id,
+        dealId: input.dealId,
+        leadId: input.leadId,
+        type: input.type,
+        title: input.title,
+        description: input.description,
+        dueDate: input.dueDate ? new Date(input.dueDate) : undefined,
+      });
+    }),
+    complete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.updateActivity(input.id, { status: "completed", completedAt: new Date() });
+      return { success: true };
+    }),
+  }),
+
+  // ─── Ad Platform Connections ──────────────────────────────────────
+  adPlatform: router({
+    connections: protectedProcedure.query(async ({ ctx }) => {
+      return db.getAdPlatformConnectionsByUser(ctx.user.id);
+    }),
+    connect: protectedProcedure.input(z.object({
+      platform: z.string().min(1),
+      accountId: z.string().optional(),
+      accountName: z.string().optional(),
+      accessToken: z.string().optional(),
+      refreshToken: z.string().optional(),
+      scopes: z.array(z.string()).optional(),
+    })).mutation(async ({ ctx, input }) => {
+      return db.createAdPlatformConnection({
+        userId: ctx.user.id,
+        platform: input.platform,
+        accountId: input.accountId,
+        accountName: input.accountName,
+        accessToken: input.accessToken,
+        refreshToken: input.refreshToken,
+        scopes: input.scopes,
+        status: "connected",
+      });
+    }),
+    disconnect: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.updateAdPlatformConnection(input.id, { status: "disconnected" });
+      return { success: true };
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteAdPlatformConnection(input.id);
+      return { success: true };
+    }),
+    campaigns: protectedProcedure.input(z.object({ connectionId: z.number() })).query(async ({ input }) => {
+      return db.getAdPlatformCampaignsByConnection(input.connectionId);
+    }),
+    allCampaigns: protectedProcedure.query(async ({ ctx }) => {
+      return db.getAdPlatformCampaignsByUser(ctx.user.id);
+    }),
+    launchAd: protectedProcedure.input(z.object({
+      connectionId: z.number(),
+      campaignId: z.number().optional(),
+      name: z.string(),
+      budget: z.string().optional(),
+      contentId: z.number().optional(),
+      creativeId: z.number().optional(),
+      targetAudience: z.any().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      const connection = await db.getAdPlatformConnectionById(input.connectionId);
+      if (!connection) throw new TRPCError({ code: "NOT_FOUND", message: "Connection not found" });
+      if (connection.status !== "connected") throw new TRPCError({ code: "BAD_REQUEST", message: "Platform not connected" });
+      // Create the ad platform campaign record — actual API call would go here with the platform's SDK
+      const result = await db.createAdPlatformCampaign({
+        userId: ctx.user.id,
+        connectionId: input.connectionId,
+        campaignId: input.campaignId,
+        externalCampaignId: `ext_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        platform: connection.platform,
+        name: input.name,
+        status: "pending_launch",
+        budget: input.budget,
+        metadata: { targetAudience: input.targetAudience, contentId: input.contentId, creativeId: input.creativeId },
+      });
+      return { id: result.id, message: `Ad campaign '${input.name}' queued for launch on ${connection.platform}. Connect your ${connection.platform} API key in Settings to enable auto-posting.` };
+    }),
+    syncMetrics: protectedProcedure.input(z.object({ connectionId: z.number() })).mutation(async ({ ctx, input }) => {
+      // Placeholder for real API sync — would call Meta/Google/TikTok APIs with stored tokens
+      const campaigns = await db.getAdPlatformCampaignsByConnection(input.connectionId);
+      return { synced: campaigns.length, message: "Metrics sync initiated. Connect platform API keys for live data." };
+    }),
+  }),
+
+  // ─── Team Collaboration ───────────────────────────────────────────
+  team: router({
+    members: protectedProcedure.query(async ({ ctx }) => {
+      return db.getTeamMembersByOwner(ctx.user.id);
+    }),
+    invite: protectedProcedure.input(z.object({
+      email: z.string().email(),
+      name: z.string().optional(),
+      role: z.enum(["admin", "editor", "viewer"]).default("viewer"),
+      permissions: z.array(z.string()).optional(),
+    })).mutation(async ({ ctx, input }) => {
+      const token = `invite_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+      return db.createTeamMember({
+        ownerId: ctx.user.id,
+        email: input.email,
+        name: input.name,
+        role: input.role,
+        permissions: input.permissions || ["view_campaigns", "view_content", "view_analytics"],
+        inviteToken: token,
+        inviteStatus: "pending",
+      });
+    }),
+    updateRole: protectedProcedure.input(z.object({
+      id: z.number(),
+      role: z.enum(["admin", "editor", "viewer"]),
+      permissions: z.array(z.string()).optional(),
+    })).mutation(async ({ input }) => {
+      await db.updateTeamMember(input.id, { role: input.role, permissions: input.permissions });
+      return { success: true };
+    }),
+    remove: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
+      await db.deleteTeamMember(input.id);
+      return { success: true };
+    }),
+  }),
+
+  // ─── Approval Workflows ───────────────────────────────────────────
+  approval: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getApprovalsByUser(ctx.user.id);
+    }),
+    pending: protectedProcedure.query(async ({ ctx }) => {
+      return db.getPendingApprovals(ctx.user.id);
+    }),
+    create: protectedProcedure.input(z.object({
+      type: z.enum(["content", "creative", "campaign", "ad_launch"]),
+      title: z.string().min(1).max(255),
+      contentId: z.number().optional(),
+      creativeId: z.number().optional(),
+      campaignId: z.number().optional(),
+      reviewerId: z.number().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      return db.createApprovalWorkflow({
+        userId: ctx.user.id,
+        requestedById: ctx.user.id,
+        type: input.type,
+        title: input.title,
+        contentId: input.contentId,
+        creativeId: input.creativeId,
+        campaignId: input.campaignId,
+        reviewerId: input.reviewerId,
+        status: "pending",
+      });
+    }),
+    review: protectedProcedure.input(z.object({
+      id: z.number(),
+      status: z.enum(["approved", "rejected", "revision_requested"]),
+      comment: z.string().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      await db.updateApprovalWorkflow(input.id, {
+        status: input.status,
+        reviewerId: ctx.user.id,
+        reviewerComment: input.comment,
+        reviewedAt: new Date(),
+      });
+      return { success: true };
+    }),
+  }),
+
+  // ─── Predictive Analytics ─────────────────────────────────────────
+  predictive: router({
+    scores: protectedProcedure.query(async ({ ctx }) => {
+      return db.getPredictiveScoresByUser(ctx.user.id);
+    }),
+    scoreEntity: protectedProcedure.input(z.object({
+      entityType: z.enum(["campaign", "content", "creative", "ad"]),
+      entityId: z.number(),
+    })).mutation(async ({ ctx, input }) => {
+      // Get entity data for AI scoring
+      let entityData: any = null;
+      if (input.entityType === "campaign") entityData = await db.getCampaignById(input.entityId);
+      else if (input.entityType === "content") entityData = await db.getContentById(input.entityId);
+      else if (input.entityType === "creative") entityData = await db.getCreativeById(input.entityId);
+      if (!entityData) throw new TRPCError({ code: "NOT_FOUND", message: "Entity not found" });
+
+      // Get historical performance data for context
+      const analytics = await db.getAnalyticsByUser(ctx.user.id);
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a predictive marketing analytics AI. Score the given marketing entity based on historical data and best practices. Return JSON with predicted performance metrics." },
+          { role: "user", content: `Entity type: ${input.entityType}\nEntity data: ${JSON.stringify(entityData)}\nHistorical analytics (last 20): ${JSON.stringify(analytics.slice(0, 20))}\n\nPredict: CTR, conversion rate, ROAS, engagement score (0-100), virality score (0-100), quality score (0-100), and provide recommendations.` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "prediction", strict: true, schema: { type: "object", properties: { predictedCtr: { type: "string" }, predictedConversionRate: { type: "string" }, predictedRoas: { type: "string" }, engagementScore: { type: "integer" }, viralityScore: { type: "integer" }, qualityScore: { type: "integer" }, recommendations: { type: "array", items: { type: "string" } }, confidence: { type: "string" } }, required: ["predictedCtr", "predictedConversionRate", "predictedRoas", "engagementScore", "viralityScore", "qualityScore", "recommendations", "confidence"], additionalProperties: false } } }
+      });
+
+      const prediction = JSON.parse(response.choices[0].message.content as string);
+      const saved = await db.createPredictiveScore({
+        userId: ctx.user.id,
+        entityType: input.entityType,
+        entityId: input.entityId,
+        predictedCtr: prediction.predictedCtr,
+        predictedConversionRate: prediction.predictedConversionRate,
+        predictedRoas: prediction.predictedRoas,
+        engagementScore: prediction.engagementScore,
+        viralityScore: prediction.viralityScore,
+        qualityScore: prediction.qualityScore,
+        recommendations: prediction.recommendations,
+        confidence: prediction.confidence,
+      });
+      return { id: saved.id, ...prediction };
+    }),
+    budgetOptimizer: protectedProcedure.input(z.object({
+      totalBudget: z.string(),
+      platforms: z.array(z.string()),
+      objective: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+      const analytics = await db.getAnalyticsByUser(ctx.user.id);
+      const campaigns = await db.getCampaignsByUser(ctx.user.id);
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a marketing budget optimization AI. Analyze historical performance and recommend optimal budget allocation across platforms. Return JSON." },
+          { role: "user", content: `Total budget: $${input.totalBudget}\nTarget platforms: ${input.platforms.join(", ")}\nObjective: ${input.objective}\nHistorical analytics: ${JSON.stringify(analytics.slice(0, 30))}\nPast campaigns: ${JSON.stringify(campaigns.slice(0, 20))}\n\nProvide: allocation per platform (%), expected ROI per platform, risk assessment, and optimization tips.` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "budget", strict: true, schema: { type: "object", properties: { allocations: { type: "array", items: { type: "object", properties: { platform: { type: "string" }, percentage: { type: "number" }, amount: { type: "string" }, expectedRoi: { type: "string" }, risk: { type: "string" } }, required: ["platform", "percentage", "amount", "expectedRoi", "risk"], additionalProperties: false } }, overallExpectedRoi: { type: "string" }, optimizationTips: { type: "array", items: { type: "string" } }, riskAssessment: { type: "string" } }, required: ["allocations", "overallExpectedRoi", "optimizationTips", "riskAssessment"], additionalProperties: false } } }
+      });
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+  }),
+
+  // ─── SEO Audit Engine ─────────────────────────────────────────────
+  seo: router({
+    audits: protectedProcedure.query(async ({ ctx }) => {
+      return db.getSeoAuditsByUser(ctx.user.id);
+    }),
+    getAudit: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
+      return db.getSeoAuditById(input.id);
+    }),
+    runAudit: protectedProcedure.input(z.object({
+      url: z.string().url(),
+    })).mutation(async ({ ctx, input }) => {
+      // Real-time website scraping
+      let scrapedData = "";
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+        const res = await fetch(input.url, {
+          signal: controller.signal,
+          headers: { "User-Agent": "OmniMarketAI-SEO-Bot/1.0" },
+        });
+        clearTimeout(timeout);
+        const html = await res.text();
+        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+        const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+        const h1Matches = html.match(/<h1[^>]*>([^<]+)<\/h1>/gi)?.slice(0, 5) || [];
+        const h2Matches = html.match(/<h2[^>]*>([^<]+)<\/h2>/gi)?.slice(0, 10) || [];
+        const canonicalMatch = html.match(/<link[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i);
+        const ogTags = html.match(/<meta[^>]*property=["']og:[^"']+["'][^>]*>/gi)?.slice(0, 10) || [];
+        const schemaMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)?.slice(0, 3) || [];
+        const imgWithoutAlt = (html.match(/<img(?![^>]*alt=["'][^"']+["'])[^>]*>/gi) || []).length;
+        const totalImages = (html.match(/<img[^>]*>/gi) || []).length;
+        const internalLinks = (html.match(/href=["']\/[^"']*["']/gi) || []).length;
+        const externalLinks = (html.match(/href=["']https?:\/\/[^"']*["']/gi) || []).length;
+        const hasViewport = /meta[^>]*name=["']viewport["']/i.test(html);
+        const hasRobots = /meta[^>]*name=["']robots["']/i.test(html);
+        const pageSize = html.length;
+        scrapedData = `Title: ${titleMatch?.[1] || 'Not found'}\nMeta Description: ${metaDescMatch?.[1] || 'Not found'}\nCanonical: ${canonicalMatch?.[1] || 'Not found'}\nH1 Tags: ${h1Matches.length}\nH2 Tags: ${h2Matches.length}\nImages without alt: ${imgWithoutAlt}/${totalImages}\nInternal links: ${internalLinks}\nExternal links: ${externalLinks}\nHas viewport: ${hasViewport}\nHas robots meta: ${hasRobots}\nPage size: ${(pageSize / 1024).toFixed(1)}KB\nOG Tags: ${ogTags.length}\nSchema markup: ${schemaMatch.length} blocks\nH1 content: ${h1Matches.join(', ')}\nH2 content: ${h2Matches.slice(0, 5).join(', ')}`;
+      } catch (e) {
+        scrapedData = "Could not scrape website - analyzing URL pattern and domain only.";
+      }
+
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are an expert SEO auditor. Perform a comprehensive SEO audit based on the scraped website data. Provide scores, keyword analysis, issues, and actionable recommendations. Return JSON." },
+          { role: "user", content: `URL: ${input.url}\n\nScraped Data:\n${scrapedData}\n\nPerform a full SEO audit with: overall score (0-100), technical score, content score, authority score, top keywords with estimated volume/difficulty/position, issues with severity and fixes, estimated backlink profile, competitor domains, and prioritized recommendations.` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "seo_audit", strict: true, schema: { type: "object", properties: { overallScore: { type: "integer" }, technicalScore: { type: "integer" }, contentScore: { type: "integer" }, authorityScore: { type: "integer" }, keywords: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, volume: { type: "string" }, difficulty: { type: "string" }, position: { type: "string" } }, required: ["keyword", "volume", "difficulty", "position"], additionalProperties: false } }, issues: { type: "array", items: { type: "object", properties: { severity: { type: "string" }, description: { type: "string" }, fix: { type: "string" } }, required: ["severity", "description", "fix"], additionalProperties: false } }, backlinks: { type: "array", items: { type: "object", properties: { domain: { type: "string" }, authority: { type: "integer" }, type: { type: "string" } }, required: ["domain", "authority", "type"], additionalProperties: false } }, competitors: { type: "array", items: { type: "object", properties: { domain: { type: "string" }, overlap: { type: "integer" }, ranking: { type: "string" } }, required: ["domain", "overlap", "ranking"], additionalProperties: false } }, recommendations: { type: "array", items: { type: "string" } } }, required: ["overallScore", "technicalScore", "contentScore", "authorityScore", "keywords", "issues", "backlinks", "competitors", "recommendations"], additionalProperties: false } } }
+      });
+
+      const audit = JSON.parse(response.choices[0].message.content as string);
+      const saved = await db.createSeoAudit({
+        userId: ctx.user.id,
+        url: input.url,
+        overallScore: audit.overallScore,
+        technicalScore: audit.technicalScore,
+        contentScore: audit.contentScore,
+        authorityScore: audit.authorityScore,
+        keywords: audit.keywords,
+        issues: audit.issues,
+        backlinks: audit.backlinks,
+        competitors: audit.competitors,
+        recommendations: audit.recommendations,
+      });
+      return { id: saved.id, ...audit };
+    }),
+    keywordResearch: protectedProcedure.input(z.object({
+      seed: z.string().min(1),
+      industry: z.string().optional(),
+      region: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are an SEO keyword research expert. Generate comprehensive keyword research with volume estimates, difficulty scores, and content suggestions. Return JSON." },
+          { role: "user", content: `Seed keyword: ${input.seed}\nIndustry: ${input.industry || 'general'}\nRegion: ${input.region || 'global'}\n\nGenerate: 20 keyword suggestions with estimated monthly volume, difficulty (0-100), CPC estimate, intent type (informational/commercial/transactional/navigational), and content angle suggestion.` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "keywords", strict: true, schema: { type: "object", properties: { keywords: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, volume: { type: "string" }, difficulty: { type: "integer" }, cpc: { type: "string" }, intent: { type: "string" }, contentAngle: { type: "string" } }, required: ["keyword", "volume", "difficulty", "cpc", "intent", "contentAngle"], additionalProperties: false } }, summary: { type: "string" }, topOpportunities: { type: "array", items: { type: "string" } } }, required: ["keywords", "summary", "topOpportunities"], additionalProperties: false } } }
+      });
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+    rankTracker: protectedProcedure.input(z.object({
+      url: z.string().url(),
+      keywords: z.array(z.string()).min(1).max(20),
+    })).mutation(async ({ input }) => {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are an SEO rank tracking expert. Estimate current search rankings for the given keywords and URL. Return JSON." },
+          { role: "user", content: `URL: ${input.url}\nKeywords to track: ${input.keywords.join(", ")}\n\nEstimate current position, trend (up/down/stable), and improvement suggestions for each keyword.` }
+        ],
+        response_format: { type: "json_schema", json_schema: { name: "rankings", strict: true, schema: { type: "object", properties: { rankings: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, estimatedPosition: { type: "integer" }, trend: { type: "string" }, suggestion: { type: "string" } }, required: ["keyword", "estimatedPosition", "trend", "suggestion"], additionalProperties: false } }, overallVisibility: { type: "string" }, topRecommendation: { type: "string" } }, required: ["rankings", "overallVisibility", "topRecommendation"], additionalProperties: false } } }
+      });
+      return JSON.parse(response.choices[0].message.content as string);
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

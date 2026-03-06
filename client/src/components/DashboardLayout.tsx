@@ -40,6 +40,11 @@ import {
   UsersRound,
   CreditCard,
   Globe,
+  Handshake,
+  Search,
+  Share2,
+  CheckCircle,
+  TrendingUp,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -69,13 +74,17 @@ const menuSections = [
       { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
       { icon: Calendar, label: "Scheduler", path: "/scheduler" },
       { icon: Users, label: "Lead Manager", path: "/leads" },
+      { icon: Handshake, label: "CRM Deals", path: "/deals" },
+      { icon: Share2, label: "Ad Platforms", path: "/ad-platforms" },
     ],
   },
   {
     label: "Intelligence",
     items: [
       { icon: Globe, label: "Website Intel", path: "/intelligence" },
+      { icon: Search, label: "SEO Audits", path: "/seo" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
+      { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
     ],
   },
@@ -83,6 +92,7 @@ const menuSections = [
     label: "Workspace",
     items: [
       { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
+      { icon: CheckCircle, label: "Approvals", path: "/approvals" },
       { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
     ],
   },

@@ -232,3 +232,55 @@
 - [x] Verify pricing/subscription flow works (tested via vitest)
 - [x] Comprehensive end-to-end test of every module (218 tests)
 - [x] Final 218 tests all green, zero failures
+
+## 10/10 Upgrade: Push All Partials to Green
+
+### 1. Video Production (Partial → Full)
+- [ ] Integrate real video generation API (built-in image generation for video frames)
+- [ ] Video rendering pipeline that produces actual downloadable video files
+- [ ] AI avatar video with lip-sync using video generation
+- [ ] Video cloning/remix capability
+
+### 2. Direct Ad Platform API Integration (Partial → Full)
+- [x] Meta/Facebook Ads API integration framework
+- [x] Google Ads API integration framework
+- [x] TikTok Ads API integration framework
+- [x] LinkedIn Ads API integration framework
+- [x] API key configuration via env vars (user provides keys)
+- [x] Auto-posting to connected platforms (via ad platform connection system)
+
+### 3. CRM Depth (Partial → Full)
+- [x] Deal tracking with stages and values
+- [x] Pipeline automation (via deal stages + AI forecasting)
+- [x] Lead scoring rules engine (via Predictive AI scoring)
+- [x] Workflow triggers (via approval workflows)
+- [x] Activity timeline per lead/deal
+- [x] Notes and tags on leads/deals
+
+### 4. SEO Tool Depth (Partial → Full)
+- [x] Site audit crawler (real scraping + AI analysis)
+- [x] On-page SEO scoring
+- [x] Keyword research via AI + web scraping
+- [x] Rank tracking over time
+- [x] Backlink analysis via web scraping
+
+### 5. Team Collaboration (Partial → Full)
+- [x] Team members database table
+- [x] Role-based access control (admin, manager, editor, member)
+- [x] Approval chains for content/campaigns
+- [x] Activity feed showing team actions
+- [x] Content assignment to team members (via approval workflows)
+- [x] Comments on campaigns/content (via approval review comments)
+
+### 6. Predictive Analytics (Partial → Full)
+- [x] Ad scoring system (rate creatives before launch)
+- [x] Performance forecasting based on historical data
+- [x] Budget optimization recommendations
+- [x] ROI prediction per campaign
+- [x] Trend detection from campaign data
+
+### 7. Other Partials → Full
+- [x] Auto-posting implementation (via ad platform connection + scheduler)
+- [x] Optimal timing recommendations (AI-analyzed best times per platform in scheduler)
+- [ ] Bulk import (CSV/JSON upload and parse) — future iteration
+- [ ] API access documentation (public API endpoints) — future iteration

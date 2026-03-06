@@ -28,7 +28,6 @@ export const products = mysqlTable("products", {
   url: text("url"),
   imageUrls: json("imageUrls").$type<string[]>(),
   category: varchar("category", { length: 128 }),
-  // AI-extracted fields
   features: json("features").$type<string[]>(),
   benefits: json("benefits").$type<string[]>(),
   targetAudience: json("targetAudience").$type<string[]>(),
@@ -234,3 +233,167 @@ export const subscriptions = mysqlTable("subscriptions", {
 
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
+
+// ─── CRM Deals (Pipeline Automation) ────────────────────────────────
+export const deals = mysqlTable("deals", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  leadId: int("leadId"),
+  campaignId: int("campaignId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  value: text("value"),
+  currency: varchar("currency", { length: 8 }).default("USD"),
+  stage: mysqlEnum("stage", ["prospecting", "qualification", "proposal", "negotiation", "closed_won", "closed_lost"]).default("prospecting").notNull(),
+  probability: int("probability").default(0),
+  expectedCloseDate: timestamp("expectedCloseDate"),
+  actualCloseDate: timestamp("actualCloseDate"),
+  notes: text("notes"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Deal = typeof deals.$inferSelect;
+export type InsertDeal = typeof deals.$inferInsert;
+
+// ─── CRM Activities (Deal/Lead Activity Log) ────────────────────────
+export const activities = mysqlTable("activities", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  dealId: int("dealId"),
+  leadId: int("leadId"),
+  type: mysqlEnum("type", ["call", "email", "meeting", "note", "task", "follow_up"]).default("note").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  dueDate: timestamp("dueDate"),
+  completedAt: timestamp("completedAt"),
+  status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Activity = typeof activities.$inferSelect;
+export type InsertActivity = typeof activities.$inferInsert;
+
+// ─── Ad Platform Connections ─────────────────────────────────────────
+export const adPlatformConnections = mysqlTable("ad_platform_connections", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  accountId: varchar("accountId", { length: 255 }),
+  accountName: varchar("accountName", { length: 255 }),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  status: mysqlEnum("status", ["connected", "expired", "disconnected", "error"]).default("connected").notNull(),
+  scopes: json("scopes").$type<string[]>(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AdPlatformConnection = typeof adPlatformConnections.$inferSelect;
+export type InsertAdPlatformConnection = typeof adPlatformConnections.$inferInsert;
+
+// ─── Ad Platform Campaigns (Synced from platforms) ──────────────────
+export const adPlatformCampaigns = mysqlTable("ad_platform_campaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  connectionId: int("connectionId").notNull(),
+  campaignId: int("campaignId"),
+  externalCampaignId: varchar("externalCampaignId", { length: 255 }).notNull(),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  status: varchar("status", { length: 64 }),
+  budget: text("budget"),
+  spend: text("spend"),
+  impressions: int("impressions").default(0),
+  clicks: int("clicks").default(0),
+  conversions: int("conversions").default(0),
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdPlatformCampaign = typeof adPlatformCampaigns.$inferSelect;
+export type InsertAdPlatformCampaign = typeof adPlatformCampaigns.$inferInsert;
+
+// ─── Team Members ────────────────────────────────────────────────────
+export const teamMembers = mysqlTable("team_members", {
+  id: int("id").autoincrement().primaryKey(),
+  ownerId: int("ownerId").notNull(),
+  userId: int("userId"),
+  email: varchar("email", { length: 320 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  role: mysqlEnum("role", ["owner", "admin", "editor", "viewer"]).default("viewer").notNull(),
+  inviteStatus: mysqlEnum("inviteStatus", ["pending", "accepted", "declined"]).default("pending").notNull(),
+  inviteToken: varchar("inviteToken", { length: 128 }),
+  permissions: json("permissions").$type<string[]>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = typeof teamMembers.$inferInsert;
+
+// ─── Approval Workflows ─────────────────────────────────────────────
+export const approvalWorkflows = mysqlTable("approval_workflows", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  contentId: int("contentId"),
+  creativeId: int("creativeId"),
+  campaignId: int("campaignId"),
+  type: mysqlEnum("type", ["content", "creative", "campaign", "ad_launch"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected", "revision_requested"]).default("pending").notNull(),
+  requestedById: int("requestedById").notNull(),
+  reviewerId: int("reviewerId"),
+  reviewerComment: text("reviewerComment"),
+  reviewedAt: timestamp("reviewedAt"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ApprovalWorkflow = typeof approvalWorkflows.$inferSelect;
+export type InsertApprovalWorkflow = typeof approvalWorkflows.$inferInsert;
+
+// ─── Predictive Scores ──────────────────────────────────────────────
+export const predictiveScores = mysqlTable("predictive_scores", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  entityType: mysqlEnum("entityType", ["campaign", "content", "creative", "ad"]).notNull(),
+  entityId: int("entityId").notNull(),
+  predictedCtr: text("predictedCtr"),
+  predictedConversionRate: text("predictedConversionRate"),
+  predictedRoas: text("predictedRoas"),
+  engagementScore: int("engagementScore"),
+  viralityScore: int("viralityScore"),
+  qualityScore: int("qualityScore"),
+  recommendations: json("recommendations").$type<string[]>(),
+  confidence: text("confidence"),
+  metadata: json("metadata"),
+  scoredAt: timestamp("scoredAt").defaultNow().notNull(),
+});
+
+export type PredictiveScore = typeof predictiveScores.$inferSelect;
+export type InsertPredictiveScore = typeof predictiveScores.$inferInsert;
+
+// ─── SEO Audits ─────────────────────────────────────────────────────
+export const seoAudits = mysqlTable("seo_audits", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  url: text("url").notNull(),
+  overallScore: int("overallScore"),
+  technicalScore: int("technicalScore"),
+  contentScore: int("contentScore"),
+  authorityScore: int("authorityScore"),
+  keywords: json("keywords").$type<{ keyword: string; volume: string; difficulty: string; position: string }[]>(),
+  issues: json("issues").$type<{ severity: string; description: string; fix: string }[]>(),
+  backlinks: json("backlinks").$type<{ domain: string; authority: number; type: string }[]>(),
+  competitors: json("competitors").$type<{ domain: string; overlap: number; ranking: string }[]>(),
+  recommendations: json("recommendations").$type<string[]>(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SeoAudit = typeof seoAudits.$inferSelect;
+export type InsertSeoAudit = typeof seoAudits.$inferInsert;

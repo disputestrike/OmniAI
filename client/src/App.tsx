@@ -20,6 +20,12 @@ import Collaboration from "./pages/Collaboration";
 import ExportImport from "./pages/ExportImport";
 import Pricing from "./pages/Pricing";
 import Intelligence from "./pages/Intelligence";
+import Deals from "./pages/Deals";
+import AdPlatforms from "./pages/AdPlatforms";
+import SeoAudits from "./pages/SeoAudits";
+import Predictive from "./pages/Predictive";
+import Approvals from "./pages/Approvals";
+import Team from "./pages/Team";
 
 function Router() {
   return (
@@ -40,6 +46,12 @@ function Router() {
         <Route path="/export-import" component={ExportImport} />
         <Route path="/pricing" component={Pricing} />
         <Route path="/intelligence" component={Intelligence} />
+        <Route path="/deals" component={Deals} />
+        <Route path="/ad-platforms" component={AdPlatforms} />
+        <Route path="/seo-audits" component={SeoAudits} />
+        <Route path="/predictive" component={Predictive} />
+        <Route path="/approvals" component={Approvals} />
+        <Route path="/team" component={Team} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>

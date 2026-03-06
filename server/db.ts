@@ -354,3 +354,214 @@ export async function getDashboardStats(userId: number) {
     analytics: analyticsSummary,
   };
 }
+
+// ─── CRM Deals ──────────────────────────────────────────────────────
+import {
+  deals, InsertDeal, Deal,
+  activities, InsertActivity, Activity,
+  adPlatformConnections, InsertAdPlatformConnection, AdPlatformConnection,
+  adPlatformCampaigns, InsertAdPlatformCampaign, AdPlatformCampaign,
+  teamMembers, InsertTeamMember, TeamMember,
+  approvalWorkflows, InsertApprovalWorkflow, ApprovalWorkflow,
+  predictiveScores, InsertPredictiveScore, PredictiveScore,
+  seoAudits, InsertSeoAudit, SeoAudit,
+} from "../drizzle/schema";
+
+export async function createDeal(data: InsertDeal) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(deals).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getDealsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(deals).where(eq(deals.userId, userId)).orderBy(desc(deals.createdAt));
+}
+
+export async function getDealById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(deals).where(eq(deals.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateDeal(id: number, data: Partial<InsertDeal>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(deals).set(data).where(eq(deals.id, id));
+}
+
+export async function deleteDeal(id: number) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(deals).where(eq(deals.id, id));
+}
+
+export async function getDealsByStage(userId: number, stage: string) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(deals).where(and(eq(deals.userId, userId), eq(deals.stage, stage as any))).orderBy(desc(deals.createdAt));
+}
+
+export async function getDealPipelineSummary(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select({
+    stage: deals.stage,
+    count: sql<number>`COUNT(*)`,
+    totalValue: sql<string>`COALESCE(SUM(CAST(value AS DECIMAL(12,2))), 0)`,
+  }).from(deals).where(eq(deals.userId, userId)).groupBy(deals.stage);
+}
+
+// ─── CRM Activities ─────────────────────────────────────────────────
+export async function createActivity(data: InsertActivity) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(activities).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getActivitiesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(activities).where(eq(activities.userId, userId)).orderBy(desc(activities.createdAt));
+}
+
+export async function getActivitiesByDeal(dealId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(activities).where(eq(activities.dealId, dealId)).orderBy(desc(activities.createdAt));
+}
+
+export async function getActivitiesByLead(leadId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(activities).where(eq(activities.leadId, leadId)).orderBy(desc(activities.createdAt));
+}
+
+export async function updateActivity(id: number, data: Partial<InsertActivity>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(activities).set(data).where(eq(activities.id, id));
+}
+
+// ─── Ad Platform Connections ─────────────────────────────────────────
+export async function createAdPlatformConnection(data: InsertAdPlatformConnection) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(adPlatformConnections).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getAdPlatformConnectionsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(adPlatformConnections).where(eq(adPlatformConnections.userId, userId)).orderBy(desc(adPlatformConnections.createdAt));
+}
+
+export async function getAdPlatformConnectionById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(adPlatformConnections).where(eq(adPlatformConnections.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateAdPlatformConnection(id: number, data: Partial<InsertAdPlatformConnection>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(adPlatformConnections).set(data).where(eq(adPlatformConnections.id, id));
+}
+
+export async function deleteAdPlatformConnection(id: number) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(adPlatformConnections).where(eq(adPlatformConnections.id, id));
+}
+
+// ─── Ad Platform Campaigns ──────────────────────────────────────────
+export async function createAdPlatformCampaign(data: InsertAdPlatformCampaign) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(adPlatformCampaigns).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getAdPlatformCampaignsByConnection(connectionId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(adPlatformCampaigns).where(eq(adPlatformCampaigns.connectionId, connectionId)).orderBy(desc(adPlatformCampaigns.createdAt));
+}
+
+export async function getAdPlatformCampaignsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(adPlatformCampaigns).where(eq(adPlatformCampaigns.userId, userId)).orderBy(desc(adPlatformCampaigns.createdAt));
+}
+
+// ─── Team Members ────────────────────────────────────────────────────
+export async function createTeamMember(data: InsertTeamMember) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(teamMembers).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getTeamMembersByOwner(ownerId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(teamMembers).where(eq(teamMembers.ownerId, ownerId)).orderBy(desc(teamMembers.createdAt));
+}
+
+export async function updateTeamMember(id: number, data: Partial<InsertTeamMember>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(teamMembers).set(data).where(eq(teamMembers.id, id));
+}
+
+export async function deleteTeamMember(id: number) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(teamMembers).where(eq(teamMembers.id, id));
+}
+
+export async function getTeamMemberByToken(token: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(teamMembers).where(eq(teamMembers.inviteToken, token)).limit(1);
+  return result[0];
+}
+
+// ─── Approval Workflows ─────────────────────────────────────────────
+export async function createApprovalWorkflow(data: InsertApprovalWorkflow) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(approvalWorkflows).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getApprovalsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(approvalWorkflows).where(eq(approvalWorkflows.userId, userId)).orderBy(desc(approvalWorkflows.createdAt));
+}
+
+export async function getPendingApprovals(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(approvalWorkflows).where(and(eq(approvalWorkflows.userId, userId), eq(approvalWorkflows.status, "pending"))).orderBy(desc(approvalWorkflows.createdAt));
+}
+
+export async function updateApprovalWorkflow(id: number, data: Partial<InsertApprovalWorkflow>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(approvalWorkflows).set(data).where(eq(approvalWorkflows.id, id));
+}
+
+// ─── Predictive Scores ──────────────────────────────────────────────
+export async function createPredictiveScore(data: InsertPredictiveScore) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(predictiveScores).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getPredictiveScoresByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(predictiveScores).where(eq(predictiveScores.userId, userId)).orderBy(desc(predictiveScores.scoredAt));
+}
+
+export async function getPredictiveScoreByEntity(entityType: string, entityId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(predictiveScores).where(and(eq(predictiveScores.entityType, entityType as any), eq(predictiveScores.entityId, entityId))).orderBy(desc(predictiveScores.scoredAt)).limit(1);
+  return result[0];
+}
+
+// ─── SEO Audits ─────────────────────────────────────────────────────
+export async function createSeoAudit(data: InsertSeoAudit) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(seoAudits).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getSeoAuditsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(seoAudits).where(eq(seoAudits.userId, userId)).orderBy(desc(seoAudits.createdAt));
+}
+
+export async function getSeoAuditById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(seoAudits).where(eq(seoAudits.id, id)).limit(1);
+  return result[0];
+}
