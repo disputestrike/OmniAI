@@ -507,3 +507,50 @@
 - [x] Add Predis.ai to COMPETITIVE_RANKING.md analysis (added to all matrices, ranked #3 at 5.3/10)
 - [x] Ensure feature parity or superiority vs Predis.ai (OmniMarket beats on 2.75x content types, CRM, intelligence, automation)
 - [x] Match Predis.ai pricing competitiveness (OmniMarket $0-499/mo vs Predis $19-249/mo, better value per feature)
+
+## REAL API INTEGRATIONS: Close ALL Gaps vs Predis.ai
+
+### Server-Side API Helpers
+- [x] Video generation helper (Kling AI / Runway ML / Luma API wrapper, activates with API key)
+- [x] AI voiceover helper (ElevenLabs / OpenAI TTS API wrapper, activates with API key)
+- [x] AI avatar/UGC video helper (HeyGen / Synthesia API wrapper, activates with API key)
+- [x] Social media posting helpers (Instagram Graph API, TikTok, Facebook, LinkedIn, Twitter)
+- [x] E-commerce sync helpers (Shopify Admin API, WooCommerce REST API)
+
+### Image Generation Wiring (already have generateImage built-in)
+- [x] Wire real image generation into Creative Engine (actual rendered ad images from prompts)
+- [x] Wire real image generation into Ad Generator (produce actual ad creative PNGs)
+- [x] Wire real image generation into Meme Generator (new dedicated page)
+- [x] Wire real image generation into AI Photoshoot (product photo generation)
+
+### Video Generation Wiring
+- [x] Wire video generation API into Video Ads page (actual MP4 output)
+- [x] Wire video generation API into Video Studio page (real video rendering)
+- [x] Wire AI voiceover API into video generation pipeline
+- [x] Wire AI avatar API into UGC video creation
+
+### Social Media OAuth Posting
+- [x] Build social accounts connection system (OAuth flow per platform)
+- [x] Database tables for connected social accounts (already existed in schema)
+- [x] Wire real posting into Scheduler (auto-post to connected accounts)
+- [x] Wire real posting into Social Publish page
+- [x] Multi-platform post format adaptation (auto-resize, character limits)
+
+### E-Commerce Product Sync
+- [x] Build Shopify product catalog import (API integration)
+- [x] Build WooCommerce product catalog import (API integration)
+- [x] Product-to-Post automation (catalog → ads automatically)
+- [x] Database tables for connected stores and synced products (already existed in schema)
+
+### Meme Generator (New Dedicated Page)
+- [x] Build Meme Generator page with template selection
+- [x] Wire image generation for meme creation
+- [x] Text overlay and meme format system
+
+### tRPC Router Procedures for All New Features
+- [x] Video generation procedures (generate, status check, download)
+- [x] Voiceover procedures (generate, list voices, download)
+- [x] Social media connection procedures (connect, disconnect, list, post)
+- [x] E-commerce sync procedures (connect store, sync products, list)
+- [x] Avatar generation procedures (generate, customize, download)
+- [x] Meme generation procedures (generate, list templates, download)

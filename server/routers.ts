@@ -15,6 +15,7 @@ import { eq, desc, count } from "drizzle-orm";
 import { getDb } from "./db";
 import { brandVoiceRouter, emailMarketingRouter, landingPageRouter, automationRouter, socialPublishRouter, videoRenderRouter, webhookRouter, imageEditorRouter, multiLanguageRouter, competitorSpyRouter, bulkImportRouter } from "./gapRouters";
 import { personalVideoRouter, competitorIntelRouter, customerIntelRouter } from "./newFeatureRouters";
+import { realVideoRouter, voiceoverRouter, avatarRouter, socialConnectionRouter, ecommerceRouter, memeRouter, creativeEngineRouter, integrationStatusRouter } from "./apiIntegrationRouters";
 
 export const appRouter = router({
   system: systemRouter,
@@ -2250,6 +2251,15 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
   personalVideo: personalVideoRouter,
   competitorIntel: competitorIntelRouter,
   customerIntel: customerIntelRouter,
+  // ─── Real API Integrations (Gap Closers) ──────────────────────────
+  realVideo: realVideoRouter,
+  voiceoverApi: voiceoverRouter,
+  avatar: avatarRouter,
+  socialConnection: socialConnectionRouter,
+  ecommerce: ecommerceRouter,
+  meme: memeRouter,
+  creativeEngine: creativeEngineRouter,
+  integrationStatus: integrationStatusRouter,
 });
 
 export type AppRouter = typeof appRouter;

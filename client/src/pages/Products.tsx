@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Package, Plus, Loader2, Sparkles, Trash2, ExternalLink, Tag, Target, Lightbulb, MessageSquare } from "lucide-react";
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Package, Plus, Loader2, Sparkles, Trash2, ExternalLink, Tag, Target, Lightbulb, MessageSquare, Store, ShoppingCart, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
 export default function Products() {
@@ -17,40 +18,92 @@ export default function Products() {
   const analyzeMut = trpc.product.analyze.useMutation({ onSuccess: () => { utils.product.list.invalidate(); toast.success("Analysis complete"); } });
   const deleteMut = trpc.product.delete.useMutation({ onSuccess: () => { utils.product.list.invalidate(); toast.success("Product deleted"); } });
 
+  // E-commerce sync mutations
+  const syncProductsMut = trpc.ecommerce.syncProducts.useMutation({
+    onSuccess: (data: any) => {
+      toast.success(`Synced ${data.products?.length || 0} products!`);
+      utils.product.list.invalidate();
+      setSyncOpen(false);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Real image generation for product photos
+  const generatePhotoMut = trpc.creativeEngine.productPhotoshoot.useMutation({
+    onSuccess: (data: any) => {
+      toast.success("Product photos generated!");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const [open, setOpen] = useState(false);
+  const [syncOpen, setSyncOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [url, setUrl] = useState("");
   const [category, setCategory] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [shopifyDomain, setShopifyDomain] = useState("");
+  const [wooUrl, setWooUrl] = useState("");
+  const [tab, setTab] = useState("products");
 
   const resetForm = () => { setName(""); setDescription(""); setUrl(""); setCategory(""); };
 
+  const stats = useMemo(() => {
+    if (!products) return { total: 0, analyzed: 0, pending: 0 };
+    return {
+      total: products.length,
+      analyzed: products.filter(p => p.analysisStatus === "completed").length,
+      pending: products.filter(p => p.analysisStatus !== "completed").length,
+    };
+  }, [products]);
+
   return (
     <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Product Analyzer</h1>
-          <p className="text-muted-foreground text-sm mt-1">Add products and let AI extract marketing intelligence — features, audience, positioning, and keywords.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Product Hub</h1>
+          <p className="text-muted-foreground text-sm mt-1">Import from Shopify/WooCommerce, analyze with AI, and generate marketing assets.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />Add Product</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>Add a Product</DialogTitle></DialogHeader>
-            <div className="space-y-4">
-              <div><Label>Product Name *</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Smart Fitness Tracker" /></div>
-              <div><Label>Description</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the product, its features, and what makes it unique..." rows={4} /></div>
-              <div><Label>Product URL</Label><Input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." /></div>
-              <div><Label>Category</Label><Input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Health & Fitness" /></div>
-              <Button className="w-full rounded-xl" disabled={!name || createMut.isPending} onClick={() => createMut.mutate({ name, description, url, category })}>
-                {createMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
-                Add Product
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-2">
+          <Button variant="outline" className="rounded-xl" onClick={() => setSyncOpen(true)}>
+            <Store className="h-4 w-4 mr-2" />Import from Store
+          </Button>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />Add Product</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader><DialogTitle>Add a Product</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Product Name *</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Smart Fitness Tracker" /></div>
+                <div><Label>Description</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe the product, its features, and what makes it unique..." rows={4} /></div>
+                <div><Label>Product URL</Label><Input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." /></div>
+                <div><Label>Category</Label><Input value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g. Health & Fitness" /></div>
+                <Button className="w-full rounded-xl" disabled={!name || createMut.isPending} onClick={() => createMut.mutate({ name, description, url, category })}>
+                  {createMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                  Add Product
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+          <p className="text-2xl font-bold">{stats.total}</p>
+          <p className="text-xs text-muted-foreground">Total Products</p>
+        </CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+          <p className="text-2xl font-bold text-emerald-600">{stats.analyzed}</p>
+          <p className="text-xs text-muted-foreground">AI Analyzed</p>
+        </CardContent></Card>
+        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+          <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
+          <p className="text-xs text-muted-foreground">Pending Analysis</p>
+        </CardContent></Card>
       </div>
 
       {isLoading ? (
@@ -60,8 +113,11 @@ export default function Products() {
           <CardContent className="p-12 text-center">
             <Package className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
             <h3 className="font-semibold text-lg">No products yet</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Add your first product and let AI analyze it for marketing insights — features, target audience, positioning, and SEO keywords.</p>
-            <Button className="mt-4 rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Your First Product</Button>
+            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Add products manually or import from Shopify/WooCommerce. AI will analyze each for marketing insights.</p>
+            <div className="flex gap-3 justify-center mt-4">
+              <Button className="rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Manually</Button>
+              <Button variant="outline" className="rounded-xl" onClick={() => setSyncOpen(true)}><Store className="h-4 w-4 mr-2" />Import from Store</Button>
+            </div>
           </CardContent>
         </Card>
       ) : (
@@ -108,6 +164,11 @@ export default function Products() {
                         {isExpanded ? "Hide" : "View"} Analysis
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" className="rounded-lg" disabled={generatePhotoMut.isPending}
+                      onClick={() => generatePhotoMut.mutate({ productName: product.name, scenes: ["white background studio", "lifestyle setting"], count: 2 })}>
+                      {generatePhotoMut.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}
+                      AI Photo
+                    </Button>
                     {product.url && (
                       <Button size="sm" variant="ghost" className="rounded-lg" onClick={() => window.open(product.url!, "_blank")}>
                         <ExternalLink className="h-3 w-3 mr-1" />URL
@@ -143,6 +204,56 @@ export default function Products() {
           })}
         </div>
       )}
+
+      {/* E-Commerce Sync Dialog */}
+      <Dialog open={syncOpen} onOpenChange={setSyncOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader><DialogTitle>Import Products from Store</DialogTitle></DialogHeader>
+          <Tabs defaultValue="shopify" className="mt-2">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="shopify"><ShoppingCart className="h-4 w-4 mr-2" />Shopify</TabsTrigger>
+              <TabsTrigger value="woocommerce"><Store className="h-4 w-4 mr-2" />WooCommerce</TabsTrigger>
+            </TabsList>
+            <TabsContent value="shopify" className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">Connect your Shopify store to automatically import all products. Requires Shopify API credentials in Settings &gt; Secrets.</p>
+              <div>
+                <Label>Store Domain</Label>
+                <Input value={shopifyDomain} onChange={e => setShopifyDomain(e.target.value)} placeholder="your-store.myshopify.com" />
+              </div>
+              <Button className="w-full" disabled={!shopifyDomain || syncProductsMut.isPending}
+                onClick={() => syncProductsMut.mutate({ platform: "shopify", storeUrl: `https://${shopifyDomain}`, accessToken: "from-settings" })}>
+                {syncProductsMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Syncing...</> : <><Download className="h-4 w-4 mr-2" />Import from Shopify</>}
+              </Button>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p><strong>Required secrets:</strong></p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>SHOPIFY_ACCESS_TOKEN — Admin API access token</li>
+                  <li>SHOPIFY_STORE_DOMAIN — Your .myshopify.com domain</li>
+                </ul>
+              </div>
+            </TabsContent>
+            <TabsContent value="woocommerce" className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">Connect your WooCommerce store to import products. Requires WooCommerce REST API credentials in Settings &gt; Secrets.</p>
+              <div>
+                <Label>Store URL</Label>
+                <Input value={wooUrl} onChange={e => setWooUrl(e.target.value)} placeholder="https://your-store.com" />
+              </div>
+              <Button className="w-full" disabled={!wooUrl || syncProductsMut.isPending}
+                onClick={() => syncProductsMut.mutate({ platform: "woocommerce", storeUrl: wooUrl, accessToken: "from-settings" })}>
+                {syncProductsMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Syncing...</> : <><Download className="h-4 w-4 mr-2" />Import from WooCommerce</>}
+              </Button>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p><strong>Required secrets:</strong></p>
+                <ul className="list-disc list-inside space-y-0.5">
+                  <li>WOOCOMMERCE_URL — Your store URL</li>
+                  <li>WOOCOMMERCE_KEY — Consumer key</li>
+                  <li>WOOCOMMERCE_SECRET — Consumer secret</li>
+                </ul>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

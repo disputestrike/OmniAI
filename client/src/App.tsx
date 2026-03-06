@@ -43,6 +43,8 @@ import Automations from "./pages/Automations";
 import VideoStudio from "./pages/VideoStudio";
 import CompetitorIntel from "./pages/CompetitorIntel";
 import CustomerIntel from "./pages/CustomerIntel";
+import AiAvatars from "./pages/AiAvatars";
+import MemeGenerator from "./pages/MemeGenerator";
 
 function DashboardRouter() {
   return (
@@ -85,6 +87,8 @@ function DashboardRouter() {
         <Route path="/video-studio" component={VideoStudio} />
         <Route path="/competitor-intel" component={CompetitorIntel} />
         <Route path="/customer-intel" component={CustomerIntel} />
+        <Route path="/ai-avatars" component={AiAvatars} />
+        <Route path="/meme-generator" component={MemeGenerator} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -134,6 +138,8 @@ function Router() {
       <Route path="/video-studio" component={DashboardRouter} />
       <Route path="/competitor-intel" component={DashboardRouter} />
       <Route path="/customer-intel" component={DashboardRouter} />
+      <Route path="/ai-avatars" component={DashboardRouter} />
+      <Route path="/meme-generator" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

@@ -74,6 +74,31 @@ export default function VideoAds() {
   });
   const deleteMut = trpc.videoAd.delete.useMutation({ onSuccess: () => { utils.videoAd.list.invalidate(); toast.success("Deleted"); } });
 
+  // Real video generation API
+  const renderVideoMut = trpc.realVideo.generate.useMutation({
+    onSuccess: (data) => {
+      if (data.videoUrl) {
+        toast.success("Video rendered! Opening in new tab...");
+        window.open(data.videoUrl, "_blank");
+      } else {
+        toast.info(`Video generation started. Status: ${data.status}`);
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const renderVoiceoverMut = trpc.voiceoverApi.generate.useMutation({
+    onSuccess: (data) => {
+      if (data.audioUrl) {
+        toast.success("Voiceover generated!");
+        const audio = new Audio(data.audioUrl);
+        audio.play();
+      } else {
+        toast.info("Voiceover generation started.");
+      }
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   const [createOpen, setCreateOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [localizeOpen, setLocalizeOpen] = useState<number | null>(null);
@@ -493,6 +518,22 @@ export default function VideoAds() {
                     <Button size="sm" variant="outline" onClick={() => handleExportScript(video)}>
                       <Download className="h-3.5 w-3.5 mr-1" />Export
                     </Button>
+                    <Button size="sm" variant="default" disabled={renderVideoMut.isPending} onClick={() => renderVideoMut.mutate({
+                      prompt: video.voiceoverText || video.script || "Product advertisement video",
+                      duration: Math.min(video.duration || 10, 10),
+                    })}>
+                      {renderVideoMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Film className="h-3.5 w-3.5 mr-1" />}
+                      Render Video
+                    </Button>
+                    {video.voiceoverText && (
+                      <Button size="sm" variant="secondary" disabled={renderVoiceoverMut.isPending} onClick={() => renderVoiceoverMut.mutate({
+                        text: video.voiceoverText!,
+                        voice: "alloy",
+                      })}>
+                        {renderVoiceoverMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <span className="mr-1">🔊</span>}
+                        Generate Voiceover
+                      </Button>
+                    )}
                     <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteMut.mutate({ id: video.id })}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

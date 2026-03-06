@@ -58,6 +58,8 @@ import {
   Mail,
   FileCode,
   Workflow,
+  Smile,
+  UserCircle,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -83,6 +85,8 @@ const menuSections = [
       { icon: Scissors, label: "Image Editor", path: "/image-editor" },
       { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
       { icon: Languages, label: "Translate", path: "/translate" },
+      { icon: UserCircle, label: "AI Avatars", path: "/ai-avatars" },
+      { icon: Smile, label: "Meme Generator", path: "/meme-generator" },
     ],
   },
   {

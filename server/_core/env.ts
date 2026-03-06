@@ -10,4 +10,28 @@ export const ENV = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
+  // Video Generation APIs (user provides key later)
+  runwayApiKey: process.env.RUNWAY_API_KEY ?? "",
+  lumaApiKey: process.env.LUMA_API_KEY ?? "",
+  klingApiKey: process.env.KLING_API_KEY ?? "",
+  // Voiceover APIs
+  elevenLabsApiKey: process.env.ELEVENLABS_API_KEY ?? "",
+  openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  // AI Avatar APIs
+  heygenApiKey: process.env.HEYGEN_API_KEY ?? "",
+  // Social Media OAuth
+  metaAppId: process.env.META_APP_ID ?? "",
+  metaAppSecret: process.env.META_APP_SECRET ?? "",
+  twitterApiKey: process.env.TWITTER_API_KEY ?? "",
+  twitterApiSecret: process.env.TWITTER_API_SECRET ?? "",
+  linkedinClientId: process.env.LINKEDIN_CLIENT_ID ?? "",
+  linkedinClientSecret: process.env.LINKEDIN_CLIENT_SECRET ?? "",
+  tiktokClientKey: process.env.TIKTOK_CLIENT_KEY ?? "",
+  tiktokClientSecret: process.env.TIKTOK_CLIENT_SECRET ?? "",
+  // E-commerce
+  shopifyApiKey: process.env.SHOPIFY_API_KEY ?? "",
+  shopifyApiSecret: process.env.SHOPIFY_API_SECRET ?? "",
+  // Google OAuth
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
 };
