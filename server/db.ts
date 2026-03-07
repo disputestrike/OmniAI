@@ -29,6 +29,12 @@ import {
   customerProfiles, InsertCustomerProfile, CustomerProfile,
   customerInteractions, InsertCustomerInteraction, CustomerInteraction,
   customerSegments, InsertCustomerSegment, CustomerSegment,
+  adPerformanceReports, InsertAdPerformanceReport, AdPerformanceReport,
+  publisherQueue, InsertPublisherQueueItem, PublisherQueueItem,
+  performanceAlerts, InsertPerformanceAlert, PerformanceAlert,
+  creatorProfiles, InsertCreatorProfile, CreatorProfile,
+  portfolioItems, InsertPortfolioItem, PortfolioItem,
+  projects2, chatConversations, contentTemplates, performanceMetrics,
   repurposingProjects, InsertRepurposingProject, RepurposingProject,
   repurposedContents, InsertRepurposedContent, RepurposedContent,
   publishingCredentials, InsertPublishingCredential, PublishingCredential,
@@ -146,6 +152,19 @@ export async function getContentsByProduct(productId: number) {
 export async function getContentsByCampaign(campaignId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(contents).where(eq(contents.campaignId, campaignId)).orderBy(desc(contents.createdAt));
+}
+
+export async function searchContents(userId: number, opts: { query?: string; type?: string; platform?: string; status?: string; limit?: number; offset?: number }) {
+  const db = await getDb(); if (!db) return { items: [], total: 0 };
+  const conditions = [eq(contents.userId, userId)];
+  if (opts.type) conditions.push(eq(contents.type, opts.type as any));
+  if (opts.platform) conditions.push(eq(contents.platform, opts.platform));
+  if (opts.status) conditions.push(eq(contents.status, opts.status as any));
+  if (opts.query) conditions.push(sql`(${contents.title} LIKE ${"%" + opts.query + "%"} OR ${contents.body} LIKE ${"%" + opts.query + "%"})`);
+  const whereClause = conditions.length > 1 ? and(...conditions) : conditions[0];
+  const items = await db.select().from(contents).where(whereClause).orderBy(desc(contents.createdAt)).limit(opts.limit || 50).offset(opts.offset || 0);
+  const countResult = await db.select({ count: sql<number>`count(*)` }).from(contents).where(whereClause);
+  return { items, total: Number(countResult[0]?.count || 0) };
 }
 
 // ─── Creatives ───────────────────────────────────────────────────────
@@ -934,6 +953,223 @@ export async function updateCustomerSegment(id: number, data: Partial<InsertCust
 export async function deleteCustomerSegment(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(customerSegments).where(eq(customerSegments.id, id));
+}
+
+// ─── Ad Performance Reports ──────────────────────────────────────
+export async function createAdPerformanceReport(data: InsertAdPerformanceReport) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(adPerformanceReports).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getAdPerformanceReportsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(adPerformanceReports).where(eq(adPerformanceReports.userId, userId)).orderBy(desc(adPerformanceReports.createdAt));
+}
+export async function getAdPerformanceReportById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(adPerformanceReports).where(eq(adPerformanceReports.id, id)).limit(1);
+  return result[0];
+}
+export async function updateAdPerformanceReport(id: number, data: Partial<AdPerformanceReport>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(adPerformanceReports).set(data).where(eq(adPerformanceReports.id, id));
+}
+
+// ─── Publisher Queue ─────────────────────────────────────────────
+export async function createPublisherQueueItem(data: InsertPublisherQueueItem) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(publisherQueue).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getPublisherQueueByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(publisherQueue).where(eq(publisherQueue.userId, userId)).orderBy(desc(publisherQueue.createdAt));
+}
+export async function getPublisherQueueItemById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const result = await db.select().from(publisherQueue).where(eq(publisherQueue.id, id)).limit(1);
+  return result[0];
+}
+export async function updatePublisherQueueItem(id: number, data: Partial<PublisherQueueItem>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(publisherQueue).set(data).where(eq(publisherQueue.id, id));
+}
+export async function deletePublisherQueueItem(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(publisherQueue).where(eq(publisherQueue.id, id));
+}
+
+// ─── Performance Alerts ─────────────────────────────────────────
+export async function createPerformanceAlert(data: InsertPerformanceAlert) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(performanceAlerts).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getPerformanceAlertsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(performanceAlerts).where(eq(performanceAlerts.userId, userId)).orderBy(desc(performanceAlerts.createdAt));
+}
+export async function updatePerformanceAlert(id: number, data: Partial<PerformanceAlert>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(performanceAlerts).set(data).where(eq(performanceAlerts.id, id));
+}
+
+// ─── Creator Profile ─────────────────────────────────────────────
+export async function getCreatorProfileByUserId(userId: number) {
+  const db = await getDb(); if (!db) return null;
+  const result = await db.select().from(creatorProfiles).where(eq(creatorProfiles.userId, userId)).limit(1);
+  return result[0] || null;
+}
+export async function getCreatorProfileBySlug(slug: string) {
+  const db = await getDb(); if (!db) return null;
+  const result = await db.select().from(creatorProfiles).where(eq(creatorProfiles.profileSlug, slug)).limit(1);
+  return result[0] || null;
+}
+export async function upsertCreatorProfile(userId: number, data: Partial<InsertCreatorProfile>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const existing = await getCreatorProfileByUserId(userId);
+  if (existing) {
+    await db.update(creatorProfiles).set({ ...data, updatedAt: new Date() }).where(eq(creatorProfiles.userId, userId));
+    return getCreatorProfileByUserId(userId);
+  }
+  await db.insert(creatorProfiles).values({ userId, ...data } as InsertCreatorProfile);
+  return getCreatorProfileByUserId(userId);
+}
+
+// ─── Portfolio Items ─────────────────────────────────────────────
+export async function getPortfolioItemsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(portfolioItems).where(eq(portfolioItems.userId, userId)).orderBy(desc(portfolioItems.createdAt));
+}
+export async function getPublicPortfolioItems(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(portfolioItems).where(eq(portfolioItems.userId, userId)).orderBy(desc(portfolioItems.createdAt));
+}
+export async function getPortfolioItemById(id: number) {
+  const db = await getDb(); if (!db) return null;
+  const result = await db.select().from(portfolioItems).where(eq(portfolioItems.id, id)).limit(1);
+  return result[0] || null;
+}
+export async function createPortfolioItem(data: InsertPortfolioItem) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(portfolioItems).values(data);
+  const id = Number(result[0].insertId);
+  return await getPortfolioItemById(id);
+}
+export async function updatePortfolioItem(id: number, data: Partial<InsertPortfolioItem>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(portfolioItems).set(data).where(eq(portfolioItems.id, id));
+}
+export async function deletePortfolioItem(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(portfolioItems).where(eq(portfolioItems.id, id));
+}
+
+// ─── Projects ───────────────────────────────────────────────────────
+export async function createProject(data: { userId: number; name: string; description?: string; metadata?: unknown }) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(projects2).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getProjectsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(projects2).where(eq(projects2.userId, userId)).orderBy(desc(projects2.updatedAt));
+}
+export async function getProjectById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(projects2).where(eq(projects2.id, id)).limit(1);
+  return r[0];
+}
+export async function updateProject(id: number, data: Partial<{ name: string; description: string; status: "active" | "paused" | "completed" | "archived"; metadata: unknown }>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(projects2).set(data).where(eq(projects2.id, id));
+}
+export async function deleteProject(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(projects2).where(eq(projects2.id, id));
+}
+
+// ─── Chat conversations ───────────────────────────────────────────
+export async function createConversation(data: { userId: number; projectId?: number; title?: string; messages?: unknown; agentMode?: string }) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(chatConversations).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getConversationsByUser(userId: number, projectId?: number) {
+  const db = await getDb(); if (!db) return [];
+  if (projectId) {
+    return db.select().from(chatConversations).where(and(eq(chatConversations.userId, userId), eq(chatConversations.projectId, projectId))).orderBy(desc(chatConversations.updatedAt));
+  }
+  return db.select().from(chatConversations).where(eq(chatConversations.userId, userId)).orderBy(desc(chatConversations.updatedAt));
+}
+export async function getConversationById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(chatConversations).where(eq(chatConversations.id, id)).limit(1);
+  return r[0];
+}
+export async function updateConversation(id: number, data: Partial<{ title: string; messages: unknown; projectId: number }>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(chatConversations).set(data).where(eq(chatConversations.id, id));
+}
+export async function deleteConversation(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(chatConversations).where(eq(chatConversations.id, id));
+}
+
+// ─── Content templates ─────────────────────────────────────────────
+export async function createTemplate(data: { userId: number; name: string; description?: string; category?: string; contentType?: string; platform?: string; body?: string; variables?: unknown; metadata?: unknown }) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(contentTemplates).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getTemplatesByUser(userId: number, category?: string) {
+  const db = await getDb(); if (!db) return [];
+  if (category) {
+    return db.select().from(contentTemplates).where(and(eq(contentTemplates.userId, userId), eq(contentTemplates.category, category))).orderBy(desc(contentTemplates.createdAt));
+  }
+  return db.select().from(contentTemplates).where(eq(contentTemplates.userId, userId)).orderBy(desc(contentTemplates.createdAt));
+}
+export async function getTemplateById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(contentTemplates).where(eq(contentTemplates.id, id)).limit(1);
+  return r[0];
+}
+export async function updateTemplate(id: number, data: Partial<{ name: string; description: string; category: string; body: string; variables: unknown; metadata: unknown }>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(contentTemplates).set(data).where(eq(contentTemplates.id, id));
+}
+export async function deleteTemplate(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(contentTemplates).where(eq(contentTemplates.id, id));
+}
+export async function incrementTemplateUsage(id: number) {
+  const db = await getDb(); if (!db) return;
+  const row = await db.select().from(contentTemplates).where(eq(contentTemplates.id, id)).limit(1);
+  if (row[0]) {
+    await db.update(contentTemplates).set({ usageCount: (row[0].usageCount ?? 0) + 1 }).where(eq(contentTemplates.id, id));
+  }
+}
+
+// ─── Performance metrics ───────────────────────────────────────────
+export async function createPerformanceMetric(data: { userId: number; contentId?: number; platform?: string; postUrl?: string; likes?: number; shares?: number; comments?: number; reach?: number; impressions?: number; clicks?: number; engagementRate?: string; metadata?: unknown }) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(performanceMetrics).values(data);
+  return { id: Number(result[0].insertId), ...data };
+}
+export async function getPerformanceByUser(userId: number, platform?: string) {
+  const db = await getDb(); if (!db) return [];
+  if (platform) {
+    return db.select().from(performanceMetrics).where(and(eq(performanceMetrics.userId, userId), eq(performanceMetrics.platform, platform))).orderBy(desc(performanceMetrics.createdAt));
+  }
+  return db.select().from(performanceMetrics).where(eq(performanceMetrics.userId, userId)).orderBy(desc(performanceMetrics.createdAt));
+}
+export async function getPerformanceByContent(contentId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(performanceMetrics).where(eq(performanceMetrics.contentId, contentId)).orderBy(desc(performanceMetrics.createdAt));
+}
+export async function updatePerformanceMetric(id: number, data: Partial<{ likes: number; shares: number; comments: number; reach: number; impressions: number; clicks: number; engagementRate: string }>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(performanceMetrics).set(data).where(eq(performanceMetrics.id, id));
 }
 
 // ─── Content Repurposing ─────────────────────────────────────────────

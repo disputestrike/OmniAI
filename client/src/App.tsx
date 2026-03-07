@@ -46,6 +46,26 @@ import CustomerIntel from "./pages/CustomerIntel";
 import AiAvatars from "./pages/AiAvatars";
 import MemeGenerator from "./pages/MemeGenerator";
 import ContentRepurposer from "./pages/ContentRepurposer";
+import ContentIngest from "./pages/ContentIngest";
+import ContentLibrary from "./pages/ContentLibrary";
+import ContentTemplates from "./pages/ContentTemplates";
+import ContentScorer from "./pages/ContentScorer";
+import BulkImport from "./pages/BulkImport";
+import BrandKit from "./pages/BrandKit";
+import MusicStudio from "./pages/MusicStudio";
+import VoiceoverStudio from "./pages/VoiceoverStudio";
+import AdPerformanceAnalyzer from "./pages/AdPerformanceAnalyzer";
+import OnePushPublisher from "./pages/OnePushPublisher";
+import ContentCalendar from "./pages/ContentCalendar";
+import PerformanceTracking from "./pages/PerformanceTracking";
+import SocialPlanner from "./pages/SocialPlanner";
+import CompetitorMonitor from "./pages/CompetitorMonitor";
+import Projects from "./pages/Projects";
+import CreatorProfile from "./pages/CreatorProfile";
+import AboutUs from "./pages/AboutUs";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Contact from "./pages/Contact";
 
 function DashboardRouter() {
   return (
@@ -91,6 +111,22 @@ function DashboardRouter() {
         <Route path="/customer-intel" component={CustomerIntel} />
         <Route path="/ai-avatars" component={AiAvatars} />
         <Route path="/meme-generator" component={MemeGenerator} />
+        <Route path="/content-ingest" component={ContentIngest} />
+        <Route path="/content-library" component={ContentLibrary} />
+        <Route path="/content-templates" component={ContentTemplates} />
+        <Route path="/content-scorer" component={ContentScorer} />
+        <Route path="/bulk-import" component={BulkImport} />
+        <Route path="/brand-kit" component={BrandKit} />
+        <Route path="/music-studio" component={MusicStudio} />
+        <Route path="/voiceover-studio" component={VoiceoverStudio} />
+        <Route path="/ad-performance" component={AdPerformanceAnalyzer} />
+        <Route path="/one-push-publisher" component={OnePushPublisher} />
+        <Route path="/content-calendar" component={ContentCalendar} />
+        <Route path="/performance" component={PerformanceTracking} />
+        <Route path="/social-planner" component={SocialPlanner} />
+        <Route path="/competitor-monitor" component={CompetitorMonitor} />
+        <Route path="/projects" component={Projects} />
+        <Route path="/creator-profile" component={CreatorProfile} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -100,8 +136,12 @@ function DashboardRouter() {
 function Router() {
   return (
     <Switch>
-      {/* Public landing page */}
+      {/* Public pages */}
       <Route path="/" component={Landing} />
+      <Route path="/about" component={AboutUs} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/contact" component={Contact} />
       {/* All dashboard routes */}
       <Route path="/dashboard" component={DashboardRouter} />
       <Route path="/products" component={DashboardRouter} />
@@ -143,6 +183,22 @@ function Router() {
       <Route path="/customer-intel" component={DashboardRouter} />
       <Route path="/ai-avatars" component={DashboardRouter} />
       <Route path="/meme-generator" component={DashboardRouter} />
+      <Route path="/content-ingest" component={DashboardRouter} />
+      <Route path="/content-library" component={DashboardRouter} />
+      <Route path="/content-templates" component={DashboardRouter} />
+      <Route path="/content-scorer" component={DashboardRouter} />
+      <Route path="/bulk-import" component={DashboardRouter} />
+      <Route path="/brand-kit" component={DashboardRouter} />
+      <Route path="/music-studio" component={DashboardRouter} />
+      <Route path="/voiceover-studio" component={DashboardRouter} />
+      <Route path="/ad-performance" component={DashboardRouter} />
+      <Route path="/one-push-publisher" component={DashboardRouter} />
+      <Route path="/content-calendar" component={DashboardRouter} />
+      <Route path="/performance" component={DashboardRouter} />
+      <Route path="/social-planner" component={DashboardRouter} />
+      <Route path="/competitor-monitor" component={DashboardRouter} />
+      <Route path="/projects" component={DashboardRouter} />
+      <Route path="/creator-profile" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

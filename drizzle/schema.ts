@@ -769,6 +769,209 @@ export const customerSegments = mysqlTable("customer_segments", {
 export type CustomerSegment = typeof customerSegments.$inferSelect;
 export type InsertCustomerSegment = typeof customerSegments.$inferInsert;
 
+// ─── Brand Kits ─────────────────────────────────────────────────────
+export const brandKits = mysqlTable("brand_kits", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  logoUrl: text("logoUrl"),
+  primaryColor: varchar("primaryColor", { length: 32 }),
+  secondaryColor: varchar("secondaryColor", { length: 32 }),
+  accentColor: varchar("accentColor", { length: 32 }),
+  fontHeading: varchar("fontHeading", { length: 128 }),
+  fontBody: varchar("fontBody", { length: 128 }),
+  toneOfVoice: varchar("toneOfVoice", { length: 64 }),
+  toneDescription: text("toneDescription"),
+  brandPersonality: json("brandPersonality").$type<string[]>(),
+  tagline: varchar("tagline", { length: 255 }),
+  missionStatement: text("missionStatement"),
+  targetAudience: text("targetAudience"),
+  doList: json("doList").$type<string[]>(),
+  dontList: json("dontList").$type<string[]>(),
+  isDefault: boolean("isDefault").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type BrandKit = typeof brandKits.$inferSelect;
+export type InsertBrandKit = typeof brandKits.$inferInsert;
+
+// ─── Ad Performance Reports ────────────────────────────────────────
+export const adPerformanceReports = mysqlTable("ad_performance_reports", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  connectionId: int("connectionId").notNull(),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  reportType: mysqlEnum("reportType", ["campaign", "adset", "ad", "account"]).default("campaign"),
+  dateRange: varchar("dateRange", { length: 64 }),
+  rawData: json("rawData"),
+  aiAnalysis: text("aiAnalysis"),
+  topPerformers: json("topPerformers"),
+  winningPatterns: json("winningPatterns"),
+  recommendations: json("recommendations"),
+  status: mysqlEnum("adReportStatus", ["pending", "analyzing", "complete", "error"]).default("pending"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type AdPerformanceReport = typeof adPerformanceReports.$inferSelect;
+export type InsertAdPerformanceReport = typeof adPerformanceReports.$inferInsert;
+
+// ─── Publisher Queue ───────────────────────────────────────────────
+export const publisherQueue = mysqlTable("publisher_queue", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  connectionId: int("connectionId").notNull(),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  adName: varchar("adName", { length: 255 }).notNull(),
+  adType: mysqlEnum("adType", ["image", "video", "carousel", "text"]).default("image"),
+  headline: text("headline"),
+  body: text("body"),
+  imageUrl: text("imageUrl"),
+  videoUrl: text("videoUrl"),
+  destinationUrl: text("destinationUrl"),
+  callToAction: varchar("callToAction", { length: 64 }),
+  budget: text("budget"),
+  budgetType: mysqlEnum("budgetType", ["daily", "lifetime"]).default("daily"),
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  targetAudience: json("targetAudience"),
+  status: mysqlEnum("publishStatus", ["draft", "queued", "publishing", "live", "paused", "completed", "failed"]).default("draft"),
+  externalAdId: varchar("externalAdId", { length: 255 }),
+  errorMessage: text("errorMessage"),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PublisherQueueItem = typeof publisherQueue.$inferSelect;
+export type InsertPublisherQueueItem = typeof publisherQueue.$inferInsert;
+
+// ─── Performance Alerts ───────────────────────────────────────────
+export const performanceAlerts = mysqlTable("performance_alerts", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  connectionId: int("connectionId").notNull(),
+  externalCampaignId: varchar("externalCampaignId", { length: 255 }),
+  campaignName: varchar("campaignName", { length: 255 }),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  alertType: mysqlEnum("alertType", ["underperforming", "budget_depleted", "high_cpa", "low_ctr", "opportunity"]).notNull(),
+  severity: mysqlEnum("severity", ["info", "warning", "critical"]).default("warning"),
+  metric: varchar("metric", { length: 64 }),
+  currentValue: text("currentValue"),
+  benchmarkValue: text("benchmarkValue"),
+  aiSuggestion: text("aiSuggestion"),
+  isRead: boolean("isRead").default(false),
+  isDismissed: boolean("isDismissed").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type PerformanceAlert = typeof performanceAlerts.$inferSelect;
+export type InsertPerformanceAlert = typeof performanceAlerts.$inferInsert;
+
+// ─── Creator Profiles ──────────────────────────────────────────────
+export const creatorProfiles = mysqlTable("creator_profiles", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull().unique(),
+  displayName: varchar("displayName", { length: 128 }),
+  bio: text("bio"),
+  tagline: varchar("tagline", { length: 255 }),
+  avatarUrl: text("avatarUrl"),
+  coverImageUrl: text("coverImageUrl"),
+  website: text("website"),
+  instagram: varchar("instagram", { length: 128 }),
+  twitter: varchar("twitter", { length: 128 }),
+  linkedin: varchar("linkedin", { length: 128 }),
+  tiktok: varchar("tiktok", { length: 128 }),
+  specialties: json("specialties"),
+  isPublic: boolean("isPublic").default(false),
+  profileSlug: varchar("profileSlug", { length: 128 }).unique(),
+  totalCreations: int("totalCreations").default(0),
+  totalViews: int("totalViews").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type CreatorProfile = typeof creatorProfiles.$inferSelect;
+export type InsertCreatorProfile = typeof creatorProfiles.$inferInsert;
+
+// ─── Portfolio Items ───────────────────────────────────────────────
+export const portfolioItems = mysqlTable("portfolio_items", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  contentType: mysqlEnum("contentType", ["image", "video", "copy", "email", "social", "ad", "other"]).default("other"),
+  thumbnailUrl: text("thumbnailUrl"),
+  contentUrl: text("contentUrl"),
+  contentText: text("contentText"),
+  platform: varchar("platform", { length: 64 }),
+  tags: json("tags"),
+  isPublic: boolean("isPublic").default(true),
+  isFeatured: boolean("isFeatured").default(false),
+  views: int("views").default(0),
+  likes: int("likes").default(0),
+  sourceType: varchar("sourceType", { length: 64 }),
+  sourceId: int("sourceId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type PortfolioItem = typeof portfolioItems.$inferSelect;
+export type InsertPortfolioItem = typeof portfolioItems.$inferInsert;
+
+// ─── Projects (workspace folders) ─────────────────────────────────────
+export const projects2 = mysqlTable("projects2", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  status: mysqlEnum("projectStatus", ["active", "paused", "completed", "archived"]).default("active"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ─── Chat conversations ─────────────────────────────────────────────
+export const chatConversations = mysqlTable("chat_conversations", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  projectId: int("projectId"),
+  title: varchar("title", { length: 255 }),
+  messages: json("messages"),
+  agentMode: varchar("agentMode", { length: 100 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ─── Content templates ──────────────────────────────────────────────
+export const contentTemplates = mysqlTable("content_templates", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 100 }),
+  contentType: varchar("contentType", { length: 100 }),
+  platform: varchar("platform", { length: 100 }),
+  body: text("body"),
+  variables: json("variables"),
+  metadata: json("metadata"),
+  usageCount: int("usageCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+// ─── Performance metrics ────────────────────────────────────────────
+export const performanceMetrics = mysqlTable("performance_metrics", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("userId").notNull(),
+  contentId: int("contentId"),
+  platform: varchar("platform", { length: 100 }),
+  postUrl: text("postUrl"),
+  likes: int("likes").default(0),
+  shares: int("shares").default(0),
+  comments: int("comments").default(0),
+  reach: int("reach").default(0),
+  impressions: int("impressions").default(0),
+  clicks: int("clicks").default(0),
+  engagementRate: text("engagementRate"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 // ─── Content Repurposing Engine (video/audio → all formats) ─────────────
 export const repurposingProjects = mysqlTable("repurposing_projects", {
   id: int("id").autoincrement().primaryKey(),

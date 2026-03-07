@@ -30,9 +30,8 @@ COPY package.json pnpm-lock.yaml ./
 COPY patches/ ./patches/
 RUN pnpm install --frozen-lockfile --prod
 
-# Copy built assets from build stage
+# Copy built assets from build stage (client is in dist/public from Vite)
 COPY --from=base /app/dist ./dist
-COPY --from=base /app/client/dist ./client/dist
 COPY --from=base /app/drizzle ./drizzle
 
 # Set environment

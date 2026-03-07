@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,18 +13,27 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Shuffle, Copy, Check, Send, Link2 } from "lucide-react";
+import { Loader2, Shuffle, Copy, Check, Send, Link2, Upload, FileAudio } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+
+type InputMode = "transcript" | "upload";
 
 export default function ContentRepurposer() {
   const [title, setTitle] = useState("");
   const [transcript, setTranscript] = useState("");
   const [sourceUrl, setSourceUrl] = useState("");
+  const [inputMode, setInputMode] = useState<InputMode>("transcript");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
   const listProjects = trpc.repurposing.list.useQuery();
   const createProject = trpc.repurposing.create.useMutation({
-    onSuccess: () => { utils.repurposing.list.invalidate(); toast.success("Project created"); setTitle(""); setTranscript(""); setSourceUrl(""); },
+    onSuccess: () => { utils.repurposing.list.invalidate(); toast.success("Project created"); setTitle(""); setTranscript(""); setSourceUrl(""); setUploadFile(null); },
+    onError: (e) => toast.error(e.message),
+  });
+  const createFromUpload = trpc.repurposing.createFromUpload.useMutation({
+    onSuccess: () => { utils.repurposing.list.invalidate(); setTitle(""); setUploadFile(null); },
     onError: (e) => toast.error(e.message),
   });
   const generateAll = trpc.repurposing.generateAllFormats.useMutation({
@@ -38,61 +47,120 @@ export default function ContentRepurposer() {
 
   const handleCreateAndGenerate = () => {
     if (!title.trim()) { toast.error("Enter a project title"); return; }
-    if (!transcript.trim()) { toast.error("Paste a transcript or content to repurpose"); return; }
-    createProject.mutate(
-      {
-        title: title.trim(),
-        sourceType: "transcript_paste",
-        sourceTranscript: transcript.trim(),
-        sourceUrl: sourceUrl.trim() || undefined,
-      },
-      {
-        onSuccess: (data) => {
-          generateAll.mutate({ projectId: data.id });
+    if (inputMode === "transcript") {
+      if (!transcript.trim()) { toast.error("Paste a transcript or content to repurpose"); return; }
+      createProject.mutate(
+        {
+          title: title.trim(),
+          sourceType: "transcript_paste",
+          sourceTranscript: transcript.trim(),
+          sourceUrl: sourceUrl.trim() || undefined,
         },
-      }
-    );
+        {
+          onSuccess: (data) => {
+            generateAll.mutate({ projectId: data.id });
+          },
+        }
+      );
+      return;
+    }
+    if (inputMode === "upload") {
+      if (!uploadFile) { toast.error("Choose a video or audio file"); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(",")[1];
+        if (!base64) { toast.error("Could not read file"); return; }
+        createFromUpload.mutate(
+          { title: title.trim(), audioBase64: base64, mimeType: uploadFile.type },
+          {
+            onSuccess: (data) => {
+              toast.success("Transcribed. Generating all formats…");
+              generateAll.mutate({ projectId: data.id });
+            },
+          }
+        );
+      };
+      reader.readAsDataURL(uploadFile);
+    }
   };
+
+  const isBusy = createProject.isPending || createFromUpload.isPending || generateAll.isPending;
 
   return (
     <div className="space-y-8 p-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Content Repurposer</h1>
         <p className="text-muted-foreground mt-1">
-          One input → all formats. Paste a video transcript or any content and generate blog posts, LinkedIn articles, social captions, emails, and 22+ formats in your voice.
+          One input → all formats. Upload a video/audio (we transcribe it), or paste a transcript. Then we generate blog posts, LinkedIn articles, social captions, emails, and 22+ formats in your voice.
         </p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Shuffle className="h-5 w-5" /> New repurposing project</CardTitle>
-          <CardDescription>Paste a transcript (e.g. from a video) or any long-form content. We’ll generate every format in one go.</CardDescription>
+          <CardDescription>Upload a video or audio file (we’ll transcribe it) or paste a transcript. We’ll generate every format in one go.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
             <Label>Project title</Label>
             <Input placeholder="e.g. Q4 product launch" value={title} onChange={e => setTitle(e.target.value)} />
           </div>
+
           <div className="grid gap-2">
-            <Label>Video or source URL (optional)</Label>
-            <Input placeholder="https://youtube.com/..." value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} />
+            <Label>Input method</Label>
+            <div className="flex gap-2">
+              <Button type="button" variant={inputMode === "transcript" ? "default" : "outline"} size="sm" onClick={() => setInputMode("transcript")}>
+                Paste transcript
+              </Button>
+              <Button type="button" variant={inputMode === "upload" ? "default" : "outline"} size="sm" onClick={() => setInputMode("upload")}>
+                <Upload className="h-4 w-4 mr-1" /> Upload video/audio
+              </Button>
+            </div>
           </div>
-          <div className="grid gap-2">
-            <Label>Transcript or content to repurpose *</Label>
-            <Textarea
-              placeholder="Paste your video transcript or any content here..."
-              value={transcript}
-              onChange={e => setTranscript(e.target.value)}
-              rows={8}
-              className="resize-y"
-            />
-          </div>
+
+          {inputMode === "transcript" && (
+            <>
+              <div className="grid gap-2">
+                <Label>Video or source URL (optional)</Label>
+                <Input placeholder="https://youtube.com/..." value={sourceUrl} onChange={e => setSourceUrl(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Transcript or content to repurpose *</Label>
+                <Textarea
+                  placeholder="Paste your video transcript or any content here..."
+                  value={transcript}
+                  onChange={e => setTranscript(e.target.value)}
+                  rows={8}
+                  className="resize-y"
+                />
+              </div>
+            </>
+          )}
+
+          {inputMode === "upload" && (
+            <div className="grid gap-2">
+              <Label>Video or audio file *</Label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="audio/*,video/*,.mp4,.webm,.mp3,.wav,.m4a"
+                className="hidden"
+                onChange={e => setUploadFile(e.target.files?.[0] ?? null)}
+              />
+              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} className="gap-2">
+                <FileAudio className="h-4 w-4" />
+                {uploadFile ? uploadFile.name : "Choose file (MP4, WebM, MP3, WAV…)"}
+              </Button>
+              <p className="text-xs text-muted-foreground">We’ll transcribe it with AI, then generate all 22 formats. Max ~16MB.</p>
+            </div>
+          )}
+
           <Button
             onClick={handleCreateAndGenerate}
-            disabled={createProject.isPending || generateAll.isPending || !title.trim() || !transcript.trim()}
+            disabled={isBusy || !title.trim() || (inputMode === "transcript" ? !transcript.trim() : !uploadFile)}
           >
-            {(createProject.isPending || generateAll.isPending) && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-            Generate all formats
+            {isBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            {inputMode === "upload" ? "Upload, transcribe & generate all formats" : "Generate all formats"}
           </Button>
         </CardContent>
       </Card>

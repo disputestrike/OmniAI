@@ -1,10 +1,13 @@
 /**
  * Content Repurposing Engine — video/audio/transcript → all content formats in one go.
+ * Supports: paste transcript, upload video/audio (auto-transcribe), then generate 22 formats.
  */
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { transcribeAudio } from "./_core/voiceTranscription";
+import { storagePut } from "./storage";
 import * as db from "./db";
 
 const REPURPOSE_FORMATS = [
@@ -73,6 +76,63 @@ export const repurposingRouter = router({
       status: "pending",
     });
     return { id };
+  }),
+
+  /** Upload video/audio file → transcribe → save transcript to new project. Returns projectId for generateAllFormats. */
+  createFromUpload: protectedProcedure.input(z.object({
+    title: z.string().min(1),
+    audioBase64: z.string(),
+    mimeType: z.string().default("audio/webm"),
+    brandVoiceId: z.number().optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const buffer = Buffer.from(input.audioBase64, "base64");
+    const ext = input.mimeType.includes("webm") ? "webm" : input.mimeType.includes("wav") ? "wav" : input.mimeType.includes("mp4") ? "mp4" : "mp3";
+    const key = `repurposing/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { url } = await storagePut(key, buffer, input.mimeType);
+
+    const { id } = await db.createRepurposingProject({
+      userId: ctx.user.id,
+      title: input.title,
+      sourceType: "audio_upload",
+      sourceUrl: url,
+      sourceTranscript: null,
+      brandVoiceId: input.brandVoiceId ?? null,
+      status: "transcribing",
+    });
+
+    const result = await transcribeAudio({
+      audioUrl: url,
+      prompt: "Transcribe this video or audio for content repurposing. Preserve key points and tone.",
+    });
+    if ("error" in result) {
+      await db.updateRepurposingProject(id, { status: "failed", errorMessage: result.error });
+      throw new TRPCError({ code: "BAD_REQUEST", message: result.error });
+    }
+    const transcript = result.text || "";
+    await db.updateRepurposingProject(id, { sourceTranscript: transcript, status: "pending" });
+    return { id, transcriptLength: transcript.length };
+  }),
+
+  /** Transcribe from an existing audio/video URL and save to project (e.g. after user pastes a link we fetch or after external upload). */
+  transcribeFromUrl: protectedProcedure.input(z.object({
+    projectId: z.number(),
+    audioUrl: z.string().url(),
+  })).mutation(async ({ ctx, input }) => {
+    const project = await db.getRepurposingProjectById(input.projectId);
+    if (!project || project.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+    await db.updateRepurposingProject(input.projectId, { status: "transcribing" });
+
+    const result = await transcribeAudio({
+      audioUrl: input.audioUrl,
+      prompt: "Transcribe this video or audio for content repurposing. Preserve key points and tone.",
+    });
+    if ("error" in result) {
+      await db.updateRepurposingProject(input.projectId, { status: "failed", errorMessage: result.error });
+      throw new TRPCError({ code: "BAD_REQUEST", message: result.error });
+    }
+    const transcript = result.text || "";
+    await db.updateRepurposingProject(input.projectId, { sourceTranscript: transcript, status: "pending" });
+    return { transcriptLength: transcript.length };
   }),
 
   generateAllFormats: protectedProcedure.input(z.object({ projectId: z.number() })).mutation(async ({ ctx, input }) => {

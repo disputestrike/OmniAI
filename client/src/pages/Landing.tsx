@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { getLoginUrl } from "@/const";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ArrowRight,
   Sparkles,
@@ -1163,10 +1163,11 @@ export default function Landing() {
             <div>
               <h4 className="font-bold text-sm mb-3 text-[#1a1a1a]">Company</h4>
               <div className="space-y-2">
-                <span className="block text-sm text-[#6b5e4f]">About</span>
-                <span className="block text-sm text-[#6b5e4f]">Blog</span>
-                <span className="block text-sm text-[#6b5e4f]">Contact</span>
-                <span className="block text-sm text-[#6b5e4f]">Privacy Policy</span>
+                <Link href="/about" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">About</Link>
+                <Link href="/blog" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Blog</Link>
+                <Link href="/contact" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Contact</Link>
+                <Link href="/privacy" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Privacy Policy</Link>
+                <Link href="/terms" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Terms of Service</Link>
               </div>
             </div>
           </div>

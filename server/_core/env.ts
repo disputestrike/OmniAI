@@ -34,4 +34,8 @@ export const ENV = {
   // Google OAuth
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+  // Music Studio APIs
+  sunoApiKey: process.env.SUNO_API_KEY ?? "",
+  mubertApiKey: process.env.MUBERT_API_KEY ?? "",
+  soundrawApiKey: process.env.SOUNDRAW_API_KEY ?? "",
 };

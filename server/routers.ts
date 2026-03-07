@@ -18,6 +18,14 @@ import { personalVideoRouter, competitorIntelRouter, customerIntelRouter } from 
 import { realVideoRouter, voiceoverRouter, avatarRouter, socialConnectionRouter, ecommerceRouter, memeRouter, creativeEngineRouter, integrationStatusRouter } from "./apiIntegrationRouters";
 import { repurposingRouter } from "./repurposingRouter";
 import { publishingRouter } from "./publishingRouter";
+import { adPerformanceRouter } from "./adPerformanceRouter";
+import { contentIngestRouter } from "./contentIngestRouter";
+import { contentLibraryRouter } from "./contentLibraryRouter";
+import { creatorProfileRouter } from "./creatorProfileRouter";
+import { publisherRouter } from "./publisherRouter";
+import { advancedFeaturesRouter } from "./advancedFeaturesRouter";
+import { enhancedChatRouter } from "./enhancedChatRouter";
+import { brandKits } from "../drizzle/schema";
 
 export const appRouter = router({
   system: systemRouter,
@@ -2264,6 +2272,158 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
   integrationStatus: integrationStatusRouter,
   repurposing: repurposingRouter,
   publishing: publishingRouter,
+  adPerformance: adPerformanceRouter,
+  ingest: contentIngestRouter,
+  library: contentLibraryRouter,
+  creatorProfile: creatorProfileRouter,
+  publisher: publisherRouter,
+  advanced: advancedFeaturesRouter,
+  enhanced: enhancedChatRouter,
+  brandKit: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const db2 = await getDb(); if (!db2) return [];
+      return db2.select().from(brandKits).where(eq(brandKits.userId, ctx.user.id)).orderBy(desc(brandKits.createdAt));
+    }),
+    get: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ ctx, input }) => {
+      const db2 = await getDb(); if (!db2) throw new TRPCError({ code: "NOT_FOUND" });
+      const [kit] = await db2.select().from(brandKits).where(eq(brandKits.id, input.id));
+      if (!kit || kit.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+      return kit;
+    }),
+    getDefault: protectedProcedure.query(async ({ ctx }) => {
+      const db2 = await getDb(); if (!db2) return null;
+      const kits = await db2.select().from(brandKits).where(eq(brandKits.userId, ctx.user.id)).orderBy(desc(brandKits.isDefault), desc(brandKits.createdAt)).limit(1);
+      return kits[0] ?? null;
+    }),
+    create: protectedProcedure.input(z.object({
+      name: z.string().min(1),
+      logoUrl: z.string().optional(),
+      primaryColor: z.string().optional(),
+      secondaryColor: z.string().optional(),
+      accentColor: z.string().optional(),
+      fontHeading: z.string().optional(),
+      fontBody: z.string().optional(),
+      toneOfVoice: z.string().optional(),
+      toneDescription: z.string().optional(),
+      brandPersonality: z.array(z.string()).optional(),
+      tagline: z.string().optional(),
+      missionStatement: z.string().optional(),
+      targetAudience: z.string().optional(),
+      doList: z.array(z.string()).optional(),
+      dontList: z.array(z.string()).optional(),
+      isDefault: z.boolean().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      const db2 = await getDb(); if (!db2) throw new Error("DB unavailable");
+      if (input.isDefault) {
+        await db2.update(brandKits).set({ isDefault: false }).where(eq(brandKits.userId, ctx.user.id));
+      }
+      const result = await db2.insert(brandKits).values({ ...input, userId: ctx.user.id });
+      return { id: Number(result[0].insertId) };
+    }),
+    update: protectedProcedure.input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      logoUrl: z.string().optional(),
+      primaryColor: z.string().optional(),
+      secondaryColor: z.string().optional(),
+      accentColor: z.string().optional(),
+      fontHeading: z.string().optional(),
+      fontBody: z.string().optional(),
+      toneOfVoice: z.string().optional(),
+      toneDescription: z.string().optional(),
+      brandPersonality: z.array(z.string()).optional(),
+      tagline: z.string().optional(),
+      missionStatement: z.string().optional(),
+      targetAudience: z.string().optional(),
+      doList: z.array(z.string()).optional(),
+      dontList: z.array(z.string()).optional(),
+      isDefault: z.boolean().optional(),
+    })).mutation(async ({ ctx, input }) => {
+      const db2 = await getDb(); const { id, ...data } = input;
+      if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [existing] = await db2.select().from(brandKits).where(eq(brandKits.id, id));
+      if (!existing || existing.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+      if (data.isDefault) {
+        await db2.update(brandKits).set({ isDefault: false }).where(eq(brandKits.userId, ctx.user.id));
+      }
+      await db2.update(brandKits).set(data).where(eq(brandKits.id, id));
+      return { success: true };
+    }),
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+      const db2 = await getDb(); if (!db2) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const [existing] = await db2.select().from(brandKits).where(eq(brandKits.id, input.id));
+      if (!existing || existing.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+      await db2.delete(brandKits).where(eq(brandKits.id, input.id));
+      return { success: true };
+    }),
+    generateWithAI: protectedProcedure.input(z.object({
+      businessDescription: z.string(),
+      industry: z.string().optional(),
+      targetAudience: z.string().optional(),
+    })).mutation(async ({ input }) => {
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: "You are a brand identity expert. Generate a comprehensive brand kit based on the business description." },
+          { role: "user", content: `Generate a brand kit for: ${input.businessDescription}\nIndustry: ${input.industry || "not specified"}\nTarget Audience: ${input.targetAudience || "not specified"}\n\nReturn JSON with: { primaryColor (hex), secondaryColor (hex), accentColor (hex), fontHeading (Google Font name), fontBody (Google Font name), toneOfVoice (single word), toneDescription (2-3 sentences), brandPersonality (array of 5 adjectives), tagline (catchy tagline), missionStatement (1-2 sentences), doList (array of 5 brand dos), dontList (array of 5 brand don'ts) }` },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "brand_kit",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                primaryColor: { type: "string" },
+                secondaryColor: { type: "string" },
+                accentColor: { type: "string" },
+                fontHeading: { type: "string" },
+                fontBody: { type: "string" },
+                toneOfVoice: { type: "string" },
+                toneDescription: { type: "string" },
+                brandPersonality: { type: "array", items: { type: "string" } },
+                tagline: { type: "string" },
+                missionStatement: { type: "string" },
+                doList: { type: "array", items: { type: "string" } },
+                dontList: { type: "array", items: { type: "string" } },
+              },
+              required: ["primaryColor", "secondaryColor", "accentColor", "fontHeading", "fontBody", "toneOfVoice", "toneDescription", "brandPersonality", "tagline", "missionStatement", "doList", "dontList"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+      const content = response.choices[0]?.message?.content ?? "{}";
+      return JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+    }),
+  }),
+  musicStudio: router({
+    getMusicLibrary: publicProcedure.query(async () => {
+      const { MUSIC_LIBRARY } = await import("./musicStudio");
+      return MUSIC_LIBRARY;
+    }),
+    getSFXLibrary: publicProcedure.input(z.object({ category: z.string().optional() })).query(async ({ input }) => {
+      const { SFX_LIBRARY } = await import("./musicStudio");
+      if (input.category) return SFX_LIBRARY.filter((s: { category: string }) => s.category === input.category);
+      return SFX_LIBRARY;
+    }),
+    getProviders: publicProcedure.query(async () => {
+      const { getMusicProviders } = await import("./musicStudio");
+      return getMusicProviders();
+    }),
+    generateMusic: protectedProcedure.input(z.object({
+      prompt: z.string().min(1).max(500),
+      genre: z.string().optional(),
+      mood: z.string().optional(),
+      tempo: z.enum(["slow", "medium", "fast", "very-fast"]).optional(),
+      duration: z.number().min(15).max(120).optional(),
+      loop: z.boolean().optional(),
+      instrumental: z.boolean().optional(),
+    })).mutation(async ({ input }) => {
+      const { generateMusic } = await import("./musicStudio");
+      return generateMusic(input);
+    }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
