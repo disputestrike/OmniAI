@@ -182,6 +182,7 @@ export const leads = mysqlTable("leads", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull(),
   campaignId: int("campaignId"),
+  assignedToUserId: int("assignedToUserId"),
   name: varchar("name", { length: 255 }),
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 32 }),
@@ -1025,3 +1026,147 @@ export const publishingCredentials = mysqlTable("publishing_credentials", {
 
 export type PublishingCredential = typeof publishingCredentials.$inferSelect;
 export type InsertPublishingCredential = typeof publishingCredentials.$inferInsert;
+
+// ─── Funnels (multi-step lead/sales) ─────────────────────────────────
+export const funnels = mysqlTable("funnels", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Funnel = typeof funnels.$inferSelect;
+export type InsertFunnel = typeof funnels.$inferInsert;
+
+export const funnelSteps = mysqlTable("funnel_steps", {
+  id: int("id").autoincrement().primaryKey(),
+  funnelId: int("funnelId").notNull(),
+  orderIndex: int("orderIndex").notNull().default(0),
+  stepType: mysqlEnum("stepType", ["landing", "form", "payment", "thank_you"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  landingPageId: int("landingPageId"),
+  formId: int("formId"),
+  stripePriceId: varchar("stripePriceId", { length: 128 }),
+  config: json("config").$type<Record<string, unknown>>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FunnelStep = typeof funnelSteps.$inferSelect;
+export type InsertFunnelStep = typeof funnelSteps.$inferInsert;
+
+// ─── Reviews / Reputation ────────────────────────────────────────────
+export const reviewSources = mysqlTable("review_sources", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  sourceType: mysqlEnum("sourceType", ["google", "facebook", "yelp", "manual"]).notNull(),
+  name: varchar("name", { length: 255 }),
+  externalId: varchar("externalId", { length: 255 }),
+  accessToken: text("accessToken"),
+  status: mysqlEnum("status", ["connected", "disconnected", "error"]).default("connected").notNull(),
+  lastSyncAt: timestamp("lastSyncAt"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ReviewSource = typeof reviewSources.$inferSelect;
+export type InsertReviewSource = typeof reviewSources.$inferInsert;
+
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  sourceId: int("sourceId").notNull(),
+  externalId: varchar("externalId", { length: 255 }),
+  authorName: varchar("authorName", { length: 255 }),
+  rating: int("rating").notNull(),
+  text: text("text"),
+  reply: text("reply"),
+  reviewUrl: text("reviewUrl"),
+  reviewedAt: timestamp("reviewedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;
+
+// ─── Standalone Forms ───────────────────────────────────────────────
+export const forms = mysqlTable("forms", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
+  description: text("description"),
+  submitButtonText: varchar("submitButtonText", { length: 64 }).default("Submit"),
+  redirectUrl: text("redirectUrl"),
+  createLeadOnSubmit: boolean("createLeadOnSubmit").default(true),
+  status: mysqlEnum("status", ["draft", "active", "archived"]).default("draft").notNull(),
+  submissionCount: int("submissionCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Form = typeof forms.$inferSelect;
+export type InsertForm = typeof forms.$inferInsert;
+
+export const formFields = mysqlTable("form_fields", {
+  id: int("id").autoincrement().primaryKey(),
+  formId: int("formId").notNull(),
+  orderIndex: int("orderIndex").notNull().default(0),
+  fieldType: mysqlEnum("fieldType", ["text", "email", "phone", "textarea", "select", "checkbox", "number"]).notNull(),
+  label: varchar("label", { length: 255 }).notNull(),
+  placeholder: varchar("placeholder", { length: 255 }),
+  required: boolean("required").default(true),
+  options: json("options").$type<string[]>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FormField = typeof formFields.$inferSelect;
+export type InsertFormField = typeof formFields.$inferInsert;
+
+export const formResponses = mysqlTable("form_responses", {
+  id: int("id").autoincrement().primaryKey(),
+  formId: int("formId").notNull(),
+  userId: int("userId").notNull(),
+  leadId: int("leadId"),
+  data: json("data").$type<Record<string, string>>(),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FormResponse = typeof formResponses.$inferSelect;
+export type InsertFormResponse = typeof formResponses.$inferInsert;
+
+// ─── Report Snapshots (one-click share) ──────────────────────────────
+export const reportSnapshots = mysqlTable("report_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  reportType: mysqlEnum("reportType", ["dashboard", "analytics", "ad_performance", "campaign"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  shareToken: varchar("shareToken", { length: 64 }).notNull().unique(),
+  payload: json("payload").$type<Record<string, unknown>>(),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReportSnapshot = typeof reportSnapshots.$inferSelect;
+export type InsertReportSnapshot = typeof reportSnapshots.$inferInsert;
+
+// ─── Lead assignment (round-robin) ───────────────────────────────────
+export const assignmentSettings = mysqlTable("assignment_settings", {
+  userId: int("userId").primaryKey(),
+  mode: mysqlEnum("mode", ["manual", "round_robin"]).default("manual").notNull(),
+  memberOrder: json("memberOrder").$type<number[]>(),
+  lastAssignedIndex: int("lastAssignedIndex").default(0),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AssignmentSetting = typeof assignmentSettings.$inferSelect;
+export type InsertAssignmentSetting = typeof assignmentSettings.$inferInsert;

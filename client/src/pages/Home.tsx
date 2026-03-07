@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState } from "react";
+import { ReportExport } from "@/components/ReportExport";
 
 const goalPipelines = [
   {
@@ -115,9 +116,12 @@ export default function Home() {
             The ultimate AI marketing engine. Market anything to anybody, anywhere. Make products #1, people viral, and ideas unstoppable.
           </p>
         </div>
-        <Button onClick={() => setWizardOpen(true)} className="rounded-xl shrink-0 shadow-md">
-          <Rocket className="h-4 w-4 mr-2" />Not sure where to start?
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <ReportExport reportType="dashboard" defaultTitle="Dashboard overview" />
+          <Button onClick={() => setWizardOpen(true)} className="rounded-xl shadow-md">
+            <Rocket className="h-4 w-4 mr-2" />Not sure where to start?
+          </Button>
+        </div>
       </div>
 
       {/* Goal Pipeline Wizard Dialog */}

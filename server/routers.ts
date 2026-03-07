@@ -19,6 +19,10 @@ import { realVideoRouter, voiceoverRouter, avatarRouter, socialConnectionRouter,
 import { repurposingRouter } from "./repurposingRouter";
 import { publishingRouter } from "./publishingRouter";
 import { adPerformanceRouter } from "./adPerformanceRouter";
+import { funnelRouter } from "./funnelRouter";
+import { reviewsRouter } from "./reviewsRouter";
+import { formsRouter } from "./formsRouter";
+import { reportsRouter } from "./reportsRouter";
 import { contentIngestRouter } from "./contentIngestRouter";
 import { contentLibraryRouter } from "./contentLibraryRouter";
 import { creatorProfileRouter } from "./creatorProfileRouter";
@@ -1251,7 +1255,7 @@ Return JSON array of objects with: { name: "Variant A/B/C...", content: "the cop
       platform: z.string().optional(),
       notes: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
-      return db.createLead({
+      const result = await db.createLead({
         userId: ctx.user.id,
         campaignId: input.campaignId ?? null,
         name: input.name ?? null,
@@ -1264,15 +1268,28 @@ Return JSON array of objects with: { name: "Variant A/B/C...", content: "the cop
         status: "new",
         score: 0,
       });
+      const setting = await db.getAssignmentSetting(ctx.user.id);
+      if (setting?.mode === "round_robin" && setting.memberOrder?.length) {
+        const nextIndex = ((setting.lastAssignedIndex ?? 0) + 1) % setting.memberOrder.length;
+        const assigneeId = setting.memberOrder[nextIndex];
+        await db.updateLead(result.id, { assignedToUserId: assigneeId });
+        await db.upsertAssignmentSetting(ctx.user.id, { lastAssignedIndex: nextIndex, memberOrder: setting.memberOrder });
+      }
+      return result;
     }),
     update: protectedProcedure.input(z.object({
       id: z.number(),
       status: z.enum(["new", "contacted", "qualified", "converted", "lost"]).optional(),
       score: z.number().optional(),
       notes: z.string().optional(),
+      assignedToUserId: z.number().nullable().optional(),
     })).mutation(async ({ input }) => {
       const { id, ...data } = input;
       await db.updateLead(id, data);
+      return { success: true };
+    }),
+    assign: protectedProcedure.input(z.object({ id: z.number(), assignedToUserId: z.number().nullable() })).mutation(async ({ input }) => {
+      await db.updateLead(input.id, { assignedToUserId: input.assignedToUserId });
       return { success: true };
     }),
     delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
@@ -1303,9 +1320,26 @@ Return JSON array of objects with: { name: "Variant A/B/C...", content: "the cop
           status: "new",
           score: 0,
         });
+        const setting = await db.getAssignmentSetting(ctx.user.id);
+        if (setting?.mode === "round_robin" && setting.memberOrder?.length) {
+          const nextIndex = ((setting.lastAssignedIndex ?? 0) + 1) % setting.memberOrder.length;
+          const assigneeId = setting.memberOrder[nextIndex];
+          await db.updateLead(result.id, { assignedToUserId: assigneeId });
+          await db.upsertAssignmentSetting(ctx.user.id, { lastAssignedIndex: nextIndex, memberOrder: setting.memberOrder });
+        }
         results.push(result);
       }
       return { imported: results.length };
+    }),
+    getAssignmentSetting: protectedProcedure.query(async ({ ctx }) => {
+      return db.getAssignmentSetting(ctx.user.id);
+    }),
+    saveAssignmentSetting: protectedProcedure.input(z.object({
+      mode: z.enum(["manual", "round_robin"]),
+      memberOrder: z.array(z.number()).optional(),
+    })).mutation(async ({ ctx, input }) => {
+      await db.upsertAssignmentSetting(ctx.user.id, { mode: input.mode, memberOrder: input.memberOrder ?? [] });
+      return { success: true };
     }),
   }),
 
@@ -2424,6 +2458,10 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
       return generateMusic(input);
     }),
   }),
+  funnel: funnelRouter,
+  reviews: reviewsRouter,
+  forms: formsRouter,
+  reports: reportsRouter,
 });
 
 export type AppRouter = typeof appRouter;

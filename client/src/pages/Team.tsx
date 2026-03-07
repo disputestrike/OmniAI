@@ -8,18 +8,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { useState } from "react";
-import { Users, Plus, Trash2, Shield, Loader2, Mail, UserPlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, Plus, Trash2, Shield, Loader2, Mail, UserPlus, UserCircle } from "lucide-react";
 
 export default function Team() {
   const { user } = useAuth();
   const utils = trpc.useUtils();
   const { data: members, isLoading } = trpc.team.members.useQuery(undefined, { enabled: !!user });
+  const { data: assignmentSetting } = trpc.lead.getAssignmentSetting.useQuery(undefined, { enabled: !!user });
   const invite = trpc.team.invite.useMutation({ onSuccess: () => { utils.team.members.invalidate(); toast.success("Team member invited"); } });
   const remove = trpc.team.remove.useMutation({ onSuccess: () => { utils.team.members.invalidate(); toast.success("Member removed"); } });
+  const saveAssignment = trpc.lead.saveAssignmentSetting.useMutation({
+    onSuccess: () => { utils.lead.getAssignmentSetting.invalidate(); toast.success("Lead assignment updated"); },
+    onError: (e) => toast.error(e.message),
+  });
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
+  const [leadAssignMode, setLeadAssignMode] = useState<"manual" | "round_robin">("manual");
+  useEffect(() => { if (assignmentSetting?.mode) setLeadAssignMode(assignmentSetting.mode); }, [assignmentSetting?.mode]);
 
   const handleInvite = () => {
     if (!email.trim()) { toast.error("Email required"); return; }
@@ -63,6 +70,32 @@ export default function Team() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Lead assignment */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2"><UserCircle className="h-4 w-4" /> Lead assignment</CardTitle>
+          <p className="text-sm text-muted-foreground">When new leads are created (e.g. from forms or imports), assign them manually in Lead Manager or automatically in rotation.</p>
+        </CardHeader>
+        <CardContent className="flex flex-wrap items-center gap-3">
+          <Select value={leadAssignMode} onValueChange={(v: "manual" | "round_robin") => setLeadAssignMode(v)}>
+            <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">Manual — assign in Lead Manager</SelectItem>
+              <SelectItem value="round_robin">Round-robin — rotate among you and team</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button size="sm" disabled={saveAssignment.isPending} onClick={() => {
+            const memberOrder = leadAssignMode === "round_robin" && user?.id
+              ? [user.id, ...(members ?? []).filter((m: { userId?: number }) => m.userId).map((m: { userId: number }) => m.userId)]
+              : [];
+            saveAssignment.mutate({ mode: leadAssignMode, memberOrder });
+          }}>
+            {saveAssignment.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}Save
+          </Button>
+          {assignmentSetting?.mode === "round_robin" && <span className="text-xs text-muted-foreground">New leads will be assigned in rotation.</span>}
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">

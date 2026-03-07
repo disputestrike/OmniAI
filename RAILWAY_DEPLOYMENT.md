@@ -24,7 +24,7 @@ Set these in Railway's Variables tab:
 ### Database
 | Variable | Description | How to Get |
 |----------|-------------|------------|
-| `DATABASE_URL` | MySQL connection string | Railway auto-provisions if you add a MySQL service. Format: `mysql://user:pass@host:port/db?ssl={"rejectUnauthorized":true}` |
+| `DATABASE_URL` or `MYSQL_URL` | MySQL connection string | The app uses either. If your MySQL service exposes `MYSQL_URL`, add it to the **app** service Variables (or reference it). Format: `mysql://user:pass@host:port/db` (private: use `mysql.railway.internal` for host when same project). |
 
 ### Authentication (Google only)
 | Variable | Description | How to Get |
@@ -70,8 +70,8 @@ In Railway: open your **OmniAI** (app) service → **Variables** tab. Add these 
 
 | Variable | Example / where to get it |
 |----------|----------------------------|
-| `DATABASE_URL` | From your MySQL service: use the **private** URL, e.g. `mysql://root:YOUR_PASSWORD@mysql.railway.internal:3306/railway`. In MySQL service → **Variables** or **Connect**, copy the URL and paste as `DATABASE_URL` in the **app** service. |
-| `JWT_SECRET` | Generate: `openssl rand -hex 32` |
+| `DATABASE_URL` or `MYSQL_URL` | From your MySQL service: use the **private** URL, e.g. `mysql://root:YOUR_PASSWORD@mysql.railway.internal:3306/railway`. The app reads either variable. In MySQL service → Variables you see `MYSQL_URL`; copy it into the **app** service as `DATABASE_URL` (or set `MYSQL_URL` on the app if your project shares it). |
+| `JWT_SECRET` | **Required.** Generate: `openssl rand -hex 32`. Used to sign session cookies. |
 | `GOOGLE_CLIENT_ID` | Google Cloud Console → APIs & Credentials → OAuth 2.0 Client ID |
 | `GOOGLE_CLIENT_SECRET` | Same OAuth client → secret |
 | `BUILT_IN_FORGE_API_URL` | e.g. `https://api.openai.com/v1` |
@@ -84,21 +84,18 @@ In Railway: open your **OmniAI** (app) service → **Variables** tab. Add these 
 
 `PORT` is set by Railway; you can leave it out.
 
-### 2. Create all tables in MySQL (one-time)
+### 2. Tables are created automatically on deploy
 
-The app needs tables in your MySQL database. Do **one** of the following.
+**The app runs migrations at startup.** When `DATABASE_URL` or `MYSQL_URL` is set on the app service, the server applies `drizzle/apply-all-migrations.sql` before listening. Tables are created or updated automatically; no manual SQL or CLI step is required. If you need to create tables manually: Option A – In Railway MySQL → Data/Query, paste and run **`drizzle/apply-all-migrations.sql`**. Option B – From your machine: `railway link` then `railway run pnpm exec drizzle-kit push`.
 
-**Option A – Run SQL in Railway (easiest)**  
+**Manual options (only if automatic migration did not run):**  
+**Option A – Run SQL in Railway**  
 1. In Railway, open your **MySQL** service.  
 2. Go to the **Data** or **Query** tab (or use “Query” / “MySQL console”).  
 3. Open the file **`drizzle/apply-all-migrations.sql`** in this repo and copy its full contents.  
 4. Paste into the MySQL query box and run it.  
 5. All tables (users, products, contents, campaigns, and the rest) will be created.
 
-**Option B – From your machine with Railway CLI**  
-1. Install [Railway CLI](https://docs.railway.app/develop/cli) and run `railway link` (select your project and the OmniAI service).  
-2. Run: `railway run pnpm exec drizzle-kit push`  
-3. This pushes the schema from `drizzle/schema.ts` to your Railway MySQL and creates/updates tables.
 
 ## Stripe Webhook Setup
 

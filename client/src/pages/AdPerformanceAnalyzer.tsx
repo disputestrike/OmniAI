@@ -13,6 +13,7 @@ import {
   Loader2, Zap, Target, DollarSign, Eye, MousePointerClick, RefreshCw,
   ChevronRight, Star, ArrowUpRight, ArrowDownRight, Lightbulb, Bell, X
 } from "lucide-react";
+import { ReportExport } from "@/components/ReportExport";
 
 const DATE_RANGES = [
   { value: "last_7_days", label: "Last 7 Days" },
@@ -89,9 +90,12 @@ export default function AdPerformanceAnalyzer() {
             AI-powered analysis of your ad campaigns — identify winners, fix underperformers, and maximize ROAS.
           </p>
         </div>
-        <Badge variant="outline" className="text-violet-600 border-violet-200 bg-violet-50">
-          <Brain className="w-3 h-3 mr-1" /> AI-Powered
-        </Badge>
+        <div className="flex items-center gap-2">
+          <ReportExport reportType="ad_performance" defaultTitle="Ad performance report" />
+          <Badge variant="outline" className="text-violet-600 border-violet-200 bg-violet-50">
+            <Brain className="w-3 h-3 mr-1" /> AI-Powered
+          </Badge>
+        </div>
       </div>
 
       {/* Alerts Banner */}

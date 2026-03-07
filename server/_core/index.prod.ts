@@ -12,8 +12,12 @@ import { createContext } from "./context";
 import { serveStatic } from "./static";
 import { registerStripeRoutes } from "../stripe-routes";
 import { securityHeaders, rateLimit } from "../security";
+import { runMigrations } from "./migrate";
 
 async function startServer() {
+  // Ensure DB tables exist (uses DATABASE_URL or MYSQL_URL from Railway)
+  await runMigrations();
+
   const app = express();
   const server = createServer(app);
 

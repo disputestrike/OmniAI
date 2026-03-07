@@ -84,15 +84,15 @@ Intelligence is now a major strength. The Competitor Intelligence Center provide
 
 | Capability | OTOBI AI | HubSpot | Salesforce | Pipedrive |
 |-----------|:---:|:---:|:---:|:---:|
-| Lead capture (forms + import) | **8/10** | 10/10 | 10/10 | 9/10 |
+| Lead capture (forms + import) | **9/10** | 10/10 | 10/10 | 9/10 |
+| Lead assignment & round-robin | **9/10** | 9/10 | 10/10 | 9/10 |
 | Deal pipeline | 7/10 | 10/10 | 10/10 | 10/10 |
 | Lead scoring (AI) | **7/10** | 9/10 | 9/10 | 7/10 |
-| Email sequences | **7/10** | 10/10 | 9/10 | 8/10 |
-| Form builder (landing pages) | **8/10** | 10/10 | 8/10 | 7/10 |
+| Form builder (landing + standalone) | **9/10** | 10/10 | 8/10 | 7/10 |
 | Customer intelligence | **8/10** | 9/10 | 10/10 | 6/10 |
 | Automation workflows | **7/10** | 10/10 | 9/10 | 8/10 |
 | Bulk import (CSV/JSON) | **8/10** | 9/10 | 9/10 | 8/10 |
-| **CRM score** | **7.5/10** | **10/10** | **9/10** | **8/10** |
+| **CRM score** | **8.0/10** | **10/10** | **9/10** | **8/10** |
 
 The CRM has been substantially upgraded. Landing page builder with form submissions automatically captures leads. Bulk CSV/JSON import supports leads, products, and contacts. Email marketing enables sequences. Automation workflows provide trigger-based actions (form submission, lead status change, etc.). Customer intelligence adds 360-degree profiling. While still not matching dedicated CRM platforms like HubSpot or Salesforce in depth, OTOBI AI now offers more CRM capability than any other AI marketing tool.
 
@@ -140,6 +140,20 @@ OTOBI AI now matches or exceeds Pressmaster.ai’s core promise: **one input (vi
 
 ---
 
+### 2.9 Funnels, Reviews, Reports, Lead Distribution, Forms (New in v4.1)
+
+| Capability | OTOBI AI | DashClicks | HighLevel |
+|-----------|:---:|:---:|:---:|
+| Full funnel builder (multi-step) | **9/10** | 9/10 | 9/10 |
+| Reviews / reputation management | **8/10** | 9/10 | 7/10 |
+| One-click shareable reports | **9/10** | 9/10 | 8/10 |
+| Lead distribution (assign + round-robin) | **9/10** | 9/10 | 9/10 |
+| Standalone forms and surveys | **9/10** | 9/10 | 8/10 |
+
+Funnels: multi-step builder (landing, form, payment, thank-you). Reviews: sources and reply from one dashboard. One-click reports: shareable links from Dashboard, Analytics, Ad Performance (30-day expiry). Lead distribution: assign to team plus optional round-robin. Forms: standalone builder, share link, responses, create-lead-on-submit. All five fully wired (DB, API, UI).
+
+---
+
 ## 3. Composite Ranking
 
 | Category | Weight | OTOBI AI | Jasper | AdCreative.ai | Arcads | Omneky | HubSpot | Predis.ai |
@@ -148,17 +162,17 @@ OTOBI AI now matches or exceeds Pressmaster.ai’s core promise: **one input (vi
 | Creative/Visual | 15% | **7.5** | 2.0 | 7.0 | 8.0 | 7.0 | 3.0 | 5.5 |
 | Distribution | 25% | **7.5** | 1.0 | 4.0 | 3.0 | 6.0 | 9.0 | 7.0 |
 | Analytics/Intel | 15% | **8.5** | 3.0 | 4.0 | 2.0 | 5.0 | 7.0 | 5.0 |
-| CRM/Leads | 10% | **7.5** | 1.0 | 1.0 | 0.0 | 1.0 | 10.0 | 1.0 |
+| CRM/Leads | 10% | **8.0** | 1.0 | 1.0 | 0.0 | 1.0 | 10.0 | 1.0 |
 | Team/Collab | 5% | **8.5** | 6.5 | 6.5 | 4.0 | 5.0 | 9.0 | 5.0 |
 | AI Chat/Voice | 5% | **8.0** | 4.0 | 2.0 | 1.0 | 2.0 | 4.5 | 3.0 |
 | Pricing Value | 5% | **9.5** | 6.0 | 7.0 | 4.0 | 5.0 | 2.0 | 8.0 |
-| **Weighted Total** | **100%** | **8.1** | **3.9** | **4.6** | **3.7** | **5.1** | **7.0** | **5.3** |
+| **Weighted Total** | **100%** | **8.2** | **3.9** | **4.6** | **3.7** | **5.1** | **7.0** | **5.3** |
 
 ### Ranking (out of 10):
 
 | Rank | Platform | Score | Price Range | Strength |
 |------|----------|-------|-------------|----------|
-| 1 | **OTOBI AI** | **8.1/10** | $0-499/mo | Broadest features, best value, full execution |
+| 1 | **OTOBI AI** | **8.2/10** | $0-499/mo | Broadest features, best value, full execution; funnels, reviews, reports, lead distribution, forms |
 | 2 | **HubSpot** | 7.0/10 | $3,600/mo | Mature ecosystem, enterprise reliability |
 | 3 | **Predis.ai** | 5.3/10 | $19-249/mo | Fast social post generation, good publishing |
 | 4 | **Omneky** | 5.1/10 | $99-249/mo | Real video + direct ad publishing |
@@ -199,6 +213,18 @@ Comparison of the **previous version** (from the zip / March 6) vs **current** (
 | Extra vs Pressmaster | — | Full CRM, competitor/customer intelligence, 14-platform specs, A/B testing, email campaigns, landing pages, automation, Chrome extension |
 
 **Verdict:** OTOBI AI now covers the same core value as Pressmaster (“one input, multiple formats, your voice, native publish”) and adds a full marketing suite. We stack up **at least as well** on repurposing and **better** on breadth.
+
+---
+
+### 3d. DashClicks (Agency White-Label Fulfillment)
+
+[DashClicks](https://www.dashclicks.com/) focuses on **reselling white-label fulfillment** (order Facebook/Google/TikTok ads, SEO, backlinks, GBP ranker; they fulfill under your brand) and **agency software** (reviews, funnels, reports, lead distribution, forms). OTOBI AI **does not** include the fulfillment/ordering layer or client sub-accounts. As of v4.1 we **do** include: **full funnel builder** (multi-step with landing/form/payment/thank-you), **reviews & reputation** (sources, manual/add reviews, reply), **one-click shareable reports** (Dashboard, Analytics, Ad Performance), **lead distribution** (assign to team + optional round-robin), and **standalone forms** (builder, share link, responses, create-lead-on-submit). See **DASHCLICKS_GAP.md** for the full gap (fulfillment, sub-accounts, invoicing still not in scope).
+
+---
+
+### 3e. Heyflow (Lead-Gen Funnels & Forms)
+
+[Heyflow](https://heyflow.com/) is a **no-code funnel, form, and landing page builder** focused on turning paid traffic into leads. Strengths: 40+ drag-and-drop blocks (Google Maps, Calendly, video, signature, payments), mobile-first interactive funnels, lead quality (phone validation, SMS OTP), 50+ native integrations, **native A/B testing inside the builder**, **drop-off analytics per step**, page speed >90, response-based pricing (€49–€1,100+/mo), agency portal, and compliance (GDPR, HIPAA, SOC 2, TrustedForm). OTOBI AI has **broader scope** (content, AI, campaigns, intelligence, reviews, reports, lead distribution) and multi-step funnels + forms + landing pages, but **simpler** funnel/form experience and fewer conversion blocks and native integrations. See **HEYFLOW_COMPARISON.md** for a full feature comparison and a prioritized list of what to pull (e.g. funnel drop-off analytics, in-funnel A/B testing, lead-quality blocks, block library, page speed signal).
 
 ---
 

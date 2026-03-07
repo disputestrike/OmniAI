@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Users, Plus, Loader2, Trash2, Mail, Phone, Star, Search, Download, Upload } from "lucide-react";
+import { Users, Plus, Loader2, Trash2, Mail, Phone, Star, Search, Download, UserCircle } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -14,11 +15,24 @@ const statusOptions = ["new", "contacted", "qualified", "converted", "lost"];
 const sourceOptions = ["Instagram", "TikTok", "YouTube", "Facebook", "LinkedIn", "Twitter/X", "Google Ads", "Email", "WhatsApp", "Website", "Referral", "Other"];
 
 export default function Leads() {
+  const { user } = useAuth();
   const utils = trpc.useUtils();
   const { data: leads, isLoading } = trpc.lead.list.useQuery();
+  const { data: teamMembers } = trpc.team.members.useQuery(undefined, { enabled: !!user });
   const createMut = trpc.lead.create.useMutation({ onSuccess: () => { utils.lead.list.invalidate(); setOpen(false); resetForm(); toast.success("Lead added"); } });
   const updateMut = trpc.lead.update.useMutation({ onSuccess: () => { utils.lead.list.invalidate(); toast.success("Updated"); } });
+  const assignMut = trpc.lead.assign.useMutation({ onSuccess: () => { utils.lead.list.invalidate(); toast.success("Assignee updated"); } });
   const deleteMut = trpc.lead.delete.useMutation({ onSuccess: () => { utils.lead.list.invalidate(); toast.success("Deleted"); } });
+
+  const assignableUsers = useMemo(() => {
+    const list: { id: number; label: string }[] = [];
+    if (user?.id) list.push({ id: user.id, label: "Me" });
+    (teamMembers ?? []).forEach((m: { userId?: number; id: number; email: string; name?: string | null }) => {
+      const uid = m.userId ?? m.id;
+      if (uid && uid !== user?.id) list.push({ id: uid, label: m.name || m.email || `User ${uid}` });
+    });
+    return list;
+  }, [user?.id, teamMembers]);
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -127,7 +141,19 @@ export default function Leads() {
                       {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                    <Select value={lead.assignedToUserId?.toString() ?? "unassigned"} onValueChange={(val) => assignMut.mutate({ id: lead.id, assignedToUserId: val === "unassigned" ? null : parseInt(val, 10) })}>
+                      <SelectTrigger className="h-7 text-xs w-32 border-0">
+                        <span className="flex items-center gap-1 truncate">
+                          <UserCircle className="h-3 w-3 shrink-0" />
+                          {lead.assignedToUserId === user?.id ? "Me" : assignableUsers.find(a => a.id === lead.assignedToUserId)?.label ?? "Unassigned"}
+                        </span>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="unassigned">Unassigned</SelectItem>
+                        {assignableUsers.map(a => <SelectItem key={a.id} value={a.id.toString()}>{a.label}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
                     {lead.source && <Badge variant="secondary" className="text-xs">{lead.source}</Badge>}
                     <Select value={lead.status} onValueChange={(val) => updateMut.mutate({ id: lead.id, status: val as any })}>
                       <SelectTrigger className="h-7 text-xs w-28 border-0">

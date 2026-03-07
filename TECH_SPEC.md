@@ -1,9 +1,9 @@
 # OTOBI AI — Technical Specification
 
-**Version:** 3.0  
-**Date:** March 6, 2026  
+**Version:** 4.1  
+**Date:** March 2026  
 **Status:** Production-Ready (Launch-Ready)  
-**Codebase:** 32,169 lines of TypeScript across 40 pages, 39 tRPC router groups, 38 database tables, and 8 test suites
+**Codebase:** Full-stack TypeScript: 40+ pages, 45+ tRPC router groups, 47+ database tables. All features wired end-to-end (front-end, back-end, DB, routes, sidebar). No placeholders.
 
 ---
 
@@ -23,11 +23,10 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 | Styling | Tailwind CSS 4 + shadcn/ui | Design system and component library |
 | API Layer | tRPC 11 + Superjson | Type-safe RPC with auto-serialization |
 | Backend | Express 4 + Node.js 22 | HTTP server, middleware, and route handling |
-| Database | TiDB (MySQL-compatible) | Relational data storage (38 tables) |
+| Database | TiDB / MySQL (e.g. Railway) | Relational data storage (47+ tables); auto-migrations on deploy |
 | ORM | Drizzle ORM | Type-safe SQL queries and schema management |
 | File Storage | AWS S3 | Media, assets, and document storage |
-| Auth (Primary) | Manus OAuth 2.0 | User identity and session management |
-| Auth (Secondary) | Google OAuth 2.0 | Optional Google Sign-In (user-provided credentials) |
+| Auth | Google OAuth 2.0 | User identity and session management (primary) |
 | Payments | Stripe Checkout + Webhooks | 5-tier subscription billing with seat pricing |
 | AI/LLM | Built-in Forge API (GPT-class) | Content generation, analysis, chat, and predictions |
 | Voice | Whisper API | Speech-to-text transcription |
@@ -85,8 +84,8 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 │  └────────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  │
-│  │ Stripe   │ │ Manus    │ │ Google   │ │ Security │ │ Webhook  │  │
-│  │ Routes   │ │ OAuth    │ │ OAuth    │ │Middleware│ │ Handler  │  │
+│  │ Stripe   │ │ Google   │ │ Security │ │ Webhook  │ │ Migrate  │  │
+│  │ Routes   │ │ OAuth    │ │Middleware│ │ Handler  │ │ (startup)│  │
 │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  │
 └────────┬──────────────┬──────────────┬──────────────┬────────────────┘
          │              │              │              │
@@ -99,7 +98,7 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 
 ---
 
-## 3. Database Schema (38 Tables)
+## 3. Database Schema (47+ Tables)
 
 ### 3.1 Complete Table Inventory
 
@@ -114,7 +113,7 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 | 7 | `ab_tests` | A/B test experiments | userId, campaignId, name, status, winnerVariantId |
 | 8 | `ab_test_variants` | A/B test variant data | testId, name, impressions, clicks, conversions, revenue |
 | 9 | `scheduled_posts` | Content scheduler queue | userId, contentId, platform, scheduledAt, status, publishedAt |
-| 10 | `leads` | Captured leads | userId, name, email, phone, company, source, status, score |
+| 10 | `leads` | Captured leads | userId, assignedToUserId, name, email, phone, company, source, status, score |
 | 11 | `analytics_events` | Performance tracking | userId, campaignId, platform, impressions, clicks, conversions, revenue |
 | 12 | `subscriptions` | Stripe subscription tracking | userId, stripeSubscriptionId, plan, status, currentPeriodEnd |
 | 13 | `deals` | CRM deal pipeline | userId, leadId, name, value, stage, probability, expectedCloseDate |
@@ -142,6 +141,15 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 | 35 | `customer_profiles` | Customer intelligence | userId, name, email, company, engagementScore, clvPrediction |
 | 36 | `customer_interactions` | Customer touchpoints | customerId, type, description, sentiment, date |
 | 37 | `customer_segments` | Customer segmentation | userId, name, criteria (JSON), customerCount |
+| 38 | `funnels` | Multi-step funnels | userId, name, slug, status |
+| 39 | `funnel_steps` | Funnel steps (landing, form, payment, thank_you) | funnelId, orderIndex, stepType, title, landingPageId, formId, stripePriceId |
+| 40 | `review_sources` | Review sources (Google, Facebook, Yelp, manual) | userId, sourceType, name, status |
+| 41 | `reviews` | Reviews and replies | userId, sourceId, authorName, rating, text, reply |
+| 42 | `forms` | Standalone forms | userId, name, slug, status, submissionCount, createLeadOnSubmit |
+| 43 | `form_fields` | Form field definitions | formId, orderIndex, fieldType, label, required, options |
+| 44 | `form_responses` | Form submissions | formId, userId, leadId, data (JSON) |
+| 45 | `report_snapshots` | One-click shareable reports | userId, reportType, title, shareToken, payload, expiresAt |
+| 46 | `assignment_settings` | Lead assignment (round-robin) | userId, mode, memberOrder (JSON), lastAssignedIndex |
 
 ### 3.2 Role-Based Access Control
 
@@ -162,27 +170,17 @@ OTOBI AI is a comprehensive, AI-powered marketing automation platform that enabl
 
 ## 4. Authentication
 
-### 4.1 Manus OAuth (Primary)
+### 4.1 Google OAuth (Primary)
 
 ```
-User → Landing Page → "Get Started" CTA
-  → Manus OAuth Login Portal
-  → OAuth Callback (/api/oauth/callback)
-  → JWT-signed Session Cookie
-  → Dashboard (authenticated)
-```
-
-### 4.2 Google OAuth (Secondary — Optional)
-
-```
-User → Landing Page → "Continue with Google" button
+User → Landing Page → "Get Started" / "Continue with Google"
   → /api/auth/google → Google OAuth Consent Screen
   → /api/auth/google/callback → Exchange code for tokens
   → Get user info from Google → Upsert user (google_ prefixed openId)
-  → JWT-signed Session Cookie → Dashboard
+  → JWT-signed Session Cookie → Dashboard (authenticated)
 ```
 
-Google OAuth activates automatically when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` environment variables are provided. A status endpoint at `/api/auth/google/status` reports whether Google OAuth is configured.
+Google OAuth is the primary identity provider. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Status: `/api/auth/google/status`.
 
 ### 4.3 Session Management
 
@@ -322,6 +320,30 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 
 360-degree customer profiles with AI enrichment, interaction tracking (calls, emails, meetings, purchases), segmentation engine with rules-based criteria, journey mapping, engagement scoring (0-100), CLV prediction, and personalized outreach plan generation.
 
+### 6.11 Funnels, Forms, Reviews, Reports, Lead Distribution
+
+- **Funnels:** Multi-step funnel builder (landing, form, payment, thank-you steps); link steps to landing pages and forms; status draft/active/archived. Route: `/funnels`. Sidebar: **Manage → Funnels**.
+- **Forms:** Standalone form builder with field types (text, email, phone, textarea, select, checkbox, number); share link; responses view; optional create-lead-on-submit; round-robin applies to new leads. Route: `/forms`. Sidebar: **Create → Forms**.
+- **Reviews:** Review sources (Google, Facebook, Yelp, manual); add reviews manually; reply to reviews from one dashboard. Route: `/reviews`. Sidebar: **Intelligence → Reviews**.
+- **One-click reports:** Generate shareable report links from Dashboard, Analytics, and Ad Performance; recipients view at `/report/:shareToken` (30-day expiry). Wired in Home, Analytics, AdPerformanceAnalyzer pages.
+- **Lead distribution:** Assign leads to self or team members; optional round-robin (Team → Lead assignment). Lead Manager shows Assigned-to dropdown; new leads from forms/import get auto-assigned when round-robin is on.
+
+---
+
+## 6.12 Navigation — Where to Find What (Sidebar)
+
+| Category | Items | Purpose |
+|----------|-------|---------|
+| **Overview** | Dashboard | Home, stats, guided paths, export report |
+| **Create** | Product Analyzer, Content Studio, Content Repurposer, Creative Engine, Video Ads, Video Render, Video Studio, Image Editor, Brand Voice, Translate, AI Avatars, Meme Generator, Content Ingest, Content Library, Templates, Content Scorer, Bulk Import, Brand Kit, Music Studio, Voiceover Studio, **Forms** | Create content, assets, and forms |
+| **Manage** | Campaigns, **Funnels**, A/B Testing, Scheduler, Lead Manager, CRM Deals, Ad Platforms, Ad Performance, One-Push Publisher, Momentum, Social Publish, Email Marketing, Content Calendar, Performance, Social Planner | Campaigns, funnels, leads, deals, ads, scheduling |
+| **Intelligence** | Website Intel, **Reviews**, Platform Intel, SEO Audits, Analytics, Predictive AI, AI Agents, Competitor Spy, Customer Intel, Competitor Intel, Competitor Monitor | Intel, reviews, analytics, AI |
+| **Workspace** | Collaboration, Approvals, Export/Import, Webhooks, Landing Pages, Automations, Projects | Team, approvals, integrations, landing pages |
+| **Account** | Pricing & Plans, Creator Profile | Billing, profile |
+| **Admin** | Admin Panel | Platform admin (admin role only) |
+
+All sidebar links have matching routes; every route is wired to a real page and backend. No placeholder or fake screens.
+
 ---
 
 ## 7. User Flows
@@ -330,7 +352,7 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 
 ```
 1. Visit Landing Page → See interactive 3-step demo, value props, pricing
-2. Click "Start Free" → OAuth login (Manus or Google)
+2. Click "Start Free" → OAuth login (Google)
 3. Dashboard → See 3 guided paths:
    a. "Make a Product #1" (6 steps)
    b. "Make Someone Viral" (6 steps)
@@ -410,7 +432,7 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 | `campaign` | list, get, create, update, delete, generateStrategy | Protected | Campaign management |
 | `abTest` | list, get, create, addVariant, updateVariant, generateVariations, updateStatus | Protected | A/B testing suite |
 | `schedule` | list, create, update, delete, getOptimalTimes | Protected | Content scheduling |
-| `lead` | list, get, create, update, delete, byCampaign, bulkImport | Protected | Lead management and CRM |
+| `lead` | list, get, create, update, delete, assign, byCampaign, bulkImport, getAssignmentSetting, saveAssignmentSetting | Protected | Lead management, assignment, round-robin |
 | `analytics` | summary, list, byCampaign, record, getInsights | Protected | Performance analytics |
 
 ### 8.2 Extended Routers
@@ -468,7 +490,7 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 | Stripe (Publishable) | `VITE_STRIPE_PUBLISHABLE_KEY` | Frontend Stripe elements |
 | Stripe (Webhook) | `STRIPE_WEBHOOK_SECRET` | Webhook signature verification |
 | JWT Secret | `JWT_SECRET` | Session cookie signing |
-| OAuth | `VITE_APP_ID`, `OAUTH_SERVER_URL` | Manus authentication |
+| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | User authentication |
 | Database | `DATABASE_URL` | TiDB connection string |
 | S3 Storage | Auto-configured | File and media storage |
 
@@ -499,7 +521,7 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 
 ### 10.1 Authentication and Authorization
 
-- OAuth 2.0 via Manus identity provider (primary) and Google OAuth (optional)
+- OAuth 2.0 via Google (primary); JWT session
 - JWT-signed session cookies (HttpOnly, Secure, SameSite=Lax)
 - Role-based access control: admin and user roles at platform level
 - Team-level permissions: owner, editor, viewer roles

@@ -77,6 +77,9 @@ import {
   Monitor,
   FolderKanban,
   User,
+  GitBranch,
+  FileQuestion,
+  Star,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -113,12 +116,14 @@ const menuSections = [
       { icon: Palette, label: "Brand Kit", path: "/brand-kit" },
       { icon: Music, label: "Music Studio", path: "/music-studio" },
       { icon: Mic2, label: "Voiceover Studio", path: "/voiceover-studio" },
+      { icon: FileQuestion, label: "Forms", path: "/forms" },
     ],
   },
   {
     label: "Manage",
     items: [
       { icon: Megaphone, label: "Campaigns", path: "/campaigns" },
+      { icon: GitBranch, label: "Funnels", path: "/funnels" },
       { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
       { icon: Calendar, label: "Scheduler", path: "/scheduler" },
       { icon: Users, label: "Lead Manager", path: "/leads" },
@@ -138,6 +143,7 @@ const menuSections = [
     label: "Intelligence",
     items: [
       { icon: Globe, label: "Website Intel", path: "/intelligence" },
+      { icon: Star, label: "Reviews", path: "/reviews" },
       { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
       { icon: Search, label: "SEO Audits", path: "/seo-audits" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },

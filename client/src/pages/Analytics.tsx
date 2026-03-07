@@ -6,6 +6,7 @@ import { BarChart3, TrendingUp, Eye, MousePointer, Target, DollarSign, Loader2, 
 import { useState } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { ReportExport } from "@/components/ReportExport";
 
 export default function Analytics() {
   const { data: overview, isLoading } = trpc.analytics.summary.useQuery();
@@ -27,10 +28,13 @@ export default function Analytics() {
           <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
           <p className="text-muted-foreground text-sm mt-1">Unified view of campaign performance across all platforms with AI-driven insights.</p>
         </div>
-        <Button variant="outline" className="rounded-xl" onClick={() => { setShowInsights(true); insightsMut.mutate(); }}>
-          {insightsMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-          AI Insights
-        </Button>
+        <div className="flex gap-2">
+          <ReportExport reportType="analytics" defaultTitle="Analytics report" />
+          <Button variant="outline" className="rounded-xl" onClick={() => { setShowInsights(true); insightsMut.mutate(); }}>
+            {insightsMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+            AI Insights
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

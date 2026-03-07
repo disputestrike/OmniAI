@@ -110,6 +110,7 @@ CREATE TABLE `leads` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
+	`assignedToUserId` int,
 	`name` varchar(255),
 	`email` varchar(320),
 	`phone` varchar(32),
@@ -852,4 +853,119 @@ CREATE TABLE IF NOT EXISTS `performance_metrics` (
 	`metadata` json,
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	CONSTRAINT `performance_metrics_id` PRIMARY KEY(`id`)
+);
+
+-- Funnels, Reviews, Forms, Reports (added with 5-feature plan)
+CREATE TABLE IF NOT EXISTS `funnels` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`slug` varchar(255) NOT NULL,
+	`status` enum('draft','active','archived') NOT NULL DEFAULT 'draft',
+	`metadata` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `funnels_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `funnel_steps` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`funnelId` int NOT NULL,
+	`orderIndex` int NOT NULL DEFAULT 0,
+	`stepType` enum('landing','form','payment','thank_you') NOT NULL,
+	`title` varchar(255) NOT NULL,
+	`landingPageId` int,
+	`formId` int,
+	`stripePriceId` varchar(128),
+	`config` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `funnel_steps_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `review_sources` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`sourceType` enum('google','facebook','yelp','manual') NOT NULL,
+	`name` varchar(255),
+	`externalId` varchar(255),
+	`accessToken` text,
+	`status` enum('connected','disconnected','error') NOT NULL DEFAULT 'connected',
+	`lastSyncAt` timestamp,
+	`metadata` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `review_sources_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `reviews` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`sourceId` int NOT NULL,
+	`externalId` varchar(255),
+	`authorName` varchar(255),
+	`rating` int NOT NULL,
+	`text` text,
+	`reply` text,
+	`reviewUrl` text,
+	`reviewedAt` timestamp NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `reviews_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `forms` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`slug` varchar(255) NOT NULL,
+	`description` text,
+	`submitButtonText` varchar(64) DEFAULT 'Submit',
+	`redirectUrl` text,
+	`createLeadOnSubmit` boolean DEFAULT true,
+	`status` enum('draft','active','archived') NOT NULL DEFAULT 'draft',
+	`submissionCount` int DEFAULT 0,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `forms_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `form_fields` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`formId` int NOT NULL,
+	`orderIndex` int NOT NULL DEFAULT 0,
+	`fieldType` enum('text','email','phone','textarea','select','checkbox','number') NOT NULL,
+	`label` varchar(255) NOT NULL,
+	`placeholder` varchar(255),
+	`required` boolean DEFAULT true,
+	`options` json,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `form_fields_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `form_responses` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`formId` int NOT NULL,
+	`userId` int NOT NULL,
+	`leadId` int,
+	`data` json,
+	`ipAddress` varchar(64),
+	`userAgent` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `form_responses_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `report_snapshots` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`reportType` enum('dashboard','analytics','ad_performance','campaign') NOT NULL,
+	`title` varchar(255) NOT NULL,
+	`shareToken` varchar(64) NOT NULL,
+	`payload` json,
+	`expiresAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `report_snapshots_id` PRIMARY KEY(`id`),
+	CONSTRAINT `report_snapshots_shareToken_unique` UNIQUE(`shareToken`)
+);
+CREATE TABLE IF NOT EXISTS `assignment_settings` (
+	`userId` int NOT NULL,
+	`mode` enum('manual','round_robin') NOT NULL DEFAULT 'manual',
+	`memberOrder` json,
+	`lastAssignedIndex` int DEFAULT 0,
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `assignment_settings_userId` PRIMARY KEY(`userId`)
 );

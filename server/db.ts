@@ -38,15 +38,26 @@ import {
   repurposingProjects, InsertRepurposingProject, RepurposingProject,
   repurposedContents, InsertRepurposedContent, RepurposedContent,
   publishingCredentials, InsertPublishingCredential, PublishingCredential,
+  funnels, InsertFunnel, funnelSteps, InsertFunnelStep,
+  reviewSources, InsertReviewSource, reviews, InsertReview,
+  forms, InsertForm, formFields, InsertFormField, formResponses, InsertFormResponse,
+  reportSnapshots, InsertReportSnapshot,
+  assignmentSettings, InsertAssignmentSetting,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
+/** Railway injects MYSQL_URL when MySQL service is in the same project; app may also set DATABASE_URL. */
+function getDatabaseUrl(): string | undefined {
+  return process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PUBLIC_URL;
+}
+
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  const url = getDatabaseUrl();
+  if (!_db && url) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      _db = drizzle(url);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -1232,4 +1243,171 @@ export async function updatePublishingCredential(id: number, data: Partial<Inser
 export async function deletePublishingCredential(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(publishingCredentials).where(eq(publishingCredentials.id, id));
+}
+
+// ─── Funnels ─────────────────────────────────────────────────────────
+export async function createFunnel(data: InsertFunnel) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(funnels).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFunnelsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(funnels).where(eq(funnels.userId, userId)).orderBy(desc(funnels.updatedAt));
+}
+export async function getFunnelById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(funnels).where(eq(funnels.id, id)).limit(1);
+  return r[0];
+}
+export async function getFunnelBySlug(userId: number, slug: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(funnels).where(and(eq(funnels.userId, userId), eq(funnels.slug, slug))).limit(1);
+  return r[0];
+}
+export async function updateFunnel(id: number, data: Partial<InsertFunnel>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(funnels).set(data).where(eq(funnels.id, id));
+}
+export async function deleteFunnel(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(funnels).where(eq(funnels.id, id));
+}
+export async function createFunnelStep(data: InsertFunnelStep) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(funnelSteps).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFunnelSteps(funnelId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(funnelSteps).where(eq(funnelSteps.funnelId, funnelId)).orderBy(funnelSteps.orderIndex);
+}
+export async function updateFunnelStep(id: number, data: Partial<InsertFunnelStep>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(funnelSteps).set(data).where(eq(funnelSteps.id, id));
+}
+export async function deleteFunnelStep(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(funnelSteps).where(eq(funnelSteps.id, id));
+}
+
+// ─── Reviews / Reputation ────────────────────────────────────────────
+export async function createReviewSource(data: InsertReviewSource) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(reviewSources).values(data);
+  return { id: result[0].insertId };
+}
+export async function getReviewSourcesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(reviewSources).where(eq(reviewSources.userId, userId));
+}
+export async function updateReviewSource(id: number, data: Partial<InsertReviewSource>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(reviewSources).set(data).where(eq(reviewSources.id, id));
+}
+export async function getReviewsBySource(sourceId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(reviews).where(eq(reviews.sourceId, sourceId)).orderBy(desc(reviews.reviewedAt));
+}
+export async function getReviewsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(reviews).where(eq(reviews.userId, userId)).orderBy(desc(reviews.reviewedAt));
+}
+export async function createReview(data: InsertReview) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(reviews).values(data);
+  return { id: result[0].insertId };
+}
+export async function updateReview(id: number, data: Partial<InsertReview>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(reviews).set(data).where(eq(reviews.id, id));
+}
+
+// ─── Forms ───────────────────────────────────────────────────────────
+export async function createForm(data: InsertForm) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(forms).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFormsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(forms).where(eq(forms.userId, userId)).orderBy(desc(forms.updatedAt));
+}
+export async function getFormById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(forms).where(eq(forms.id, id)).limit(1);
+  return r[0];
+}
+export async function getFormBySlug(userId: number, slug: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(forms).where(and(eq(forms.userId, userId), eq(forms.slug, slug))).limit(1);
+  return r[0];
+}
+export async function updateForm(id: number, data: Partial<InsertForm>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(forms).set(data).where(eq(forms.id, id));
+}
+export async function deleteForm(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(forms).where(eq(forms.id, id));
+}
+export async function createFormField(data: InsertFormField) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(formFields).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFormFields(formId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(formFields).where(eq(formFields.formId, formId)).orderBy(formFields.orderIndex);
+}
+export async function updateFormField(id: number, data: Partial<InsertFormField>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(formFields).set(data).where(eq(formFields.id, id));
+}
+export async function deleteFormField(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(formFields).where(eq(formFields.id, id));
+}
+export async function createFormResponse(data: InsertFormResponse) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(formResponses).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFormResponses(formId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(formResponses).where(eq(formResponses.formId, formId)).orderBy(desc(formResponses.createdAt));
+}
+export async function updateFormResponse(id: number, data: Partial<InsertFormResponse>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(formResponses).set(data).where(eq(formResponses.id, id));
+}
+export async function incrementFormSubmissionCount(formId: number) {
+  const db = await getDb(); if (!db) return;
+  const form = await getFormById(formId);
+  if (form) await db.update(forms).set({ submissionCount: (form.submissionCount ?? 0) + 1 }).where(eq(forms.id, formId));
+}
+
+// ─── Report snapshots ───────────────────────────────────────────────
+export async function createReportSnapshot(data: InsertReportSnapshot) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(reportSnapshots).values(data);
+  return { id: result[0].insertId };
+}
+export async function getReportByShareToken(shareToken: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(reportSnapshots).where(eq(reportSnapshots.shareToken, shareToken)).limit(1);
+  return r[0];
+}
+
+// ─── Assignment settings (round-robin) ───────────────────────────────
+export async function getAssignmentSetting(userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(assignmentSettings).where(eq(assignmentSettings.userId, userId)).limit(1);
+  return r[0];
+}
+export async function upsertAssignmentSetting(userId: number, data: Partial<InsertAssignmentSetting>) {
+  const db = await getDb(); if (!db) return;
+  const existing = await getAssignmentSetting(userId);
+  if (existing) await db.update(assignmentSettings).set({ ...data, updatedAt: new Date() }).where(eq(assignmentSettings.userId, userId));
+  else await db.insert(assignmentSettings).values({ userId, mode: data.mode ?? "manual", memberOrder: data.memberOrder ?? [], lastAssignedIndex: data.lastAssignedIndex ?? 0 });
 }

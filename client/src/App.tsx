@@ -62,6 +62,10 @@ import SocialPlanner from "./pages/SocialPlanner";
 import CompetitorMonitor from "./pages/CompetitorMonitor";
 import Projects from "./pages/Projects";
 import CreatorProfile from "./pages/CreatorProfile";
+import Funnels from "./pages/Funnels";
+import Reviews from "./pages/Reviews";
+import Forms from "./pages/Forms";
+import ReportView from "./pages/ReportView";
 import AboutUs from "./pages/AboutUs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -127,6 +131,9 @@ function DashboardRouter() {
         <Route path="/competitor-monitor" component={CompetitorMonitor} />
         <Route path="/projects" component={Projects} />
         <Route path="/creator-profile" component={CreatorProfile} />
+        <Route path="/funnels" component={Funnels} />
+        <Route path="/reviews" component={Reviews} />
+        <Route path="/forms" component={Forms} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -139,6 +146,7 @@ function Router() {
       {/* Public pages */}
       <Route path="/" component={Landing} />
       <Route path="/about" component={AboutUs} />
+      <Route path="/report/:shareToken" component={ReportView} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/contact" component={Contact} />
@@ -199,6 +207,9 @@ function Router() {
       <Route path="/competitor-monitor" component={DashboardRouter} />
       <Route path="/projects" component={DashboardRouter} />
       <Route path="/creator-profile" component={DashboardRouter} />
+      <Route path="/funnels" component={DashboardRouter} />
+      <Route path="/reviews" component={DashboardRouter} />
+      <Route path="/forms" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
