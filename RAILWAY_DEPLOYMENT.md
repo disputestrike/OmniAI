@@ -62,13 +62,43 @@ Set these in Railway's Variables tab:
 | `VITE_APP_LOGO` | Logo URL | Your logo CDN URL |
 | `PORT` | Server port | Railway sets this automatically |
 
-## Database Setup
+## Database Setup (required for app to work)
 
-1. If MySQL is already in your project: in your **app service** → Variables, add:
-   - `DATABASE_URL` = `mysql://root:YOUR_MYSQL_ROOT_PASSWORD@mysql.railway.internal:3306/railway`
-   - Use the same password as your MySQL service; database name is usually `railway`.
-2. If you add MySQL via Railway: link it to the app so Railway can inject `DATABASE_URL` or `MYSQL_URL`. If the app expects `DATABASE_URL` and Railway only provides `MYSQL_URL`, add a variable `DATABASE_URL` and set it to the value of `MYSQL_URL` (private URL with `mysql.railway.internal`).
-3. **Run migrations once**: from your machine with the public MySQL URL, or from Railway CLI: `railway run pnpm exec drizzle-kit push`. Or run the SQL in `drizzle/0008_next_banshee.sql` (and any earlier migrations) in your MySQL client.
+### 1. Add variables to your **OmniAI app service**
+
+In Railway: open your **OmniAI** (app) service → **Variables** tab. Add these (create any that are missing):
+
+| Variable | Example / where to get it |
+|----------|----------------------------|
+| `DATABASE_URL` | From your MySQL service: use the **private** URL, e.g. `mysql://root:YOUR_PASSWORD@mysql.railway.internal:3306/railway`. In MySQL service → **Variables** or **Connect**, copy the URL and paste as `DATABASE_URL` in the **app** service. |
+| `JWT_SECRET` | Generate: `openssl rand -hex 32` |
+| `GOOGLE_CLIENT_ID` | Google Cloud Console → APIs & Credentials → OAuth 2.0 Client ID |
+| `GOOGLE_CLIENT_SECRET` | Same OAuth client → secret |
+| `BUILT_IN_FORGE_API_URL` | e.g. `https://api.openai.com/v1` |
+| `BUILT_IN_FORGE_API_KEY` | Your LLM API key |
+| `VITE_FRONTEND_FORGE_API_URL` | Same as above (or proxy URL) |
+| `VITE_FRONTEND_FORGE_API_KEY` | Frontend-safe key |
+| `STRIPE_SECRET_KEY` | Stripe Dashboard → API keys |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks → add endpoint → signing secret |
+
+`PORT` is set by Railway; you can leave it out.
+
+### 2. Create all tables in MySQL (one-time)
+
+The app needs tables in your MySQL database. Do **one** of the following.
+
+**Option A – Run SQL in Railway (easiest)**  
+1. In Railway, open your **MySQL** service.  
+2. Go to the **Data** or **Query** tab (or use “Query” / “MySQL console”).  
+3. Open the file **`drizzle/apply-all-migrations.sql`** in this repo and copy its full contents.  
+4. Paste into the MySQL query box and run it.  
+5. All tables (users, products, contents, campaigns, and the rest) will be created.
+
+**Option B – From your machine with Railway CLI**  
+1. Install [Railway CLI](https://docs.railway.app/develop/cli) and run `railway link` (select your project and the OmniAI service).  
+2. Run: `railway run pnpm exec drizzle-kit push`  
+3. This pushes the schema from `drizzle/schema.ts` to your Railway MySQL and creates/updates tables.
 
 ## Stripe Webhook Setup
 
