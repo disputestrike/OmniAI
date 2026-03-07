@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
+import { checkMediaSupport, getMediaErrorMessage } from "@/lib/mediaPermissions";
 import { Streamdown } from "streamdown";
 import { useLocation } from "wouter";
 
@@ -205,6 +206,11 @@ export default function AiAgents() {
 
   // Voice recording
   const startRecording = useCallback(async () => {
+    const support = checkMediaSupport();
+    if (!support.ok) {
+      toast.error(support.message);
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
@@ -255,7 +261,7 @@ export default function AiAgents() {
       timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
       toast.info("Recording... Click the mic button again to stop.");
     } catch (err) {
-      toast.error("Microphone access denied. Please allow microphone access in your browser settings.");
+      toast.error(getMediaErrorMessage(err));
     }
   }, [voiceMut]);
 

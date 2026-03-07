@@ -32,6 +32,12 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+
+  // Health check for Railway/containers (no tRPC, no DB) — use this as Healthcheck Path in Railway
+  app.get("/health", (_req, res) => {
+    res.status(200).json({ ok: true });
+  });
+
   // Security headers on all responses
   app.use(securityHeaders);
   // Stripe webhook must be registered BEFORE body parsers (needs raw body)
@@ -64,16 +70,23 @@ async function startServer() {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  const port = parseInt(process.env.PORT || "3000", 10);
+  const host = process.env.NODE_ENV === "production" ? "0.0.0.0" : undefined;
 
-  if (port !== preferredPort) {
-    console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
+  // In production (e.g. Railway), use PORT as-is and bind to 0.0.0.0 so the container accepts external traffic
+  if (process.env.NODE_ENV === "production") {
+    server.listen(port, host, () => {
+      console.log(`Server running on http://0.0.0.0:${port}/`);
+    });
+  } else {
+    const actualPort = await findAvailablePort(port);
+    if (actualPort !== port) {
+      console.log(`Port ${port} is busy, using port ${actualPort} instead`);
+    }
+    server.listen(actualPort, () => {
+      console.log(`Server running on http://localhost:${actualPort}/`);
+    });
   }
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
-  });
 }
 
 startServer().catch(console.error);

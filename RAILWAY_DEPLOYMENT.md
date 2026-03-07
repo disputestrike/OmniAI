@@ -77,6 +77,16 @@ Set these in Railway's Variables tab:
 3. Select events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`
 4. Copy the signing secret to `STRIPE_WEBHOOK_SECRET`
 
+## Healthcheck (fixes "replicas never became healthy")
+
+Railway runs a healthcheck before marking the deploy live. Set it to the lightweight HTTP endpoint:
+
+1. In Railway, go to your **OmniAI** service → **Settings**
+2. Find **Healthcheck** (or **Deploy** → **Healthcheck Path**)
+3. Set **Healthcheck Path** to: **`/health`**
+
+Do **not** use `/api/trpc/auth.me` — that goes through tRPC and can fail before the app is fully ready. The `/health` route returns `200` and `{"ok":true}` as soon as the HTTP server is listening (no DB or tRPC).
+
 ## Custom Domain
 
 1. In Railway, go to your service → Settings → Domains

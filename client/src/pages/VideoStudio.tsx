@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Video, Mic, MicOff, Camera, CameraOff, Play, Square, Share2, Download, Wand2, Copy, Trash2, Eye, Clock, FileText, Sparkles, Monitor, Smartphone, RotateCcw } from "lucide-react";
+import { checkMediaSupport, getMediaErrorMessage } from "@/lib/mediaPermissions";
 
 export default function VideoStudio() {
   const [tab, setTab] = useState("studio");
@@ -51,12 +52,19 @@ export default function VideoStudio() {
   const deleteMut = trpc.personalVideo.delete.useMutation({ onSuccess: () => { refetch(); toast.success("Deleted"); }, onError: () => toast.error("Delete failed") });
 
   const startCamera = useCallback(async () => {
+    const support = checkMediaSupport();
+    if (!support.ok) {
+      toast.error(support.message);
+      return;
+    }
     try {
       const constraints: MediaStreamConstraints = { video: cameraOn ? { width: 1280, height: 720, facingMode: "user" } : false, audio: micOn };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
-    } catch (err) { toast.error("Camera/microphone access denied. Please allow permissions."); }
+    } catch (err) {
+      toast.error(getMediaErrorMessage(err));
+    }
   }, [cameraOn, micOn]);
 
   const stopCamera = useCallback(() => {
@@ -175,7 +183,12 @@ export default function VideoStudio() {
                   {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                 </Button>
                 {!streamRef.current && !isPreviewing && (
-                  <Button onClick={startCamera}><Camera className="w-4 h-4 mr-2" /> Start Camera</Button>
+                  <>
+                    <Button onClick={startCamera}><Camera className="w-4 h-4 mr-2" /> Start Camera</Button>
+                    {typeof window !== "undefined" && !window.isSecureContext && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 w-full text-center mt-1">Camera requires HTTPS or localhost.</p>
+                    )}
+                  </>
                 )}
                 {streamRef.current && !isRecording && !isPreviewing && (
                   <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700"><div className="w-3 h-3 bg-white rounded-full mr-2" /> Record</Button>

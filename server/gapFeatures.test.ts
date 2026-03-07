@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
-// Tests that call DB list procedures; skip when DATABASE_URL is missing or DB unreachable (e.g. CI without DB)
-const hasDb = !!process.env.DATABASE_URL;
+// Tests that call DB list procedures; skip unless RUN_DB_INTEGRATION=1 (avoids timeouts when DATABASE_URL points to unreachable DB e.g. Railway from local)
+const hasDb = process.env.RUN_DB_INTEGRATION === "1" && !!process.env.DATABASE_URL;
 
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
