@@ -1,4 +1,4 @@
-# OmniMarket AI — Comprehensive Rating, Ranking & API Key Guide
+# OTOBI AI — Comprehensive Rating, Ranking & API Key Guide
 
 **Date:** March 6, 2026
 **Author:** Manus AI
@@ -27,7 +27,7 @@
 
 ### Rating Scale: 0 = Not Present, 1 = Placeholder, 2 = Framework Built, 3 = API-Ready (activates with key), 4 = Fully Working
 
-| Feature | OmniMarket AI | Predis.ai | Arcads.ai | Jasper | Copy.ai | AdCreative.ai | HubSpot | Hootsuite | Canva | Semrush |
+| Feature | OTOBI AI | Predis.ai | Arcads.ai | Jasper | Copy.ai | AdCreative.ai | HubSpot | Hootsuite | Canva | Semrush |
 |---|---|---|---|---|---|---|---|---|---|---|
 | **AI Text Generation (copy, ads, blogs)** | 4 | 4 | 2 | 4 | 4 | 3 | 2 | 1 | 2 | 3 |
 | **Content Types Variety** | 4 (22 types) | 3 (8 types) | 2 (video scripts) | 4 (50+ templates) | 4 (90+ templates) | 2 (ad copy) | 2 | 1 | 2 | 3 |
@@ -71,7 +71,7 @@ Scoring methodology: Each feature rated 0-4, weighted by market importance. Maxi
 
 | Platform | Raw Score | Percentage | Weighted Rating /10 | Category Strength |
 |---|---|---|---|---|
-| **OmniMarket AI** | 111/128 | 86.7% | **8.7/10** | Broadest feature set, most API-ready |
+| **OTOBI AI** | 111/128 | 86.7% | **8.7/10** | Broadest feature set, most API-ready |
 | **HubSpot** | 94/128 | 73.4% | 7.3/10 | Enterprise CRM + marketing automation king |
 | **Semrush** | 72/128 | 56.3% | 5.6/10 | SEO + competitive intelligence specialist |
 | **Predis.ai** | 71/128 | 55.5% | 5.5/10 | AI content + video + social posting specialist |
@@ -86,7 +86,7 @@ Scoring methodology: Each feature rated 0-4, weighted by market importance. Maxi
 
 ## 4. Honest Strengths vs Weaknesses
 
-### Where OmniMarket AI WINS (Genuine Advantages)
+### Where OTOBI AI WINS (Genuine Advantages)
 
 1. **Breadth of features** — 42 pages covering content, video, ads, CRM, intelligence, SEO, email, landing pages, automation, analytics. No single competitor covers all of this.
 2. **22 content types** — More than Predis (8), Arcads (1), AdCreative (2). Only Jasper/Copy.ai match on template variety.
@@ -97,7 +97,7 @@ Scoring methodology: Each feature rated 0-4, weighted by market importance. Maxi
 7. **Predictive AI scoring** — Only AdCreative.ai and Semrush have comparable features.
 8. **All-in-one pricing** — $0-499/mo for everything vs buying 5-6 separate tools ($500-2000/mo combined).
 
-### Where OmniMarket AI LOSES (Honest Gaps)
+### Where OTOBI AI LOSES (Honest Gaps)
 
 1. **Video rendering is API-ready, not live** — Predis.ai generates actual videos RIGHT NOW with Kling AI + Veo 3. Ours needs API keys plugged in.
 2. **Social posting is API-ready, not live** — Predis.ai actually posts to Instagram/TikTok. Ours needs OAuth app approval from Meta/TikTok (2-4 weeks).
@@ -236,13 +236,13 @@ This means the total API cost to run the entire platform is **$29-129/month**, w
 ## 8. Final Honest Verdict
 
 ### What We Built
-OmniMarket AI is the most feature-complete all-in-one AI marketing platform in its category. With 42 pages, 48 router groups, 36 database tables, 22 content types, 21 platform campaigns, full CRM, competitor intelligence, SEO audits, email marketing, landing pages, automation workflows, predictive AI, and subscription billing — no single competitor covers this much ground.
+OTOBI AI is the most feature-complete all-in-one AI marketing platform in its category. With 42 pages, 48 router groups, 36 database tables, 22 content types, 21 platform campaigns, full CRM, competitor intelligence, SEO audits, email marketing, landing pages, automation workflows, predictive AI, and subscription billing — no single competitor covers this much ground.
 
 ### What's Real vs What's Waiting
 - **Fully working NOW (no keys needed):** AI text generation (22 types), image generation, campaigns, A/B testing, scheduling, CRM, leads, analytics, competitor spy, customer intelligence, SEO audits, email marketing, landing pages, brand voice, content remixing, multi-language, predictive scoring, automation workflows, subscription billing, AI Trusted Advisor chat
 - **API-ready (activates with keys):** Video generation, voiceovers, AI avatars, social media posting, e-commerce sync, meme image generation
 
 ### The Bottom Line
-With API keys plugged in, OmniMarket AI goes from 8.7/10 to a potential **9.5/10** — surpassing every competitor in the sub-$500/month category. Without API keys, the core platform (text, images, CRM, analytics, campaigns) is already more comprehensive than Predis.ai, Arcads.ai, or AdCreative.ai individually.
+With API keys plugged in, OTOBI AI goes from 8.7/10 to a potential **9.5/10** — surpassing every competitor in the sub-$500/month category. Without API keys, the core platform (text, images, CRM, analytics, campaigns) is already more comprehensive than Predis.ai, Arcads.ai, or AdCreative.ai individually.
 
 The honest gap: We are a **platform** that needs users and iteration. Predis.ai is a **product** with 6.4M users and 5 years of refinement. The architecture is superior; the production maturity is not there yet.

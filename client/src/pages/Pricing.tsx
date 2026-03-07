@@ -334,7 +334,7 @@ export default function Pricing() {
                     </Button>
                   ) : plan.key === "enterprise" ? (
                     <Button className="w-full rounded-xl" variant="outline"
-                      onClick={() => toast.info("Contact us at sales@omnimarket.ai for enterprise pricing.")}>
+                      onClick={() => toast.info("Contact us at sales@otobiai.com for enterprise pricing.")}>
                       Contact Sales
                     </Button>
                   ) : (
@@ -356,13 +356,13 @@ export default function Pricing() {
       {/* Comparison with competitors */}
       <Card className="border-0 shadow-sm">
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-center mb-4">Why OmniMarket AI is the Best Value</h3>
+          <h3 className="text-lg font-semibold text-center mb-4">Why OTOBI AI is the Best Value</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-2 px-3 font-medium">Capability</th>
-                  <th className="text-center py-2 px-3 font-medium text-primary">OmniMarket AI<br/><span className="text-xs font-normal">from $29/mo</span></th>
+                  <th className="text-center py-2 px-3 font-medium text-primary">OTOBI AI<br/><span className="text-xs font-normal">from $29/mo</span></th>
                   <th className="text-center py-2 px-3 font-medium text-muted-foreground">Jasper<br/><span className="text-xs font-normal">$49-69/seat</span></th>
                   <th className="text-center py-2 px-3 font-medium text-muted-foreground">AdCreative<br/><span className="text-xs font-normal">$25-359/mo</span></th>
                   <th className="text-center py-2 px-3 font-medium text-muted-foreground">Omneky<br/><span className="text-xs font-normal">$99/mo</span></th>

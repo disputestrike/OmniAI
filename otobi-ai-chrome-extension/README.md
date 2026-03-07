@@ -1,6 +1,6 @@
-# OmniMarket AI - Chrome Extension
+# OTOBI AI - Chrome Extension
 
-A companion Chrome extension for the OmniMarket AI marketing platform. Analyze any webpage, extract product data, spy on competitors, generate content, and manage leads — all from your browser.
+A companion Chrome extension for the OTOBI AI marketing platform. Analyze any webpage, extract product data, spy on competitors, generate content, and manage leads — all from your browser.
 
 ## Features
 
@@ -22,20 +22,20 @@ A companion Chrome extension for the OmniMarket AI marketing platform. Analyze a
 1. Open Chrome and navigate to `chrome://extensions/`
 2. Enable "Developer mode" (toggle in top-right)
 3. Click "Load unpacked"
-4. Select this `omni-market-ai-chrome-extension` directory
+4. Select this `otobi-ai-chrome-extension` directory
 5. The extension icon will appear in your toolbar
 
 ### Production
 
 1. Create icon files (16x16, 32x32, 48x48, 128x128 PNG) in the `icons/` directory
-2. Run `zip -r omnimarket-ai-extension.zip . -x "*.md" ".git/*"` to create the package
+2. Run `zip -r otobi-ai-extension.zip . -x "*.md" ".git/*"` to create the package
 3. Upload to Chrome Web Store at https://chrome.google.com/webstore/devconsole
 
 ## Configuration
 
 Click the extension icon > Settings, or right-click the icon > Options to configure:
 
-- **API Base URL**: Your OmniMarket AI instance URL (defaults to the hosted version)
+- **API Base URL**: Your OTOBI AI instance URL (defaults to the hosted version)
 - **Default Content Type**: Default content type for quick generation
 
 ## File Structure

@@ -116,7 +116,7 @@ const workflows = [
     label: "Go Viral in 7 Days",
     icon: Flame,
     color: "bg-gradient-to-r from-orange-500 to-red-500",
-    prompt: "I want to go viral in 7 days. Walk me through a day-by-day workflow using ALL the OmniMarket tools: Day 1 - Brand Voice setup + Content creation, Day 2 - Creative assets + Video production, Day 3 - A/B test variations, Day 4 - Schedule + Publish, Day 5-7 - Monitor momentum + Optimize. Start by asking what I want to make viral.",
+    prompt: "I want to go viral in 7 days. Walk me through a day-by-day workflow using ALL the OTOBI AI tools: Day 1 - Brand Voice setup + Content creation, Day 2 - Creative assets + Video production, Day 3 - A/B test variations, Day 4 - Schedule + Publish, Day 5-7 - Monitor momentum + Optimize. Start by asking what I want to make viral.",
   },
   {
     label: "Competitor Takedown",
@@ -372,7 +372,7 @@ export default function AiAgents() {
                 <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
                   <Bot className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-semibold text-lg">OmniMarket AI Agent</h3>
+                <h3 className="font-semibold text-lg">OTOBI AI Agent</h3>
                 <p className="text-sm text-muted-foreground mt-1 max-w-lg">
                   I'm your trusted marketing advisor. I'll walk you step-by-step from idea to execution, connecting you to the right tools at every stage. Pick a workflow above or ask me anything.
                 </p>

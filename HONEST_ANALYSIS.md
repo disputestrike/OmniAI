@@ -1,4 +1,4 @@
-# HONEST ANALYSIS: OmniMarket AI vs Predis.ai
+# HONEST ANALYSIS: OTOBI AI vs Predis.ai
 
 ## Your Questions, Answered With Zero BS
 
@@ -10,9 +10,9 @@
 
 Predis.ai is a **production-deployed SaaS** with 6.4M+ users, $3.6M revenue, Semrush/Yamaha as customers, and 5 years of iteration since 2020. They have a 25-person team that has been refining their product daily for half a decade.
 
-OmniMarket AI is a **prototype/MVP** built in a single development session. The UI is functional, the architecture is solid, and the feature scope is actually broader than Predis.ai. But there is a critical difference between "feature exists in code" and "feature works at production quality with real users."
+OTOBI AI is a **prototype/MVP** built in a single development session. The UI is functional, the architecture is solid, and the feature scope is actually broader than Predis.ai. But there is a critical difference between "feature exists in code" and "feature works at production quality with real users."
 
-| Quality Dimension | OmniMarket AI | Predis.ai | Honest Gap |
+| Quality Dimension | OTOBI AI | Predis.ai | Honest Gap |
 |---|---|---|---|
 | **Feature breadth** | 40 pages, 38 tables | ~31 features | We win on scope |
 | **Feature depth** | Thin — most features call LLM and return text | Deep — years of refinement per feature | They win significantly |
@@ -35,7 +35,7 @@ OmniMarket AI is a **prototype/MVP** built in a single development session. The 
 
 Here's the feature-by-feature truth:
 
-| Predis.ai Feature | OmniMarket Has It? | But Does It Actually Work? |
+| Predis.ai Feature | OTOBI AI Has It? | But Does It Actually Work? |
 |---|---|---|
 | Text-to-Ads | Yes (Creative Engine) | Generates text/copy, NOT actual rendered ad images |
 | AI Video Ads | Yes (Video Ads page) | Generates scripts, NOT actual rendered videos |
@@ -177,7 +177,7 @@ What we'd need to build to match Predis.ai's actual production capabilities:
 
 ## THE BOTTOM LINE
 
-**OmniMarket AI is a comprehensive MVP/prototype with the broadest feature scope in the market.** The architecture is solid, the AI integration is real, and the Trusted Advisor system is genuinely innovative.
+**OTOBI AI is a comprehensive MVP/prototype with the broadest feature scope in the market.** The architecture is solid, the AI integration is real, and the Trusted Advisor system is genuinely innovative.
 
 **But Predis.ai is a production-grade product with 5 years of refinement, real video rendering, real social publishing, and 6.4M users.** They're not succeeding because of hype — they're succeeding because their tool actually renders images, actually generates videos, and actually posts to social media.
 

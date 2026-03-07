@@ -58,6 +58,7 @@ import {
   Mail,
   FileCode,
   Workflow,
+  Shuffle,
   Smile,
   UserCircle,
 } from "lucide-react";
@@ -78,6 +79,7 @@ const menuSections = [
     items: [
       { icon: Package, label: "Product Analyzer", path: "/products" },
       { icon: PenTool, label: "Content Studio", path: "/content" },
+      { icon: Shuffle, label: "Content Repurposer", path: "/content-repurposer" },
       { icon: Image, label: "Creative Engine", path: "/creatives" },
       { icon: Video, label: "Video Ads", path: "/video-ads" },
       { icon: Film, label: "Video Render", path: "/video-render" },
@@ -108,7 +110,7 @@ const menuSections = [
     items: [
       { icon: Globe, label: "Website Intel", path: "/intelligence" },
       { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
-      { icon: Search, label: "SEO Audits", path: "/seo" },
+      { icon: Search, label: "SEO Audits", path: "/seo-audits" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
@@ -171,7 +173,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
                 <Zap className="h-6 w-6 text-primary" />
               </div>
-              <span className="text-2xl font-bold tracking-tight">OmniMarket AI</span>
+              <span className="text-2xl font-bold tracking-tight">OTOBI AI</span>
             </div>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
               The ultimate AI marketing suite. Create campaigns, generate content, manage leads, and grow your business — all in one place.
@@ -250,7 +252,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
               {!isCollapsed && (
                 <div className="flex items-center gap-2 min-w-0">
                   <Zap className="h-5 w-5 text-primary shrink-0" />
-                  <span className="font-bold tracking-tight truncate text-sm">OmniMarket AI</span>
+                  <span className="font-bold tracking-tight truncate text-sm">OTOBI AI</span>
                 </div>
               )}
             </div>

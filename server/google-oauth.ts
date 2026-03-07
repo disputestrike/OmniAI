@@ -1,23 +1,14 @@
 /**
- * Google OAuth Integration
- * 
- * This module provides Google Sign-In alongside the existing Manus OAuth.
- * It requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables.
- * 
- * Flow:
- * 1. Frontend redirects to /api/auth/google
- * 2. Server redirects to Google's OAuth consent screen
- * 3. Google redirects back to /api/auth/google/callback
- * 4. Server exchanges code for tokens, gets user info
- * 5. Server creates/updates user and sets session cookie
- * 6. User is redirected to the app
+ * Google OAuth — sole authentication for OTOBI AI.
+ * Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.
+ * Flow: /api/auth/google → Google consent → /api/auth/google/callback → session cookie → app.
  */
 
 import type { Express, Request, Response } from "express";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { sdk } from "./_core/sdk";
+import { createSessionToken } from "./_core/auth";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -139,10 +130,8 @@ export function registerGoogleOAuthRoutes(app: Express) {
         return;
       }
 
-      // Create a unique openId for Google users (prefixed to avoid collision with Manus openIds)
       const googleOpenId = `google_${googleUser.id}`;
 
-      // Upsert the user
       await db.upsertUser({
         openId: googleOpenId,
         name: googleUser.name || null,
@@ -151,8 +140,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
-      // Create session token using the existing SDK
-      const sessionToken = await sdk.createSessionToken(googleOpenId, {
+      const sessionToken = await createSessionToken(googleOpenId, {
         name: googleUser.name || googleUser.email,
         expiresInMs: ONE_YEAR_MS,
       });

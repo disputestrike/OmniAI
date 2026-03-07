@@ -45,6 +45,7 @@ import CompetitorIntel from "./pages/CompetitorIntel";
 import CustomerIntel from "./pages/CustomerIntel";
 import AiAvatars from "./pages/AiAvatars";
 import MemeGenerator from "./pages/MemeGenerator";
+import ContentRepurposer from "./pages/ContentRepurposer";
 
 function DashboardRouter() {
   return (
@@ -53,6 +54,7 @@ function DashboardRouter() {
         <Route path="/dashboard" component={Home} />
         <Route path="/products" component={Products} />
         <Route path="/content" component={ContentStudio} />
+        <Route path="/content-repurposer" component={ContentRepurposer} />
         <Route path="/creatives" component={Creatives} />
         <Route path="/video-ads" component={VideoAds} />
         <Route path="/campaigns" component={Campaigns} />
@@ -104,6 +106,7 @@ function Router() {
       <Route path="/dashboard" component={DashboardRouter} />
       <Route path="/products" component={DashboardRouter} />
       <Route path="/content" component={DashboardRouter} />
+      <Route path="/content-repurposer" component={DashboardRouter} />
       <Route path="/creatives" component={DashboardRouter} />
       <Route path="/video-ads" component={DashboardRouter} />
       <Route path="/campaigns" component={DashboardRouter} />

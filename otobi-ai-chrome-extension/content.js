@@ -1,4 +1,4 @@
-// OmniMarket AI Chrome Extension - Content Script
+// OTOBI AI Chrome Extension - Content Script
 
 // Listen for messages from popup/background
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {

@@ -110,7 +110,7 @@ export default function Home() {
       {/* Hero */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome to OmniMarket AI</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome to OTOBI AI</h1>
           <p className="text-muted-foreground text-sm mt-1 max-w-xl">
             The ultimate AI marketing engine. Market anything to anybody, anywhere. Make products #1, people viral, and ideas unstoppable.
           </p>

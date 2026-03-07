@@ -3,7 +3,6 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { registerGoogleOAuthRoutes } from "../google-oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -40,9 +39,7 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
-  // Google OAuth (requires GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in env)
+  // Google OAuth only (GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET required)
   registerGoogleOAuthRoutes(app);
   // Rate limit AI-heavy endpoints (60 requests per minute per IP)
   app.use("/api/trpc/content.generate", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-gen" }));

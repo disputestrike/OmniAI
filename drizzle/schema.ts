@@ -768,3 +768,57 @@ export const customerSegments = mysqlTable("customer_segments", {
 
 export type CustomerSegment = typeof customerSegments.$inferSelect;
 export type InsertCustomerSegment = typeof customerSegments.$inferInsert;
+
+// ─── Content Repurposing Engine (video/audio → all formats) ─────────────
+export const repurposingProjects = mysqlTable("repurposing_projects", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  sourceType: mysqlEnum("sourceType", ["video_url", "video_upload", "audio_upload", "transcript_paste"]).notNull(),
+  sourceUrl: text("sourceUrl"),
+  sourceTranscript: text("sourceTranscript"),
+  status: mysqlEnum("status", ["pending", "transcribing", "generating", "completed", "failed"]).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  brandVoiceId: int("brandVoiceId"),
+  metadata: json("metadata").$type<{ duration?: number; platform?: string }>(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type RepurposingProject = typeof repurposingProjects.$inferSelect;
+export type InsertRepurposingProject = typeof repurposingProjects.$inferInsert;
+
+export const repurposedContents = mysqlTable("repurposed_contents", {
+  id: int("id").autoincrement().primaryKey(),
+  projectId: int("projectId").notNull(),
+  userId: int("userId").notNull(),
+  formatType: varchar("formatType", { length: 64 }).notNull(),
+  title: varchar("title", { length: 255 }),
+  body: text("body"),
+  status: mysqlEnum("status", ["draft", "published"]).default("draft").notNull(),
+  externalId: varchar("externalId", { length: 255 }),
+  publishedAt: timestamp("publishedAt"),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type RepurposedContent = typeof repurposedContents.$inferSelect;
+export type InsertRepurposedContent = typeof repurposedContents.$inferInsert;
+
+// ─── Native publishing credentials (Medium, Substack, WordPress) ────────
+export const publishingCredentials = mysqlTable("publishing_credentials", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  platform: mysqlEnum("platform", ["medium", "substack", "wordpress"]).notNull(),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  apiUrl: text("apiUrl"),
+  siteUrl: text("siteUrl"),
+  status: mysqlEnum("status", ["connected", "expired", "disconnected"]).default("connected").notNull(),
+  metadata: json("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PublishingCredential = typeof publishingCredentials.$inferSelect;
+export type InsertPublishingCredential = typeof publishingCredentials.$inferInsert;

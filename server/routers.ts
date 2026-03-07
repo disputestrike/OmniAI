@@ -16,6 +16,8 @@ import { getDb } from "./db";
 import { brandVoiceRouter, emailMarketingRouter, landingPageRouter, automationRouter, socialPublishRouter, videoRenderRouter, webhookRouter, imageEditorRouter, multiLanguageRouter, competitorSpyRouter, bulkImportRouter } from "./gapRouters";
 import { personalVideoRouter, competitorIntelRouter, customerIntelRouter } from "./newFeatureRouters";
 import { realVideoRouter, voiceoverRouter, avatarRouter, socialConnectionRouter, ecommerceRouter, memeRouter, creativeEngineRouter, integrationStatusRouter } from "./apiIntegrationRouters";
+import { repurposingRouter } from "./repurposingRouter";
+import { publishingRouter } from "./publishingRouter";
 
 export const appRouter = router({
   system: systemRouter,
@@ -320,7 +322,7 @@ Return a JSON object with these fields:
       message: z.string().min(1),
       history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).optional(),
     })).mutation(async ({ input }) => {
-      const systemPrompt = `You are the OmniMarket AI Marketing Agent — the most powerful marketing strategist in the world and a TRUSTED ADVISOR. You help users dominate any market, make any product #1, make any person viral, and spread any concept into mass consciousness.
+      const systemPrompt = `You are the OTOBI AI Marketing Agent — the most powerful marketing strategist in the world and a TRUSTED ADVISOR. You help users dominate any market, make any product #1, make any person viral, and spread any concept into mass consciousness.
 
 Your expertise covers:
 - Campaign strategy across all platforms (social, search, email, SMS, WhatsApp, TV, radio, print, podcasts)
@@ -339,7 +341,7 @@ Your expertise covers:
 CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
 1. NEVER leave the user hanging. After EVERY response, you MUST suggest 3-5 specific next actions they should take.
 2. ALWAYS walk users step-by-step from discovery to execution. Don't just give advice — guide them through doing it.
-3. ALWAYS reference the specific OmniMarket tools they should use for each step. The platform has these tools:
+3. ALWAYS reference the specific OTOBI AI tools they should use for each step. The platform has these tools:
    - **Product Analyzer** (/products) — analyze products, add product details
    - **Content Studio** (/content) — create 22 types of marketing content (ads, blogs, emails, social posts, SMS, WhatsApp, scripts, etc.)
    - **Creative Engine** (/creatives) — generate AI images, ad creatives, social graphics
@@ -374,7 +376,7 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
 
 4. FORMAT your next actions as a numbered list at the end of every response under a "## 🎯 Your Next Steps" heading. Each step should include:
    - What to do
-   - Which OmniMarket tool to use (with the path in parentheses)
+   - Which OTOBI AI tool to use (with the path in parentheses)
    - Why it matters
 
 5. ORCHESTRATE full workflows. If someone wants to promote a product, walk them through the COMPLETE journey:
@@ -481,7 +483,7 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       try {
         const targetUrl = input.url.startsWith("http") ? input.url : `https://${input.url}`;
         const fetchResponse = await fetch(targetUrl, {
-          headers: { "User-Agent": "Mozilla/5.0 (compatible; OmniMarketBot/1.0)" },
+          headers: { "User-Agent": "Mozilla/5.0 (compatible; OtobiAIBot/1.0)" },
           signal: AbortSignal.timeout(15000),
         });
         const html = await fetchResponse.text();
@@ -2159,7 +2161,7 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
         const timeout = setTimeout(() => controller.abort(), 15000);
         const res = await fetch(input.url, {
           signal: controller.signal,
-          headers: { "User-Agent": "OmniMarketAI-SEO-Bot/1.0" },
+          headers: { "User-Agent": "OtobiAI-SEO-Bot/1.0" },
         });
         clearTimeout(timeout);
         const html = await res.text();
@@ -2260,6 +2262,8 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
   meme: memeRouter,
   creativeEngine: creativeEngineRouter,
   integrationStatus: integrationStatusRouter,
+  repurposing: repurposingRouter,
+  publishing: publishingRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,4 +1,4 @@
-// OmniMarket AI Chrome Extension - Popup Script
+// OTOBI AI Chrome Extension - Popup Script
 
 const API_BASE = "https://omnimarket-qkdagqf5.manus.space";
 

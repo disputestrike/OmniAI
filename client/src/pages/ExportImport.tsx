@@ -44,7 +44,7 @@ export default function ExportImport() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `omnimarket-${id}-${new Date().toISOString().split("T")[0]}.json`;
+        a.download = `otobi-ai-${id}-${new Date().toISOString().split("T")[0]}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -81,7 +81,7 @@ export default function ExportImport() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `omnimarket-${id}-${new Date().toISOString().split("T")[0]}.csv`;
+        a.download = `otobi-ai-${id}-${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

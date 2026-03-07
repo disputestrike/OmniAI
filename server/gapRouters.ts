@@ -833,7 +833,7 @@ export const webhookRouter = router({
         body: JSON.stringify({
           event: "test",
           timestamp: new Date().toISOString(),
-          data: { message: "This is a test webhook from OmniMarket AI" },
+          data: { message: "This is a test webhook from OTOBI AI" },
         }),
       });
 
@@ -1012,7 +1012,7 @@ export const competitorSpyRouter = router({
     let pageContent = "";
     try {
       const response = await fetch(input.competitorUrl, {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; OmniMarketBot/1.0)" },
+        headers: { "User-Agent": "Mozilla/5.0 (compatible; OtobiAIBot/1.0)" },
       });
       pageContent = await response.text();
       // Extract relevant text (strip HTML)

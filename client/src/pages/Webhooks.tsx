@@ -106,7 +106,7 @@ export default function Webhooks() {
         <Card className="border-dashed"><CardContent className="flex flex-col items-center py-12">
           <Webhook className="w-12 h-12 text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold">No Webhooks Configured</h3>
-          <p className="text-muted-foreground mt-2 text-center max-w-md">Set up webhooks to connect OmniMarket AI with your favorite tools and automate your workflow.</p>
+          <p className="text-muted-foreground mt-2 text-center max-w-md">Set up webhooks to connect OTOBI AI with your favorite tools and automate your workflow.</p>
         </CardContent></Card>
       ) : (
         <div className="space-y-3">

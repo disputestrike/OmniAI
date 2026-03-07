@@ -122,7 +122,7 @@ const pricingPlans = [
     name: "Free",
     price: "$0",
     period: "",
-    description: "Try OmniMarket AI risk-free",
+    description: "Try OTOBI AI risk-free",
     features: [
       "5 AI content generations/month",
       "2 AI images/month",
@@ -208,9 +208,9 @@ function InteractiveDemo() {
     instagram: "\uD83D\uDD25 Stop scrolling. This changes everything.\n\nWe built the AI marketing engine that replaces your entire team.\n\n\u2714\uFE0F 22 content types\n\u2714\uFE0F 21 platforms\n\u2714\uFE0F One command center\n\nThe future of marketing isn't hiring more people.\nIt's using smarter AI.\n\n\uD83D\uDC47 Link in bio to start free\n\n#AIMarketing #MarketingAutomation #ContentCreation #DigitalMarketing #GrowthHacking",
     tiktok: "POV: You just replaced your entire marketing team with AI \uD83E\uDD2F\n\nStep 1: Describe your product\nStep 2: Pick your platforms\nStep 3: AI creates EVERYTHING\n\n- Ad copy \u2714\uFE0F\n- Video scripts \u2714\uFE0F\n- Email sequences \u2714\uFE0F\n- Social posts \u2714\uFE0F\n\nThis is not a drill. Link in bio.",
     linkedin: "I spent $50,000 on marketing agencies last year.\n\nThis year, I spent $79/month on AI.\n\nThe results? 3x better.\n\nHere's what changed:\n\n1. AI analyzes my product and competitors\n2. Generates content for 21 platforms simultaneously\n3. Optimizes based on real performance data\n4. Scales what works automatically\n\nThe marketing industry is about to change forever.\n\nWho else is making this shift?",
-    email: "Subject: Your marketing team just got an upgrade\n\nHi [First Name],\n\nWhat if you could create content for 21 platforms in the time it takes to write one email?\n\nOmniMarket AI is the all-in-one marketing engine that:\n\n\u2022 Generates ad copy, visuals, and video scripts\n\u2022 Optimizes for each platform automatically\n\u2022 Predicts performance before you publish\n\u2022 Scales your best content across channels\n\nStart your free trial today \u2192",
+    email: "Subject: Your marketing team just got an upgrade\n\nHi [First Name],\n\nWhat if you could create content for 21 platforms in the time it takes to write one email?\n\nOTOBI AI is the all-in-one marketing engine that:\n\n\u2022 Generates ad copy, visuals, and video scripts\n\u2022 Optimizes for each platform automatically\n\u2022 Predicts performance before you publish\n\u2022 Scales your best content across channels\n\nStart your free trial today \u2192",
     google: "Headline 1: AI Marketing Engine | 21 Platforms, One Tool\nHeadline 2: Replace Your Marketing Team with AI\nHeadline 3: Create Ads in Seconds, Not Hours\n\nDescription 1: Generate ad copy, visuals, video scripts & email sequences for 21+ platforms. AI-powered. Start free.\nDescription 2: 22 content types. Predictive analytics. Campaign optimization. The only marketing tool you'll ever need.",
-    youtube: "[HOOK - 0:00]\n\"I fired my entire marketing team... and replaced them with this.\"\n\n[PROBLEM - 0:15]\nMarketing across 21 platforms is impossible for one person.\nHiring a team costs $10K+/month.\nAgencies charge even more.\n\n[SOLUTION - 0:45]\nOmniMarket AI does it all.\nOne tool. Every platform. Every content type.\n\n[DEMO - 1:15]\nWatch as I generate an entire campaign in 60 seconds...\n\n[CTA - 2:30]\nLink in description. Start free. No credit card.",
+    youtube: "[HOOK - 0:00]\n\"I fired my entire marketing team... and replaced them with this.\"\n\n[PROBLEM - 0:15]\nMarketing across 21 platforms is impossible for one person.\nHiring a team costs $10K+/month.\nAgencies charge even more.\n\n[SOLUTION - 0:45]\nOTOBI AI does it all.\nOne tool. Every platform. Every content type.\n\n[DEMO - 1:15]\nWatch as I generate an entire campaign in 60 seconds...\n\n[CTA - 2:30]\nLink in description. Start free. No credit card.",
   };
 
   const handleGenerate = () => {
@@ -240,7 +240,7 @@ function InteractiveDemo() {
               See the AI in Action
             </h2>
             <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-              Pick a platform and watch OmniMarket AI generate platform-optimized content instantly.
+              Pick a platform and watch OTOBI AI generate platform-optimized content instantly.
             </p>
           </div>
         </FadeSection>
@@ -395,7 +395,7 @@ export default function Landing() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-                OmniMarket AI
+                OTOBI AI
               </span>
             </div>
             <div className="hidden md:flex items-center gap-8">
@@ -488,7 +488,7 @@ export default function Landing() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-900/10 border border-[#e8e0d4]/80 ring-1 ring-amber-500/10">
                 <img
                   src={IMAGES.heroDashboard}
-                  alt="OmniMarket AI — AI Marketing Command Center with analytics, ad creatives, and global reach"
+                  alt="OTOBI AI — AI Marketing Command Center with analytics, ad creatives, and global reach"
                   className="w-full h-auto"
                   loading="eager"
                 />
@@ -841,7 +841,7 @@ export default function Landing() {
           <FadeSection>
             <div className="text-center mb-16">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                Why OmniMarket AI
+                Why OTOBI AI
               </div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
                 Not Another Marketing Tool.{" "}
@@ -1111,7 +1111,7 @@ export default function Landing() {
                   Ready to Replace Your Entire Marketing Team?
                 </h2>
                 <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto mb-8">
-                  Join thousands of businesses using OmniMarket AI to create, publish, and optimize marketing campaigns across every platform.
+                  Join thousands of businesses using OTOBI AI to create, publish, and optimize marketing campaigns across every platform.
                 </p>
                 <Button
                   size="lg"
@@ -1136,7 +1136,7 @@ export default function Landing() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
                   <Zap className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-extrabold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">OmniMarket AI</span>
+                <span className="font-extrabold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">OTOBI AI</span>
               </div>
               <p className="text-sm text-[#6b5e4f]">
                 The ultimate AI-powered marketing suite. Market anything to anybody, instantly.
@@ -1171,7 +1171,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#e8e0d4] text-center text-sm text-[#9b8e7e]">
-            &copy; {new Date().getFullYear()} OmniMarket AI. All rights reserved.
+            &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved.
           </div>
         </div>
       </footer>

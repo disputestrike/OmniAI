@@ -322,7 +322,7 @@ export default function SocialPublish() {
               <p className="text-sm font-medium">How to connect accounts</p>
               <ol className="text-xs text-muted-foreground mt-2 space-y-1 list-decimal list-inside">
                 <li>Click "Connect" on the platform you want to add</li>
-                <li>You'll be redirected to authorize OmniMarket AI to post on your behalf</li>
+                <li>You'll be redirected to authorize OTOBI AI to post on your behalf</li>
                 <li>Once authorized, the platform will show as "Connected"</li>
                 <li>You can then publish directly from the queue or schedule posts</li>
               </ol>

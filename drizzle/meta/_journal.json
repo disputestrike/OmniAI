@@ -57,6 +57,13 @@
       "when": 1772817181167,
       "tag": "0007_clammy_pepper_potts",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1772901825705,
+      "tag": "0008_next_banshee",
+      "breakpoints": true
     }
   ]
 }

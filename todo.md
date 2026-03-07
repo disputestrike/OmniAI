@@ -1,4 +1,4 @@
-# OmniMarket AI - Project TODO
+# OTOBI AI - Project TODO
 
 ## Core Infrastructure
 - [x] Database schema (11 tables)
@@ -445,7 +445,7 @@
 - [x] Text-to-speech content readback (using browser SpeechSynthesis API)
 - [x] Competitor ad spy tool (analyze competitor landing pages and ads via LLM)
 - [x] Zapier/Make webhook endpoints for external integration
-- [x] Chrome extension manifest (full extension built in /omni-market-ai-chrome-extension/)
+- [x] Chrome extension manifest (full extension built in /otobi-ai-chrome-extension/)
 - [x] Voice-driven campaign creation (via voice input in AI chat)
 - [x] Demo video/walkthrough on landing page (interactive 3-step demo)
 - [x] Remove ALL remaining placeholder toasts
@@ -505,8 +505,8 @@
 
 ## Competitive Enhancement vs Predis.ai
 - [x] Add Predis.ai to COMPETITIVE_RANKING.md analysis (added to all matrices, ranked #3 at 5.3/10)
-- [x] Ensure feature parity or superiority vs Predis.ai (OmniMarket beats on 2.75x content types, CRM, intelligence, automation)
-- [x] Match Predis.ai pricing competitiveness (OmniMarket $0-499/mo vs Predis $19-249/mo, better value per feature)
+- [x] Ensure feature parity or superiority vs Predis.ai (OTOBI AI beats on 2.75x content types, CRM, intelligence, automation)
+- [x] Match Predis.ai pricing competitiveness (OTOBI AI $0-499/mo vs Predis $19-249/mo, better value per feature)
 
 ## REAL API INTEGRATIONS: Close ALL Gaps vs Predis.ai
 

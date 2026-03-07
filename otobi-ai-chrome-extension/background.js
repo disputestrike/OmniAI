@@ -1,4 +1,4 @@
-// OmniMarket AI Chrome Extension - Background Service Worker
+// OTOBI AI Chrome Extension - Background Service Worker
 
 const DEFAULT_API_BASE = "https://omnimarket-qkdagqf5.manus.space";
 
@@ -6,7 +6,7 @@ const DEFAULT_API_BASE = "https://omnimarket-qkdagqf5.manus.space";
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "omnimarket-analyze",
-    title: "Analyze with OmniMarket AI",
+    title: "Analyze with OTOBI AI",
     contexts: ["page", "link"],
   });
 
@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(() => {
 
   chrome.contextMenus.create({
     id: "omnimarket-translate",
-    title: "Translate with OmniMarket AI",
+    title: "Translate with OTOBI AI",
     contexts: ["selection"],
   });
 

@@ -1,8 +1,8 @@
-// ─── OmniMarket AI: Pricing & Unit Economics ────────────────────────
+// ─── OTOBI AI: Pricing & Unit Economics ────────────────────────
 // Pricing strategy based on competitive analysis:
 // Arcads.ai: $110/mo (video only), Omneky: $99/mo (ads only),
 // AdCreative.ai: $25-$359/mo, Jasper: $49-$69/seat/mo
-// OmniMarket combines ALL of these + CRM + Intelligence + Campaigns
+// OTOBI AI combines ALL of these + CRM + Intelligence + Campaigns
 //
 // API Cost Estimates Per User/Month:
 // - LLM (GPT-4.1 mini): $0.40-$1.60/1M tokens → ~$0.20-$5/user
@@ -53,7 +53,7 @@ export interface Plan {
 export const PLANS: Record<string, Plan> = {
   free: {
     name: "Free",
-    description: "Try OmniMarket AI risk-free",
+    description: "Try OTOBI AI risk-free",
     tagline: "Perfect for exploring what AI marketing can do",
     features: [
       "5 AI content generations/month",

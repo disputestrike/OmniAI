@@ -29,6 +29,9 @@ import {
   customerProfiles, InsertCustomerProfile, CustomerProfile,
   customerInteractions, InsertCustomerInteraction, CustomerInteraction,
   customerSegments, InsertCustomerSegment, CustomerSegment,
+  repurposingProjects, InsertRepurposingProject, RepurposingProject,
+  repurposedContents, InsertRepurposedContent, RepurposedContent,
+  publishingCredentials, InsertPublishingCredential, PublishingCredential,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -931,4 +934,66 @@ export async function updateCustomerSegment(id: number, data: Partial<InsertCust
 export async function deleteCustomerSegment(id: number) {
   const db = await getDb(); if (!db) return;
   await db.delete(customerSegments).where(eq(customerSegments.id, id));
+}
+
+// ─── Content Repurposing ─────────────────────────────────────────────
+export async function createRepurposingProject(data: InsertRepurposingProject) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(repurposingProjects).values(data);
+  return { id: result[0].insertId };
+}
+export async function getRepurposingProjectsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(repurposingProjects).where(eq(repurposingProjects.userId, userId)).orderBy(desc(repurposingProjects.createdAt));
+}
+export async function getRepurposingProjectById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(repurposingProjects).where(eq(repurposingProjects.id, id)).limit(1);
+  return r[0];
+}
+export async function updateRepurposingProject(id: number, data: Partial<InsertRepurposingProject>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(repurposingProjects).set(data).where(eq(repurposingProjects.id, id));
+}
+export async function createRepurposedContent(data: InsertRepurposedContent) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(repurposedContents).values(data);
+  return { id: result[0].insertId };
+}
+export async function getRepurposedContentsByProject(projectId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(repurposedContents).where(eq(repurposedContents.projectId, projectId));
+}
+export async function getRepurposedContentById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(repurposedContents).where(eq(repurposedContents.id, id)).limit(1);
+  return r[0];
+}
+export async function updateRepurposedContent(id: number, data: Partial<InsertRepurposedContent>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(repurposedContents).set(data).where(eq(repurposedContents.id, id));
+}
+
+// ─── Publishing credentials (Medium, Substack, WordPress) ─────────────
+export async function getPublishingCredentialsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(publishingCredentials).where(eq(publishingCredentials.userId, userId));
+}
+export async function getPublishingCredentialById(id: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(publishingCredentials).where(eq(publishingCredentials.id, id)).limit(1);
+  return r[0];
+}
+export async function createPublishingCredential(data: InsertPublishingCredential) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(publishingCredentials).values(data);
+  return { id: result[0].insertId };
+}
+export async function updatePublishingCredential(id: number, data: Partial<InsertPublishingCredential>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(publishingCredentials).set(data).where(eq(publishingCredentials.id, id));
+}
+export async function deletePublishingCredential(id: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(publishingCredentials).where(eq(publishingCredentials.id, id));
 }

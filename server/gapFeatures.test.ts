@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
+// Tests that call DB list procedures; skip when DATABASE_URL is missing or DB unreachable (e.g. CI without DB)
+const hasDb = !!process.env.DATABASE_URL;
+
 type AuthenticatedUser = NonNullable<TrpcContext["user"]>;
 
 function createAuthContext(role: "user" | "admin" = "user"): { ctx: TrpcContext } {
@@ -10,7 +13,7 @@ function createAuthContext(role: "user" | "admin" = "user"): { ctx: TrpcContext 
     openId: "test-user-gap",
     email: "test@example.com",
     name: "Test User",
-    loginMethod: "manus",
+    loginMethod: "google",
     role,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -48,7 +51,7 @@ function createAnonContext(): { ctx: TrpcContext } {
 // ─── Brand Voice Router Tests ────────────────────────────────────────
 
 describe("brandVoice router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.brandVoice.list();
@@ -65,7 +68,7 @@ describe("brandVoice router", () => {
 // ─── Email Campaign Router Tests ────────────────────────────────────
 
 describe("emailMarketing router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.emailMarketing.listLists();
@@ -82,7 +85,7 @@ describe("emailMarketing router", () => {
 // ─── Landing Page Router Tests ────────────────────────────────────
 
 describe("landingPageBuilder router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.landingPageBuilder.list();
@@ -99,7 +102,7 @@ describe("landingPageBuilder router", () => {
 // ─── Automation Workflow Router Tests ────────────────────────────────
 
 describe("automation router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.automation.list();
@@ -116,7 +119,7 @@ describe("automation router", () => {
 // ─── Social Publish Router Tests ────────────────────────────────────
 
 describe("socialPublish router", () => {
-  it("connections returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("connections returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.socialPublish.list();
@@ -133,7 +136,7 @@ describe("socialPublish router", () => {
 // ─── Video Render Router Tests ────────────────────────────────────
 
 describe("videoRender router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.videoRender.list();
@@ -150,7 +153,7 @@ describe("videoRender router", () => {
 // ─── Webhook Router Tests ────────────────────────────────────
 
 describe("webhooks router", () => {
-  it("list returns empty array for new user", async () => {
+  it.skipIf(!hasDb)("list returns empty array for new user", { timeout: 15000 }, async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.webhooks.list();

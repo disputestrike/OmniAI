@@ -1,4 +1,4 @@
-# OmniMarket AI — Technical Specification
+# OTOBI AI — Technical Specification
 
 **Version:** 3.0  
 **Date:** March 6, 2026  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-OmniMarket AI is a comprehensive, AI-powered marketing automation platform that enables users to create, publish, and optimize marketing campaigns across 21+ platforms from a single command center. The platform combines AI content generation (22 content types), visual creation, real video rendering, campaign management, CRM with deal tracking, predictive analytics, multi-channel publishing, competitor intelligence, customer intelligence, email marketing, landing page building, automation workflows, and team collaboration into one integrated system. Every feature is fully wired and functional — the only user-provided inputs required are API keys for external social platform integrations.
+OTOBI AI is a comprehensive, AI-powered marketing automation platform that enables users to create, publish, and optimize marketing campaigns across 21+ platforms from a single command center. The platform combines AI content generation (22 content types), visual creation, real video rendering, campaign management, CRM with deal tracking, predictive analytics, multi-channel publishing, competitor intelligence, customer intelligence, email marketing, landing page building, automation workflows, and team collaboration into one integrated system. Every feature is fully wired and functional — the only user-provided inputs required are API keys for external social platform integrations.
 
 ---
 
@@ -571,7 +571,7 @@ Comprehensive competitor tracking with profile management, deep AI analysis (SWO
 ## 13. File Structure
 
 ```
-omni-market-ai/
+otobi-ai/
 ├── client/
 │   ├── src/
 │   │   ├── pages/                  # 40 page components
@@ -686,7 +686,7 @@ pnpm test -- --reporter=verbose  # Verbose output
 
 ## 15. Chrome Extension
 
-A companion Chrome extension is available in the `/omni-market-ai-chrome-extension/` directory. It provides browser-integrated access to the platform's features:
+A companion Chrome extension is available in the `/otobi-ai-chrome-extension/` directory. It provides browser-integrated access to the platform's features:
 
 - **Page Analysis:** Analyze any webpage for marketing intelligence
 - **Product Extraction:** Extract product data from e-commerce pages
@@ -697,7 +697,7 @@ A companion Chrome extension is available in the `/omni-market-ai-chrome-extensi
 - **Side Panel:** Access AI Marketing Agent directly in the browser sidebar
 - **Context Menus:** Right-click integration for all quick actions
 
-The extension uses Manifest V3 and connects to the deployed OmniMarket AI instance.
+The extension uses Manifest V3 and connects to the deployed OTOBI AI instance.
 
 ---
 

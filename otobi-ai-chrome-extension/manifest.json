@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "OmniMarket AI - Marketing Assistant",
+  "name": "OTOBI AI - Marketing Assistant",
   "version": "1.0.0",
   "description": "AI-powered marketing assistant. Generate ads, social posts, SEO content, and more from any webpage. Analyze competitors, extract product data, and create campaigns instantly.",
   "permissions": [
@@ -20,7 +20,7 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
-    "default_title": "OmniMarket AI"
+    "default_title": "OTOBI AI"
   },
   "icons": {
     "16": "icons/icon16.png",

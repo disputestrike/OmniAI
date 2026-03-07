@@ -1,4 +1,4 @@
-# OmniMarket AI — Unit Economics & Pricing Analysis
+# OTOBI AI — Unit Economics & Pricing Analysis
 
 **Date:** March 6, 2026
 
@@ -19,7 +19,7 @@
 
 ### 1.2 Our Positioning
 
-OmniMarket AI is positioned as the **most comprehensive** AI marketing platform at **competitive pricing**. Unlike competitors who focus on one area (Arcads = video, AdCreative = images, Jasper = text), we offer **all 22 content types across 21 platforms** in one tool.
+OTOBI AI is positioned as the **most comprehensive** AI marketing platform at **competitive pricing**. Unlike competitors who focus on one area (Arcads = video, AdCreative = images, Jasper = text), we offer **all 22 content types across 21 platforms** in one tool.
 
 **Key differentiators:**
 - 22 content types (vs. 3-5 for competitors)
