@@ -2,6 +2,8 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import crypto from "crypto";
 import * as db from "./db";
+import { checkRateLimit } from "./security";
+import { TRPCError } from "@trpc/server";
 
 const reportTypeEnum = z.enum(["dashboard", "analytics", "ad_performance", "campaign"]);
 
@@ -50,7 +52,12 @@ export const reportsRouter = router({
     return { shareToken, shareUrl, expiresAt: expiresAt.toISOString() };
   }),
 
-  getByToken: publicProcedure.input(z.object({ shareToken: z.string() })).query(async ({ input }) => {
+  getByToken: publicProcedure.input(z.object({ shareToken: z.string() })).query(async ({ input, ctx }) => {
+    try {
+      checkRateLimit(ctx.req?.ip || "unknown", "report-token", 60000, 60);
+    } catch {
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many requests. Try again in a minute." });
+    }
     const report = await db.getReportByShareToken(input.shareToken);
     if (!report) return null;
     if (report.expiresAt && new Date(report.expiresAt) < new Date()) return null;

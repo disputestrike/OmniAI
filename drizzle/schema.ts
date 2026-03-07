@@ -1059,6 +1059,45 @@ export const funnelSteps = mysqlTable("funnel_steps", {
 export type FunnelStep = typeof funnelSteps.$inferSelect;
 export type InsertFunnelStep = typeof funnelSteps.$inferInsert;
 
+export const funnelStepEvents = mysqlTable("funnel_step_events", {
+  id: int("id").autoincrement().primaryKey(),
+  funnelId: int("funnelId").notNull(),
+  funnelStepId: int("funnelStepId").notNull(),
+  eventType: mysqlEnum("eventType", ["view", "complete"]).notNull(),
+  sessionId: varchar("sessionId", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FunnelStepEvent = typeof funnelStepEvents.$inferSelect;
+export type InsertFunnelStepEvent = typeof funnelStepEvents.$inferInsert;
+
+export const funnelAbTests = mysqlTable("funnel_ab_tests", {
+  id: int("id").autoincrement().primaryKey(),
+  funnelId: int("funnelId").notNull(),
+  funnelStepId: int("funnelStepId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  status: mysqlEnum("status", ["draft", "running", "completed"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type FunnelAbTest = typeof funnelAbTests.$inferSelect;
+export type InsertFunnelAbTest = typeof funnelAbTests.$inferInsert;
+
+export const funnelAbTestVariations = mysqlTable("funnel_ab_test_variations", {
+  id: int("id").autoincrement().primaryKey(),
+  testId: int("testId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  config: json("config").$type<Record<string, unknown>>(),
+  trafficPercent: int("trafficPercent").notNull().default(50),
+  views: int("views").default(0).notNull(),
+  conversions: int("conversions").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FunnelAbTestVariation = typeof funnelAbTestVariations.$inferSelect;
+export type InsertFunnelAbTestVariation = typeof funnelAbTestVariations.$inferInsert;
+
 // ─── Reviews / Reputation ────────────────────────────────────────────
 export const reviewSources = mysqlTable("review_sources", {
   id: int("id").autoincrement().primaryKey(),

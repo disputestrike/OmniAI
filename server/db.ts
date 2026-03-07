@@ -38,7 +38,8 @@ import {
   repurposingProjects, InsertRepurposingProject, RepurposingProject,
   repurposedContents, InsertRepurposedContent, RepurposedContent,
   publishingCredentials, InsertPublishingCredential, PublishingCredential,
-  funnels, InsertFunnel, funnelSteps, InsertFunnelStep,
+  funnels, InsertFunnel, funnelSteps, InsertFunnelStep, funnelStepEvents, InsertFunnelStepEvent,
+  funnelAbTests, InsertFunnelAbTest, funnelAbTestVariations, InsertFunnelAbTestVariation,
   reviewSources, InsertReviewSource, reviews, InsertReview,
   forms, InsertForm, formFields, InsertFormField, formResponses, InsertFormResponse,
   reportSnapshots, InsertReportSnapshot,
@@ -64,6 +65,18 @@ export async function getDb() {
     }
   }
   return _db;
+}
+
+/** For /api/health: returns true if DB is reachable. */
+export async function ping(): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  try {
+    await db.select().from(users).limit(1);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ─── Users ───────────────────────────────────────────────────────────
@@ -1291,6 +1304,61 @@ export async function deleteFunnelStep(id: number) {
   await db.delete(funnelSteps).where(eq(funnelSteps.id, id));
 }
 
+export async function createFunnelStepEvent(data: InsertFunnelStepEvent) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.insert(funnelStepEvents).values(data);
+}
+
+export async function getFunnelStepEventCounts(funnelId: number): Promise<{ stepId: number; views: number; completes: number }[]> {
+  const db = await getDb(); if (!db) return [];
+  const steps = await db.select().from(funnelSteps).where(eq(funnelSteps.funnelId, funnelId)).orderBy(funnelSteps.orderIndex);
+  const events = await db.select().from(funnelStepEvents).where(eq(funnelStepEvents.funnelId, funnelId));
+  return steps.map(step => {
+    const stepEvents = events.filter(e => e.funnelStepId === step.id);
+    const views = stepEvents.filter(e => e.eventType === "view").length;
+    const completes = stepEvents.filter(e => e.eventType === "complete").length;
+    return { stepId: step.id, stepTitle: step.title, orderIndex: step.orderIndex, views, completes };
+  });
+}
+
+export async function createFunnelAbTest(data: InsertFunnelAbTest) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(funnelAbTests).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFunnelAbTestsByFunnel(funnelId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(funnelAbTests).where(eq(funnelAbTests.funnelId, funnelId));
+}
+export async function getFunnelAbTestById(id: number) {
+  const db = await getDb(); if (!db) return null;
+  const rows = await db.select().from(funnelAbTests).where(eq(funnelAbTests.id, id));
+  return rows[0] ?? null;
+}
+export async function updateFunnelAbTest(id: number, data: Partial<InsertFunnelAbTest>) {
+  const db = await getDb(); if (!db) return;
+  await db.update(funnelAbTests).set(data).where(eq(funnelAbTests.id, id));
+}
+export async function createFunnelAbTestVariation(data: InsertFunnelAbTestVariation) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(funnelAbTestVariations).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFunnelAbTestVariations(testId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(funnelAbTestVariations).where(eq(funnelAbTestVariations.testId, testId));
+}
+export async function incrementFunnelAbVariationViews(id: number) {
+  const db = await getDb(); if (!db) return;
+  const rows = await db.select().from(funnelAbTestVariations).where(eq(funnelAbTestVariations.id, id));
+  if (rows[0]) await db.update(funnelAbTestVariations).set({ views: (rows[0].views ?? 0) + 1 }).where(eq(funnelAbTestVariations.id, id));
+}
+export async function incrementFunnelAbVariationConversions(id: number) {
+  const db = await getDb(); if (!db) return;
+  const rows = await db.select().from(funnelAbTestVariations).where(eq(funnelAbTestVariations.id, id));
+  if (rows[0]) await db.update(funnelAbTestVariations).set({ conversions: (rows[0].conversions ?? 0) + 1 }).where(eq(funnelAbTestVariations.id, id));
+}
+
 // ─── Reviews / Reputation ────────────────────────────────────────────
 export async function createReviewSource(data: InsertReviewSource) {
   const db = await getDb(); if (!db) throw new Error("DB unavailable");
@@ -1341,6 +1409,13 @@ export async function getFormById(id: number) {
 export async function getFormBySlug(userId: number, slug: string) {
   const db = await getDb(); if (!db) return undefined;
   const r = await db.select().from(forms).where(and(eq(forms.userId, userId), eq(forms.slug, slug))).limit(1);
+  return r[0];
+}
+
+/** Public form by slug (active only) for /form/:slug page. */
+export async function getFormBySlugPublic(slug: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(forms).where(and(eq(forms.slug, slug), eq(forms.status, "active"))).limit(1);
   return r[0];
 }
 export async function updateForm(id: number, data: Partial<InsertForm>) {

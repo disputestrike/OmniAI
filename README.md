@@ -16,6 +16,7 @@ AI-powered marketing automation platform: create content, run campaigns, manage 
 | [FEATURES.md](./FEATURES.md) | Where to find every feature (sidebar categories and routes) |
 | [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) | Deploy to Railway (env vars, MySQL, build) |
 | [COMPETITIVE_RANKING.md](./COMPETITIVE_RANKING.md) | Competitive positioning and feature comparison |
+| [PLATFORM_ASSESSMENT.md](./PLATFORM_ASSESSMENT.md) | How good we are now, what's wired, what's missing |
 
 ## Sidebar (where to find what)
 

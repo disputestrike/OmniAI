@@ -2,6 +2,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
+import { checkRateLimit } from "./security";
 
 const fieldTypeEnum = z.enum(["text", "email", "phone", "textarea", "select", "checkbox", "number"]);
 
@@ -21,7 +22,14 @@ export const formsRouter = router({
     const form = await db.getFormById(input.id);
     if (!form || form.status !== "active") return null;
     const fields = await db.getFormFields(input.id);
-    return { name: form.name, description: form.description, submitButtonText: form.submitButtonText, redirectUrl: form.redirectUrl, fields };
+    return { formId: form.id, name: form.name, description: form.description, submitButtonText: form.submitButtonText, redirectUrl: form.redirectUrl, fields };
+  }),
+
+  getPublicBySlug: publicProcedure.input(z.object({ slug: z.string() })).query(async ({ input }) => {
+    const form = await db.getFormBySlugPublic(input.slug);
+    if (!form) return null;
+    const fields = await db.getFormFields(form.id);
+    return { formId: form.id, name: form.name, description: form.description, submitButtonText: form.submitButtonText, redirectUrl: form.redirectUrl, fields };
   }),
 
   create: protectedProcedure.input(z.object({
@@ -124,6 +132,11 @@ export const formsRouter = router({
     formId: z.number(),
     data: z.record(z.string()),
   })).mutation(async ({ input, ctx }) => {
+    try {
+      checkRateLimit(ctx.req?.ip || "unknown", "form-submit", 60000, 30);
+    } catch (e) {
+      throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many submissions. Try again in a minute." });
+    }
     const form = await db.getFormById(input.formId);
     if (!form || form.status !== "active") throw new TRPCError({ code: "NOT_FOUND", message: "Form not found or inactive" });
     const response = await db.createFormResponse({

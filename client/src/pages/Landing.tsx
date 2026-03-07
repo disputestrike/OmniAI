@@ -32,6 +32,9 @@ import {
   LineChart,
   Layers,
   Workflow,
+  GitBranch,
+  FileQuestion,
+  FileBarChart,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
@@ -608,7 +611,7 @@ export default function Landing() {
               {
                 step: "03",
                 title: "Launch & Dominate",
-                description: "Publish across 21+ platforms with optimal timing. A/B test variants automatically. Track leads. Watch AI optimize and scale what works.",
+                description: "Publish across 21+ platforms with optimal timing. Run funnels and forms to convert. A/B test variants automatically. Track and assign leads. Share one-click reports with clients. Watch AI optimize and scale what works.",
                 icon: <Megaphone className="w-8 h-8" />,
                 gradient: "from-rose-400 to-purple-500",
               },
@@ -962,19 +965,59 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ═══════════════ SOCIAL PROOF: TESTIMONIALS & TRUSTED BY ═══════════════ */}
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeSection>
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-4 uppercase tracking-wider">
+                Trusted by marketers
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                What <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">people say</span>
+              </h2>
+            </div>
+          </FadeSection>
+          <div className="grid md:grid-cols-3 gap-6 mb-16">
+            {[
+              { quote: "OTOBI AI cut our content production time by 80%. One tool for everything from ads to email to social.", name: "Sarah M.", role: "Head of Marketing, SaaS" },
+              { quote: "We run funnels, forms, and reports from one place. Our clients love the one-click report links.", name: "James K.", role: "Agency Owner" },
+              { quote: "The AI CMO agent and predictive scoring help us ship winning campaigns faster. Game changer.", name: "Alex T.", role: "Growth Lead" },
+            ].map((t, i) => (
+              <FadeSection key={i} delay={i * 100}>
+                <div className="bg-white rounded-2xl p-6 border border-[#e8e0d4] shadow-sm h-full flex flex-col">
+                  <p className="text-[#6b5e4f] mb-4 flex-1">&ldquo;{t.quote}&rdquo;</p>
+                  <div><span className="font-semibold text-sm text-[#1a1a1a]">{t.name}</span><span className="text-xs text-[#9b8e7e] block">{t.role}</span></div>
+                </div>
+              </FadeSection>
+            ))}
+          </div>
+          <FadeSection delay={300}>
+            <div className="text-center">
+              <p className="text-xs font-medium text-[#9b8e7e] uppercase tracking-wider mb-6">Trusted by teams everywhere</p>
+              <div className="flex flex-wrap justify-center items-center gap-8 opacity-70">
+                {["SaaS Brands", "Agencies", "E‑commerce", "Creators", "Startups"].map((label, i) => (
+                  <span key={i} className="text-sm font-medium text-[#6b5e4f]">{label}</span>
+                ))}
+              </div>
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
       {/* ═══════════════ FULL CAPABILITIES GRID ═══════════════ */}
       <section className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeSection>
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
-                18 Integrated Modules.{" "}
+                22+ Integrated Modules.{" "}
                 <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
                   One Platform.
                 </span>
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                Everything you need to dominate marketing. Nothing you don't.
+                Everything you need to dominate marketing — create, convert, and close. Nothing you don't.
               </p>
             </div>
           </FadeSection>
@@ -986,15 +1029,19 @@ export default function Landing() {
               { icon: <Palette className="w-5 h-5" />, name: "Creative Engine", desc: "AI-generated visual ads & graphics" },
               { icon: <Video className="w-5 h-5" />, name: "Video Ad Studio", desc: "AI actors, UGC, multi-language" },
               { icon: <Megaphone className="w-5 h-5" />, name: "Campaign Builder", desc: "Multi-platform campaign management" },
+              { icon: <GitBranch className="w-5 h-5" />, name: "Funnels", desc: "Multi-step funnels: landing, form, payment, thank-you" },
+              { icon: <FileQuestion className="w-5 h-5" />, name: "Forms", desc: "Standalone forms, share link, lead capture" },
+              { icon: <Star className="w-5 h-5" />, name: "Reviews", desc: "Review sources & replies in one dashboard" },
+              { icon: <FileBarChart className="w-5 h-5" />, name: "One-Click Reports", desc: "Shareable report links for clients" },
               { icon: <BarChart3 className="w-5 h-5" />, name: "A/B Testing", desc: "Auto-optimize winning variants" },
               { icon: <Clock className="w-5 h-5" />, name: "Smart Scheduler", desc: "Optimal timing, auto-posting" },
-              { icon: <Users className="w-5 h-5" />, name: "Lead Manager & CRM", desc: "Full pipeline with deal tracking" },
+              { icon: <Users className="w-5 h-5" />, name: "Lead Manager & CRM", desc: "Pipeline, deal tracking, round-robin assignment" },
               { icon: <LineChart className="w-5 h-5" />, name: "Analytics", desc: "Cross-platform insights" },
               { icon: <Bot className="w-5 h-5" />, name: "AI Marketing Agent", desc: "Chat-based strategy advisor" },
               { icon: <Eye className="w-5 h-5" />, name: "Website Intelligence", desc: "SimilarWeb-level analysis" },
               { icon: <Search className="w-5 h-5" />, name: "SEO Audit Engine", desc: "Keywords, rank tracking, site audit" },
               { icon: <Target className="w-5 h-5" />, name: "Ad Platform Hub", desc: "Connect Meta, Google, TikTok, etc." },
-              { icon: <Star className="w-5 h-5" />, name: "Predictive AI", desc: "Score ads before launch" },
+              { icon: <TrendingUp className="w-5 h-5" />, name: "Predictive AI", desc: "Score ads before launch" },
               { icon: <Workflow className="w-5 h-5" />, name: "Approval Workflows", desc: "Team review & approval chains" },
               { icon: <Users className="w-5 h-5" />, name: "Team Collaboration", desc: "Roles, permissions, activity feed" },
               { icon: <Share2 className="w-5 h-5" />, name: "Export/Import", desc: "Bulk data, CSV, JSON" },
@@ -1021,7 +1068,7 @@ export default function Landing() {
                 onClick={handleGetStarted}
                 className="gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/25 border-0 rounded-xl"
               >
-                Try All 18 Modules Free <ArrowRight className="w-5 h-5" />
+                Try All Modules Free <ArrowRight className="w-5 h-5" />
               </Button>
             </div>
           </FadeSection>
@@ -1154,10 +1201,10 @@ export default function Landing() {
             <div>
               <h4 className="font-bold text-sm mb-3 text-[#1a1a1a]">Capabilities</h4>
               <div className="space-y-2">
-                <span className="block text-sm text-[#6b5e4f]">AI Content Generation</span>
-                <span className="block text-sm text-[#6b5e4f]">Video Ad Studio</span>
-                <span className="block text-sm text-[#6b5e4f]">Campaign Management</span>
-                <span className="block text-sm text-[#6b5e4f]">Lead CRM</span>
+                <span className="block text-sm text-[#6b5e4f]">AI Content & Creatives</span>
+                <span className="block text-sm text-[#6b5e4f]">Funnels & Forms</span>
+                <span className="block text-sm text-[#6b5e4f]">Reviews & Reports</span>
+                <span className="block text-sm text-[#6b5e4f]">Lead CRM & Campaigns</span>
               </div>
             </div>
             <div>

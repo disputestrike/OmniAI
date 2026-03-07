@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, GitBranch, ExternalLink, GripVertical, ListOrdered } from "lucide-react";
+import { Loader2, Plus, Trash2, GitBranch, ExternalLink, GripVertical, ListOrdered, BarChart3, FlaskConical } from "lucide-react";
 
 const stepTypes = [
   { value: "landing", label: "Landing page" },
@@ -25,10 +25,34 @@ export default function Funnels() {
   const [showAddStep, setShowAddStep] = useState(false);
   const [stepTitle, setStepTitle] = useState("");
   const [stepType, setStepType] = useState<"landing" | "form" | "payment" | "thank_you">("landing");
+  const [showAbTest, setShowAbTest] = useState(false);
+  const [abTestName, setAbTestName] = useState("");
+  const [abTestStepId, setAbTestStepId] = useState<number | null>(null);
+  const [abTestVariations, setAbTestVariations] = useState("Control,Variant A");
+  const [selectedAbTestId, setSelectedAbTestId] = useState<number | null>(null);
 
   const utils = trpc.useUtils();
   const { data: funnels, isLoading } = trpc.funnel.list.useQuery();
   const { data: funnelDetail } = trpc.funnel.get.useQuery({ id: selectedId! }, { enabled: !!selectedId });
+  const { data: funnelAnalytics } = trpc.funnel.getFunnelAnalytics.useQuery({ funnelId: selectedId! }, { enabled: !!selectedId });
+  const recordEventMut = trpc.funnel.recordStepEvent.useMutation({
+    onSuccess: () => { if (selectedId) utils.funnel.getFunnelAnalytics.invalidate({ funnelId: selectedId }); },
+  });
+  const { data: abTests } = trpc.funnel.listFunnelAbTests.useQuery({ funnelId: selectedId! }, { enabled: !!selectedId });
+  const { data: abTestResults } = trpc.funnel.getFunnelAbTestResults.useQuery({ testId: selectedAbTestId! }, { enabled: !!selectedAbTestId });
+  const createAbTestMut = trpc.funnel.createFunnelAbTest.useMutation({
+    onSuccess: () => {
+      setShowAbTest(false);
+      setAbTestName("");
+      setAbTestStepId(null);
+      setAbTestVariations("Control,Variant A");
+      if (selectedId) utils.funnel.listFunnelAbTests.invalidate({ funnelId: selectedId });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateAbTestStatusMut = trpc.funnel.updateFunnelAbTestStatus.useMutation({
+    onSuccess: () => { if (selectedAbTestId) utils.funnel.getFunnelAbTestResults.invalidate({ testId: selectedAbTestId }); },
+  });
   const createMut = trpc.funnel.create.useMutation({
     onSuccess: (data) => {
       toast.success("Funnel created");
@@ -183,9 +207,97 @@ export default function Funnels() {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          ) : null}
+          {selectedId && funnelDetail ? (
+            <Card className="border-0 shadow-sm mt-4">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Funnel health (drop-off)</CardTitle>
+                <p className="text-sm text-muted-foreground">Views and completions per step. Record events when visitors view or complete steps (e.g. from your funnel pages).</p>
+              </CardHeader>
+              <CardContent>
+                {funnelAnalytics && funnelAnalytics.length > 0 ? (
+                  <div className="rounded-lg border overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead><tr className="bg-muted/50 border-b"><th className="text-left p-3 font-medium">Step</th><th className="text-right p-3 font-medium">Views</th><th className="text-right p-3 font-medium">Completes</th><th className="text-right p-3 font-medium">Drop-off</th></tr></thead>
+                      <tbody>
+                        {funnelAnalytics.map((row: { stepId: number; stepTitle: string; views: number; completes: number; dropOffPercent: number }) => (
+                          <tr key={row.stepId} className="border-b last:border-0">
+                            <td className="p-3">{row.stepTitle}</td>
+                            <td className="text-right p-3">{row.views}</td>
+                            <td className="text-right p-3">{row.completes}</td>
+                            <td className="text-right p-3">{row.dropOffPercent}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No events yet. When you embed or link to your funnel steps, call <code className="bg-muted px-1 rounded">funnel.recordStepEvent</code> with <code className="bg-muted px-1 rounded">view</code> or <code className="bg-muted px-1 rounded">complete</code> to see drop-off here.</p>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
+          {selectedId && funnelDetail ? (
+            <Card className="border-0 shadow-sm mt-4">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2"><FlaskConical className="h-5 w-5" /> A/B tests</CardTitle>
+                  <Dialog open={showAbTest} onOpenChange={setShowAbTest}>
+                    <DialogTrigger asChild><Button size="sm" variant="outline"><Plus className="h-3.5 w-3.5 mr-1" />New A/B test</Button></DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader><DialogTitle>Create A/B test</DialogTitle></DialogHeader>
+                      <div className="space-y-4">
+                        <div><Label>Test name</Label><Input value={abTestName} onChange={e => setAbTestName(e.target.value)} placeholder="e.g. Headline test" /></div>
+                        <div><Label>Step to test</Label><Select value={abTestStepId?.toString() ?? ""} onValueChange={v => setAbTestStepId(v ? parseInt(v, 10) : null)}><SelectTrigger><SelectValue placeholder="Select step" /></SelectTrigger><SelectContent>{(funnelDetail.steps as { id: number; title: string }[]).sort((a, b) => (a as any).orderIndex - (b as any).orderIndex).map(s => <SelectItem key={s.id} value={String(s.id)}>{s.title}</SelectItem>)}</SelectContent></Select></div>
+                        <div><Label>Variation names (comma-separated)</Label><Input value={abTestVariations} onChange={e => setAbTestVariations(e.target.value)} placeholder="Control,Variant A,Variant B" /></div>
+                        <Button className="w-full" disabled={!abTestName.trim() || !abTestStepId || abTestVariations.split(",").filter(Boolean).length < 2 || createAbTestMut.isPending} onClick={() => createAbTestMut.mutate({ funnelId: selectedId, funnelStepId: abTestStepId!, name: abTestName.trim(), variationNames: abTestVariations.split(",").map(s => s.trim()).filter(Boolean) })}>{createAbTestMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}Create</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {abTests && abTests.length > 0 ? (
+                  <div className="space-y-2">
+                    {abTests.map((t: { id: number; name: string; status: string; funnelStepId: number }) => (
+                      <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                        <div className="flex items-center gap-2">
+                          <FlaskConical className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{t.name}</span>
+                          <Badge variant="secondary" className="text-xs">{t.status}</Badge>
+                        </div>
+                        <Button size="sm" variant="ghost" onClick={() => setSelectedAbTestId(selectedAbTestId === t.id ? null : t.id)}>Results</Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No A/B tests. Create one to test different versions of a step (e.g. headlines, CTAs).</p>
+                )}
+                {selectedAbTestId && abTestResults ? (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-medium mb-2">Results: {abTestResults.test.name}</p>
+                    <div className="rounded-lg border overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead><tr className="bg-muted/50 border-b"><th className="text-left p-2 font-medium">Variation</th><th className="text-right p-2 font-medium">Traffic %</th><th className="text-right p-2 font-medium">Views</th><th className="text-right p-2 font-medium">Conversions</th><th className="text-right p-2 font-medium">Conv. rate</th></tr></thead>
+                        <tbody>
+                          {abTestResults.variations.map((v: { id: number; name: string; trafficPercent: number; views: number; conversions: number; conversionRate: number }) => (
+                            <tr key={v.id} className="border-b last:border-0"><td className="p-2">{v.name}</td><td className="text-right p-2">{v.trafficPercent}%</td><td className="text-right p-2">{v.views}</td><td className="text-right p-2">{v.conversions}</td><td className="text-right p-2">{v.conversionRate}%</td></tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline" disabled={abTestResults.test.status === "running"} onClick={() => updateAbTestStatusMut.mutate({ testId: selectedAbTestId, status: "running" })}>Start</Button>
+                      <Button size="sm" variant="outline" disabled={abTestResults.test.status !== "running"} onClick={() => updateAbTestStatusMut.mutate({ testId: selectedAbTestId, status: "completed" })}>End test</Button>
+                    </div>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+          {!selectedId ? (
             <Card className="border-0 shadow-sm"><CardContent className="p-12 text-center text-muted-foreground">Select a funnel or create one to edit steps.</CardContent></Card>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

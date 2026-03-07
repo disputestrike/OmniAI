@@ -74,6 +74,23 @@ export function rateLimit(opts: { windowMs: number; max: number; keyPrefix?: str
   };
 }
 
+/** Call from inside a procedure to enforce rate limit by IP (e.g. form submit, report by token). Throws if over limit. */
+export function checkRateLimit(ip: string, keyPrefix: string, windowMs: number, max: number): void {
+  const key = `${keyPrefix}:${ip || "unknown"}`;
+  const now = Date.now();
+  let entry = rateLimitStore.get(key);
+  if (!entry || entry.resetAt < now) {
+    entry = { count: 0, resetAt: now + windowMs };
+    rateLimitStore.set(key, entry);
+  }
+  entry.count++;
+  if (entry.count > max) {
+    const e = new Error("Too many requests. Please try again later.") as Error & { code?: string };
+    (e as any).code = "TOO_MANY_REQUESTS";
+    throw e;
+  }
+}
+
 // ─── Security Headers ───────────────────────────────────────────────
 export function securityHeaders(req: Request, res: Response, next: NextFunction) {
   // Prevent clickjacking

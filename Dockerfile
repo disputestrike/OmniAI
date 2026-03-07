@@ -34,11 +34,12 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/drizzle ./drizzle
 
-# Set environment
+# App must run in production so the server uses static assets (dist/public), not Vite
 ENV NODE_ENV=production
 
 # Expose port (Railway sets PORT env var)
 EXPOSE ${PORT:-3000}
 
-# Start the application
+# Healthcheck: use /health (not /api/trpc/auth.me). See RAILWAY.md.
+# Start the application (server bundle has no vite dependency)
 CMD ["node", "dist/index.js"]

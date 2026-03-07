@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Globe, Eye, Sparkles, Layout, FileText, ExternalLink, GripVertical } from "lucide-react";
+import { Loader2, Plus, Trash2, Globe, Eye, Sparkles, Layout, FileText, ExternalLink, GripVertical, Video, MapPin, Calendar, PenLine } from "lucide-react";
 
 export default function LandingPageBuilder() {
   const [showCreate, setShowCreate] = useState(false);
@@ -53,6 +53,19 @@ export default function LandingPageBuilder() {
   });
 
   const components = (pageDetail?.components as any[]) || [];
+
+  const blockLibrary = [
+    { type: "video_embed", label: "Video embed", icon: Video, defaultProps: { url: "https://www.youtube.com/embed/dQw4w9WgXcQ", title: "Video" } },
+    { type: "map", label: "Map / Address", icon: MapPin, defaultProps: { address: "123 Main St, City, Country", embedUrl: "" } },
+    { type: "calendly", label: "Calendly", icon: Calendar, defaultProps: { calendlyUrl: "https://calendly.com/your-link", title: "Book a call" } },
+    { type: "signature", label: "Signature", icon: PenLine, defaultProps: { label: "Sign here" } },
+  ];
+
+  const addBlock = (block: typeof blockLibrary[0]) => {
+    if (!selectedPage || !pageDetail) return;
+    const updated = [...components, { type: block.type, props: block.defaultProps, order: components.length }];
+    updatePage.mutate({ id: selectedPage, components: updated });
+  };
 
   return (
     <div className="space-y-6">
@@ -148,6 +161,20 @@ export default function LandingPageBuilder() {
                 </div>
               </div>
 
+              {/* Block library: add blocks */}
+              <Card className="border-dashed">
+                <CardContent className="p-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase mb-2">Add block</p>
+                  <div className="flex flex-wrap gap-2">
+                    {blockLibrary.map(block => (
+                      <Button key={block.type} variant="outline" size="sm" className="gap-1.5" onClick={() => addBlock(block)}>
+                        <block.icon className="w-3.5 h-3.5" />{block.label}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Component List */}
               <div className="space-y-3">
                 {components.map((comp: any, idx: number) => (
@@ -159,9 +186,10 @@ export default function LandingPageBuilder() {
                           <Badge variant="secondary" className="uppercase text-xs">{comp.type}</Badge>
                           <span className="text-sm font-medium">{comp.props?.headline || comp.props?.title || comp.props?.text || `${comp.type} section`}</span>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => setEditingComponent(editingComponent === idx ? null : idx)}>
-                          {editingComponent === idx ? "Close" : "Edit"}
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => setEditingComponent(editingComponent === idx ? null : idx)}>{editingComponent === idx ? "Close" : "Edit"}</Button>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => { const updated = components.filter((_, i) => i !== idx); updatePage.mutate({ id: selectedPage!, components: updated }); setEditingComponent(null); }}><Trash2 className="w-3.5 h-3.5" /></Button>
+                        </div>
                       </div>
                       {editingComponent === idx && (
                         <div className="mt-4 space-y-3 border-t pt-4">

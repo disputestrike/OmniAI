@@ -80,6 +80,7 @@ import {
   GitBranch,
   FileQuestion,
   Star,
+  HelpCircle,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
@@ -172,6 +173,7 @@ const menuSections = [
     items: [
       { icon: CreditCard, label: "Pricing & Plans", path: "/pricing" },
       { icon: User, label: "Creator Profile", path: "/creator-profile" },
+      { icon: HelpCircle, label: "Help & Docs", path: "/help" },
     ],
   },
   {

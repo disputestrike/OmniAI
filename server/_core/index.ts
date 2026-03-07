@@ -33,9 +33,21 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
-  // Health check for Railway/containers (no tRPC, no DB) — use this as Healthcheck Path in Railway
+  // Liveness: no DB (use as Healthcheck Path in Railway)
   app.get("/health", (_req, res) => {
     res.status(200).json({ ok: true });
+  });
+
+  // Readiness: checks DB so deploy/monitoring can verify full stack
+  app.get("/api/health", async (_req, res) => {
+    try {
+      const { ping } = await import("../db");
+      const ok = await ping();
+      if (!ok) return res.status(503).json({ ok: false, db: "unavailable" });
+      res.status(200).json({ ok: true, db: "ok" });
+    } catch {
+      res.status(503).json({ ok: false, db: "error" });
+    }
   });
 
   // Security headers on all responses

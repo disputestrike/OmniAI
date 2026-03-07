@@ -881,6 +881,36 @@ CREATE TABLE IF NOT EXISTS `funnel_steps` (
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `funnel_steps_id` PRIMARY KEY(`id`)
 );
+CREATE TABLE IF NOT EXISTS `funnel_step_events` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`funnelId` int NOT NULL,
+	`funnelStepId` int NOT NULL,
+	`eventType` enum('view','complete') NOT NULL,
+	`sessionId` varchar(64),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `funnel_step_events_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `funnel_ab_tests` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`funnelId` int NOT NULL,
+	`funnelStepId` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`status` enum('draft','running','completed') NOT NULL DEFAULT 'draft',
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `funnel_ab_tests_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `funnel_ab_test_variations` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`testId` int NOT NULL,
+	`name` varchar(128) NOT NULL,
+	`config` json,
+	`trafficPercent` int NOT NULL DEFAULT 50,
+	`views` int NOT NULL DEFAULT 0,
+	`conversions` int NOT NULL DEFAULT 0,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `funnel_ab_test_variations_id` PRIMARY KEY(`id`)
+);
 CREATE TABLE IF NOT EXISTS `review_sources` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,

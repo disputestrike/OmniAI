@@ -72,7 +72,7 @@ export default function Forms() {
     createMut.mutate({ name: name.trim(), slug: s });
   };
 
-  const shareUrl = typeof window !== "undefined" && selectedId ? `${window.location.origin}/forms/${selectedId}` : "";
+  const shareUrl = typeof window !== "undefined" && formDetail?.slug && formDetail?.status === "active" ? `${window.location.origin}/form/${formDetail.slug}` : "";
 
   return (
     <div className="space-y-6 max-w-5xl">

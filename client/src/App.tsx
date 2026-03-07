@@ -66,6 +66,8 @@ import Funnels from "./pages/Funnels";
 import Reviews from "./pages/Reviews";
 import Forms from "./pages/Forms";
 import ReportView from "./pages/ReportView";
+import FormView from "./pages/FormView";
+import Help from "./pages/Help";
 import AboutUs from "./pages/AboutUs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -134,6 +136,7 @@ function DashboardRouter() {
         <Route path="/funnels" component={Funnels} />
         <Route path="/reviews" component={Reviews} />
         <Route path="/forms" component={Forms} />
+        <Route path="/help" component={Help} />
         <Route component={NotFound} />
       </Switch>
     </DashboardLayout>
@@ -147,6 +150,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/about" component={AboutUs} />
       <Route path="/report/:shareToken" component={ReportView} />
+      <Route path="/form/:slug" component={FormView} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/contact" component={Contact} />
@@ -210,6 +214,7 @@ function Router() {
       <Route path="/funnels" component={DashboardRouter} />
       <Route path="/reviews" component={DashboardRouter} />
       <Route path="/forms" component={DashboardRouter} />
+      <Route path="/help" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
