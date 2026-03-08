@@ -45,17 +45,10 @@ export function registerGoogleOAuthRoutes(app: Express) {
     return `${useHttps ? "https" : proto}://${host}`;
   }
 
-  // Initiate Google OAuth flow
-  app.get("/api/auth/google", async (req: Request, res: Response) => {
+  // Initiate Google OAuth flow — no DB check here; if DB is missing we'll fail at callback when upserting user
+  app.get("/api/auth/google", (req: Request, res: Response) => {
     if (!isGoogleOAuthConfigured()) {
       res.status(503).json({ error: "Google OAuth is not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Settings > Secrets." });
-      return;
-    }
-
-    const canDb = await db.ping();
-    if (!canDb) {
-      console.error("[Google OAuth] Database not reachable. Set DATABASE_URL or MYSQL_URL on this service and ensure migrations have run.");
-      res.status(503).json({ error: "Database not ready. Please configure DATABASE_URL (or MYSQL_URL) on this service and try again." });
       return;
     }
 
@@ -101,21 +94,17 @@ export function registerGoogleOAuthRoutes(app: Express) {
       return;
     }
 
-    let origin = "";
     let refCode: string | undefined;
     try {
       const stateData = JSON.parse(atob(stateParam || ""));
-      origin = stateData.origin || "";
       refCode = stateData.ref;
     } catch {
-      const host = (req.headers["x-forwarded-host"] as string) || req.get("host") || "";
-      const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol;
-      const useHttps = proto === "https" || /\.railway\.app$|\.up\.railway\.app$/i.test(host);
-      origin = `${useHttps ? "https" : proto}://${host}`;
+      // state invalid; refCode stays undefined
     }
 
+    // Must match EXACTLY the redirect_uri used when sending the user to Google (use same base as this request).
+    const callbackRedirectUri = `${base}/api/auth/google/callback`;
     const config = getGoogleConfig();
-    const redirectUri = `${origin.replace(/\/$/, "")}/api/auth/google/callback`;
 
     try {
       console.log("[Google OAuth] Exchanging code for tokens...");
@@ -126,7 +115,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
           code,
           client_id: config.clientId,
           client_secret: config.clientSecret,
-          redirect_uri: redirectUri,
+          redirect_uri: callbackRedirectUri,
           grant_type: "authorization_code",
         }),
       });
