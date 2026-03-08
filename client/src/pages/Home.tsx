@@ -7,11 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Package, Megaphone, PenTool, Users, BarChart3, Image, TrendingUp, Zap, ArrowRight,
   Sparkles, Rocket, Target, Brain, Globe, Video, Bot, Calendar, FlaskConical,
-  ShoppingCart, UserPlus, Lightbulb, Crown, Flame, Eye, Heart, MessageCircle,
+  ShoppingCart, UserPlus, Lightbulb, Crown, Flame, Eye, Heart, MessageCircle, Compass,
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ReportExport } from "@/components/ReportExport";
+import { getSuggestedNextStep, getPathProgress } from "@/config/pathBlueprint";
 
 const goalPipelines = [
   {
@@ -105,6 +106,7 @@ export default function Home() {
   const [selectedPipeline, setSelectedPipeline] = useState<string | null>(null);
 
   const activePipeline = goalPipelines.find(p => p.id === selectedPipeline);
+  const suggestedNextStep = useMemo(() => getSuggestedNextStep(stats ?? undefined), [stats]);
 
   return (
     <div className="space-y-8 max-w-6xl">
@@ -161,6 +163,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">{activePipeline.desc}</p>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">Jump to any step — do the full path or just one. You're in control.</p>
               <div className="space-y-2">
                 {activePipeline.steps.map((step, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-all">
@@ -210,24 +213,75 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Goal Pipelines - Always Visible */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {goalPipelines.map(p => (
-          <Card key={p.id} className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer group" onClick={() => { setSelectedPipeline(p.id); setWizardOpen(true); }}>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`h-10 w-10 rounded-xl ${p.bg} flex items-center justify-center`}>
-                  <p.icon className={`h-5 w-5 ${p.color}`} />
-                </div>
-                <div>
-                  <p className="font-semibold text-sm group-hover:text-primary transition-colors">{p.title}</p>
-                  <p className="text-xs text-muted-foreground">{p.steps.length} steps</p>
-                </div>
+      {/* Your next step — path-aware suggestion */}
+      {suggestedNextStep && (
+        <Card className="border-primary/20 bg-primary/5 shadow-sm">
+          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <Compass className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-xs text-muted-foreground line-clamp-2">{p.desc}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Your next step</p>
+                <p className="font-semibold text-foreground mt-0.5">{suggestedNextStep.label}</p>
+                {suggestedNextStep.description && (
+                  <p className="text-xs text-muted-foreground mt-1">{suggestedNextStep.description}</p>
+                )}
+              </div>
+            </div>
+            <Button className="rounded-xl shrink-0" onClick={() => setLocation(suggestedNextStep.path)}>
+              Go <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      {suggestedNextStep && (
+        <p className="text-xs text-muted-foreground -mt-2">Or choose a path below or use any tool from Quick Actions — your choice.</p>
+      )}
+
+      {/* Goal Pipelines — full path visible, continue or jump to any step */}
+      <div>
+        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+          <Rocket className="h-4 w-4 text-primary" />Choose your path — we show every step
+        </h2>
+        <p className="text-sm text-muted-foreground mb-3 max-w-2xl">
+          Follow the full flow (e.g. make someone viral in 6 steps) or work on just one thing — every step is one click away.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {goalPipelines.map(p => {
+            const progress = getPathProgress(stats ?? undefined, p.id as "product" | "person" | "concept");
+            const nextStep = progress ? `${progress.nextStepIndex + 1} of ${progress.totalSteps}` : null;
+            return (
+              <Card key={p.id} className="border-0 shadow-sm hover:shadow-md transition-all group">
+                <CardContent className="p-4 flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-xl ${p.bg} flex items-center justify-center shrink-0`}>
+                      <p.icon className={`h-5 w-5 ${p.color}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm group-hover:text-primary transition-colors">{p.title}</p>
+                      {nextStep && (
+                        <p className="text-xs text-muted-foreground">Step {nextStep} next</p>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{p.desc}</p>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {progress && (
+                      <Button size="sm" className="rounded-lg" onClick={(e) => { e.stopPropagation(); setLocation(progress.nextStepPath); }}>
+                        Continue — {progress.nextStepLabel}
+                        <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => { setSelectedPipeline(p.id); setWizardOpen(true); }}>
+                      See all 6 steps
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
 
       {/* Stats */}
@@ -309,11 +363,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Quick Actions */}
+      {/* Quick Actions — single-tool access, no path required */}
       <div>
         <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
           <Zap className="h-4 w-4 text-primary" />Quick Actions
         </h2>
+        <p className="text-sm text-muted-foreground mb-3">Work on just one thing? Jump straight to any tool.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {quickActions.map((action) => (
             <Card key={action.label} className="cursor-pointer hover:shadow-md transition-all group border-0 shadow-sm" onClick={() => setLocation(action.path)}>

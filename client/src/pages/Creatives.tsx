@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Image, Loader2, Sparkles, Trash2, Download, Camera, Palette, Megaphone, ShoppingBag } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const creativeTypes = [
   { value: "ad_image", label: "Ad Image (1200x628)" },
@@ -337,6 +339,8 @@ export default function Creatives() {
           )}
         </TabsContent>
       </Tabs>
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/creatives"] ?? []} maxSteps={2} />
     </div>
   );
 }

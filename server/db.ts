@@ -446,6 +446,7 @@ export async function getDashboardStats(userId: number) {
   const [contentCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(contents).where(eq(contents.userId, userId));
   const [leadCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(leads).where(eq(leads.userId, userId));
   const [creativeCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(creatives).where(eq(creatives.userId, userId));
+  const [videoAdCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(videoAds).where(eq(videoAds.userId, userId));
   const analyticsSummary = await getAnalyticsSummary(userId);
   return {
     products: productCount?.count ?? 0,
@@ -453,6 +454,7 @@ export async function getDashboardStats(userId: number) {
     contents: contentCount?.count ?? 0,
     leads: leadCount?.count ?? 0,
     creatives: creativeCount?.count ?? 0,
+    videoAds: videoAdCount?.count ?? 0,
     analytics: analyticsSummary,
   };
 }

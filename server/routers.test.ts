@@ -103,6 +103,7 @@ vi.mock("./db", () => ({
   updateLead: vi.fn(),
   deleteLead: vi.fn(),
   getLeadsByCampaign: vi.fn().mockResolvedValue([]),
+  getAssignmentSetting: vi.fn().mockResolvedValue(null),
   // Analytics
   createAnalyticsEvent: vi.fn().mockResolvedValue({ id: 1 }),
   getAnalyticsByUser: vi.fn().mockResolvedValue([]),

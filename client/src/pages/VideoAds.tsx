@@ -9,10 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Video, Loader2, Sparkles, Trash2, Clock, Film, MessageSquare, Globe, Users, Smile, Zap, Languages, Copy, Download } from "lucide-react";
-import { useState, useMemo } from "react";
+import { Video, Loader2, Sparkles, Trash2, Clock, Film, MessageSquare, Globe, Users, Smile, Zap, Languages, Copy, Download, Check } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const platformOptions = [
   { value: "tiktok", label: "TikTok", icon: "🎵" },
@@ -53,6 +57,20 @@ const languages = [
   "Mandarin", "Cantonese", "Hindi", "Arabic", "Russian", "Dutch", "Swedish", "Turkish",
   "Polish", "Thai", "Vietnamese", "Indonesian", "Malay", "Swahili", "Hebrew", "Greek",
   "Czech", "Romanian", "Hungarian", "Danish", "Norwegian", "Finnish",
+];
+
+// Fallback so AI Actor Library always shows (matches server getActors)
+const DEFAULT_ACTORS = [
+  { id: "actor_1", name: "Sarah", style: "professional", gender: "female", age: "25-35", ethnicity: "caucasian", languages: ["English", "Spanish", "French"] },
+  { id: "actor_2", name: "Marcus", style: "casual", gender: "male", age: "25-35", ethnicity: "african_american", languages: ["English", "French"] },
+  { id: "actor_3", name: "Yuki", style: "energetic", gender: "female", age: "20-30", ethnicity: "asian", languages: ["English", "Japanese", "Korean", "Mandarin"] },
+  { id: "actor_4", name: "Diego", style: "authoritative", gender: "male", age: "30-45", ethnicity: "hispanic", languages: ["English", "Spanish", "Portuguese"] },
+  { id: "actor_5", name: "Priya", style: "warm", gender: "female", age: "25-35", ethnicity: "south_asian", languages: ["English", "Hindi", "Tamil"] },
+  { id: "actor_6", name: "Alex", style: "gen_z", gender: "non_binary", age: "18-25", ethnicity: "mixed", languages: ["English", "German"] },
+  { id: "actor_7", name: "Fatima", style: "elegant", gender: "female", age: "25-40", ethnicity: "middle_eastern", languages: ["English", "Arabic", "French"] },
+  { id: "actor_8", name: "James", style: "corporate", gender: "male", age: "35-50", ethnicity: "caucasian", languages: ["English", "German", "Dutch"] },
+  { id: "actor_9", name: "Amara", style: "influencer", gender: "female", age: "20-30", ethnicity: "african", languages: ["English", "Swahili", "French"] },
+  { id: "actor_10", name: "Chen", style: "tech_savvy", gender: "male", age: "25-35", ethnicity: "asian", languages: ["English", "Mandarin", "Cantonese"] },
 ];
 
 export default function VideoAds() {
@@ -129,8 +147,16 @@ export default function VideoAds() {
   const [avatarClothing, setAvatarClothing] = useState("");
   const [avatarBackground, setAvatarBackground] = useState("studio_white");
 
+  const search = useSearch();
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
-  const actors = actorsData?.actors ?? [];
+  const actors = (actorsData?.actors?.length ? actorsData.actors : DEFAULT_ACTORS) as typeof DEFAULT_ACTORS;
+
+  // Pre-select product when opened from Products page (e.g. /video-ads?productId=5)
+  useEffect(() => {
+    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    const id = params.get("productId");
+    if (id) setProductId(id);
+  }, [search]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -329,10 +355,34 @@ export default function VideoAds() {
                 </TabsList>
 
                 <TabsContent value="basics" className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Platform(s) — select one or more</Label>
+                    <div className="flex flex-wrap gap-3 p-3 rounded-lg border bg-muted/30">
+                      {platformOptions.map(p => {
+                        const checked = platforms.includes(p.value);
+                        return (
+                          <label key={p.value} className="flex items-center gap-2 cursor-pointer">
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={(c) => {
+                                let next: string[];
+                                if (c) next = [...platforms, p.value].filter((v, i, a) => a.indexOf(v) === i).sort();
+                                else next = platforms.filter(x => x !== p.value).length ? platforms.filter(x => x !== p.value) : [p.value];
+                                setPlatforms(next);
+                                if (!next.includes(platform)) setPlatform(next[0]);
+                              }}
+                            />
+                            <span className="text-sm">{p.icon} {p.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Script will be optimized for all selected platforms.</p>
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div><Label>Platform</Label>
+                    <div><Label>Primary platform (for export)</Label>
                       <Select value={platform} onValueChange={setPlatform}><SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{platformOptions.map(p => <SelectItem key={p.value} value={p.value}>{p.icon} {p.label}</SelectItem>)}</SelectContent>
+                        <SelectContent>{platformOptions.filter(p => platforms.includes(p.value)).map(p => <SelectItem key={p.value} value={p.value}>{p.icon} {p.label}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div><Label>Duration (seconds)</Label>
@@ -423,7 +473,7 @@ export default function VideoAds() {
               </Tabs>
 
               <Button className="w-full mt-4" disabled={generateMut.isPending} onClick={() => generateMut.mutate({
-                platform: platform as any,
+                platform: (platforms[0] || platform) as any,
                 duration: Number(duration),
                 productId: productId ? Number(productId) : undefined,
                 customPrompt: customPrompt || undefined,
@@ -433,6 +483,7 @@ export default function VideoAds() {
                 avatarName: selectedActor || undefined,
                 includeSubtitles,
                 includeBroll,
+                platforms: platforms.length > 1 ? platforms : undefined,
               })}>
                 {generateMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Generating AI Video Ad...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Video Ad</>}
               </Button>
@@ -441,9 +492,8 @@ export default function VideoAds() {
         </div>
       </div>
 
-      {/* Actor Showcase */}
-      {actors.length > 0 && (
-        <Card>
+      {/* Actor Showcase — always visible with default or API actors */}
+      <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5" /> AI Actor Library</CardTitle>
             <CardDescription>Select from diverse AI actors for your video ads — or create your own custom avatar.</CardDescription>
@@ -462,7 +512,6 @@ export default function VideoAds() {
             </div>
           </CardContent>
         </Card>
-      )}
 
       {/* Video Ads List */}
       {isLoading ? (
@@ -600,6 +649,8 @@ export default function VideoAds() {
           })}
         </div>
       )}
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/video-ads"] ?? []} maxSteps={2} />
     </div>
   );
 }

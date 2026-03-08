@@ -9,9 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PenTool, Loader2, Sparkles, Trash2, Copy, Check, FileText, Search, RefreshCw, Shuffle, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const contentCategories = [
   {
@@ -105,7 +108,15 @@ export default function ContentStudio() {
   const [repurposeContentId, setRepurposeContentId] = useState<number | null>(null);
   const [repurposeTargets, setRepurposeTargets] = useState<string[]>([]);
 
+  const search = useSearch();
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
+
+  // Pre-select product when opened from Products page (e.g. /content?productId=5)
+  useEffect(() => {
+    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    const id = params.get("productId");
+    if (id) setProductId(id);
+  }, [search]);
 
   const filtered = useMemo(() => {
     if (!contents) return [];
@@ -351,6 +362,8 @@ export default function ContentStudio() {
           ))}
         </div>
       )}
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/content"] ?? []} maxSteps={3} />
     </div>
   );
 }

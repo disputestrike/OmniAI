@@ -39,7 +39,7 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
-  const host = req.get("host") || "";
+  const host = (typeof (req as any).get === "function" ? (req as any).get("host") : null) ?? (req.headers && "host" in req.headers ? (req.headers as any).host : "") ?? "";
   const isRailway = /\.railway\.app$|\.up\.railway\.app$/i.test(host);
   const secure = isSecureRequest(req) || isRailway;
 

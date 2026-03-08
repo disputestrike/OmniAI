@@ -11,6 +11,8 @@ import { Megaphone, Plus, Loader2, Sparkles, Trash2, Play, Pause, CheckCircle } 
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const objectives = [
   { value: "awareness", label: "Brand Awareness" },
@@ -179,6 +181,8 @@ export default function Campaigns() {
           })}
         </div>
       )}
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/campaigns"] ?? []} maxSteps={3} />
     </div>
   );
 }

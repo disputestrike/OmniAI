@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import JSZip from "jszip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,10 +14,14 @@ import {
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Loader2, Shuffle, Copy, Check, Send, Link2, Upload, FileAudio } from "lucide-react";
+import { Loader2, Shuffle, Copy, Check, Send, Link2, Upload, FileAudio, FileArchive } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
-type InputMode = "transcript" | "upload";
+const ZIP_VIDEO_AUDIO_EXT = /\.(mp4|webm|mp3|wav|m4a|ogg|aac|flac)$/i;
+
+type InputMode = "transcript" | "upload" | "zip";
 
 export default function ContentRepurposer() {
   const [title, setTitle] = useState("");
@@ -24,7 +29,10 @@ export default function ContentRepurposer() {
   const [sourceUrl, setSourceUrl] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("transcript");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [zipFile, setZipFile] = useState<File | null>(null);
+  const [zipBusy, setZipBusy] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const zipInputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
 
   const listProjects = trpc.repurposing.list.useQuery();
@@ -84,7 +92,44 @@ export default function ContentRepurposer() {
     }
   };
 
-  const isBusy = createProject.isPending || createFromUpload.isPending || generateAll.isPending;
+  const processZip = async () => {
+    if (!zipFile || zipBusy) return;
+    setZipBusy(true);
+    try {
+      const zip = await JSZip.loadAsync(zipFile);
+      const names = Object.keys(zip.files).filter(n => !zip.files[n].dir && ZIP_VIDEO_AUDIO_EXT.test(n));
+      const toProcess = names.slice(0, 10);
+      if (toProcess.length === 0) {
+        toast.error("No video or audio files found in the zip (e.g. .mp4, .mp3, .wav)");
+        setZipBusy(false);
+        return;
+      }
+      if (names.length > 10) toast.info(`Processing first 10 of ${names.length} files.`);
+      for (const name of toProcess) {
+        const entry = zip.files[name];
+        const blob = await entry.async("blob");
+        const base64 = await new Promise<string>((res, rej) => {
+          const r = new FileReader();
+          r.onload = () => { const s = (r.result as string)?.split(",")[1]; res(s || ""); };
+          r.onerror = rej;
+          r.readAsDataURL(blob);
+        });
+        const mime = blob.type || (name.endsWith(".mp4") ? "video/mp4" : name.endsWith(".mp3") ? "audio/mpeg" : "application/octet-stream");
+        const title = name.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ").slice(0, 80) || "From zip";
+        const { id } = await createFromUpload.mutateAsync({ title, audioBase64: base64, mimeType: mime });
+        await generateAll.mutateAsync({ projectId: id });
+      }
+      utils.repurposing.list.invalidate();
+      toast.success(`Created ${toProcess.length} project(s) from zip.`);
+      setZipFile(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Zip processing failed");
+    } finally {
+      setZipBusy(false);
+    }
+  };
+
+  const isBusy = createProject.isPending || createFromUpload.isPending || generateAll.isPending || zipBusy;
 
   return (
     <div className="space-y-8 p-6">
@@ -108,12 +153,15 @@ export default function ContentRepurposer() {
 
           <div className="grid gap-2">
             <Label>Input method</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button type="button" variant={inputMode === "transcript" ? "default" : "outline"} size="sm" onClick={() => setInputMode("transcript")}>
                 Paste transcript
               </Button>
               <Button type="button" variant={inputMode === "upload" ? "default" : "outline"} size="sm" onClick={() => setInputMode("upload")}>
                 <Upload className="h-4 w-4 mr-1" /> Upload video/audio
+              </Button>
+              <Button type="button" variant={inputMode === "zip" ? "default" : "outline"} size="sm" onClick={() => setInputMode("zip")}>
+                <FileArchive className="h-4 w-4 mr-1" /> Bulk zip
               </Button>
             </div>
           </div>
@@ -155,6 +203,29 @@ export default function ContentRepurposer() {
             </div>
           )}
 
+          {inputMode === "zip" && (
+            <div className="grid gap-2">
+              <Label>Zip file with videos/audio *</Label>
+              <input
+                ref={zipInputRef}
+                type="file"
+                accept=".zip,application/zip"
+                className="hidden"
+                onChange={e => setZipFile(e.target.files?.[0] ?? null)}
+              />
+              <Button type="button" variant="outline" onClick={() => zipInputRef.current?.click()} className="gap-2">
+                <FileArchive className="h-4 w-4" />
+                {zipFile ? zipFile.name : "Choose .zip file"}
+              </Button>
+              <p className="text-xs text-muted-foreground">We’ll create one repurposing project per video/audio inside (max 10 per zip). Supports .mp4, .webm, .mp3, .wav, .m4a.</p>
+              <Button type="button" onClick={processZip} disabled={!zipFile || zipBusy} className="gap-2">
+                {zipBusy && <Loader2 className="h-4 w-4 animate-spin" />}
+                Process zip & create projects
+              </Button>
+            </div>
+          )}
+
+          {inputMode !== "zip" && (
           <Button
             onClick={handleCreateAndGenerate}
             disabled={isBusy || !title.trim() || (inputMode === "transcript" ? !transcript.trim() : !uploadFile)}
@@ -162,6 +233,7 @@ export default function ContentRepurposer() {
             {isBusy && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
             {inputMode === "upload" ? "Upload, transcribe & generate all formats" : "Generate all formats"}
           </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -178,6 +250,8 @@ export default function ContentRepurposer() {
       </div>
 
       <PublishSection />
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/content-repurposer"] ?? []} maxSteps={2} />
     </div>
   );
 }

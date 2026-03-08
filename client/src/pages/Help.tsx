@@ -1,5 +1,9 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { HelpCircle, GitBranch, FileBarChart, FileQuestion, BarChart3, FlaskConical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { HelpCircle, GitBranch, FileBarChart, FileQuestion, BarChart3, FlaskConical, Shield, Copy, Check, Zap } from "lucide-react";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const helpSections = [
   {
@@ -58,6 +62,18 @@ const helpSections = [
 ];
 
 export default function Help() {
+  const { user } = useAuth();
+  const [copied, setCopied] = useState(false);
+
+  const copyOpenId = () => {
+    if (user?.openId) {
+      navigator.clipboard.writeText(user.openId);
+      setCopied(true);
+      toast.success("Open ID copied");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
@@ -66,6 +82,47 @@ export default function Help() {
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Quick guides for key features. Everything is wired and works end-to-end.</p>
       </div>
+
+      {/* Admin & AI setup — how to access admin and get Forge working */}
+      <Accordion type="single" collapsible className="space-y-2">
+        <AccordionItem value="admin-forge" className="border rounded-lg px-4 bg-card">
+          <AccordionTrigger className="hover:no-underline py-4">
+            <span className="flex items-center gap-2 font-medium">
+              <Shield className="h-4 w-4 text-muted-foreground" />
+              Admin access &amp; AI (Forge) setup
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="pb-4 space-y-4 text-sm text-muted-foreground">
+            <div>
+              <p className="font-medium text-foreground mb-1">Admin panel</p>
+              <p>Go to <strong>/admin</strong> (or use Admin in the sidebar). Only users with role <strong>admin</strong> can see it and use it. There is no separate admin password — your account becomes admin when its Open ID matches the <code className="bg-muted px-1 rounded">OWNER_OPEN_ID</code> environment variable.</p>
+              {user?.openId ? (
+                <div className="mt-3 p-3 rounded-lg bg-muted/50">
+                  <p className="font-medium text-foreground text-xs mb-1">Your Open ID (use this for admin)</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <code className="text-xs break-all">{user.openId}</code>
+                    <Button type="button" variant="outline" size="sm" className="shrink-0 h-8" onClick={copyOpenId}>
+                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    </Button>
+                  </div>
+                  <p className="mt-2 text-xs">In Railway → Variables, add <code className="bg-muted px-1 rounded">OWNER_OPEN_ID</code> = this value. Redeploy, then log out and log back in. The Admin item will appear in the sidebar and /admin will work.</p>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs">Sign in to see your Open ID here and use it for OWNER_OPEN_ID.</p>
+              )}
+            </div>
+            <div>
+              <p className="font-medium text-foreground mb-1 flex items-center gap-1"><Zap className="h-4 w-4" /> AI content &amp; image generation (Forge)</p>
+              <p>Content generation and AI images use the Forge LLM API. Set these in Railway (or .env):</p>
+              <ul className="list-disc list-inside mt-1 space-y-0.5">
+                <li><code className="bg-muted px-1 rounded">BUILT_IN_FORGE_API_URL</code> — e.g. your Forge/OpenAI-compatible API base URL</li>
+                <li><code className="bg-muted px-1 rounded">BUILT_IN_FORGE_API_KEY</code> — your API key</li>
+              </ul>
+              <p className="mt-2">If these are missing, you’ll see an error when generating content or images. Add them and redeploy.</p>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <Accordion type="single" collapsible className="space-y-2">
         {helpSections.map(section => (

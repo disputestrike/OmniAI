@@ -719,6 +719,7 @@ Return JSON with:
       productId: z.number().optional(),
       campaignId: z.number().optional(),
       platform: z.enum(["tiktok", "youtube_shorts", "instagram_reels", "youtube", "facebook", "snapchat", "pinterest"]),
+      platforms: z.array(z.enum(["tiktok", "youtube_shorts", "instagram_reels", "youtube", "facebook", "snapchat", "pinterest"])).optional(),
       duration: z.number().min(5).max(180).default(30),
       avatarStyle: z.string().optional(),
       avatarName: z.string().optional(),
@@ -743,7 +744,15 @@ Return JSON with:
         youtube_shorts: "YouTube Shorts (vertical 9:16, engaging, educational or entertaining, 15-60s)",
         instagram_reels: "Instagram Reels (vertical 9:16, aesthetic, lifestyle-focused, 15-90s)",
         youtube: "YouTube (horizontal 16:9, detailed, professional, 30-180s)",
+        facebook: "Facebook (square or vertical, broad appeal, 15-60s)",
+        snapchat: "Snapchat (vertical, casual, young audience, 10-30s)",
+        pinterest: "Pinterest (vertical 2:3 or 9:16, inspirational, 15-30s)",
       };
+      const platformsList = (input.platforms?.length ? input.platforms : [input.platform]) as (keyof typeof platformSpecs)[];
+      const platformPrompt =
+        platformsList.length > 1
+          ? `optimized for multiple platforms: ${platformsList.map(p => platformSpecs[p] || p).join("; ")}. Ensure the script works across all (e.g. vertical-first, punchy hook).`
+          : platformSpecs[input.platform];
 
       const response = await invokeLLM({
         messages: [
@@ -753,7 +762,7 @@ Return JSON with:
           },
           {
             role: "user",
-            content: `Create a ${input.duration}-second video ad script for ${platformSpecs[input.platform]}.
+            content: `Create a ${input.duration}-second video ad script ${platformPrompt}.
 
 ${productContext}
 ${input.customPrompt ? `Additional direction: ${input.customPrompt}` : ""}
@@ -824,7 +833,11 @@ Return JSON with:
         duration: input.duration,
         thumbnailUrl: thumbnailUrl ?? null,
         status: "completed",
-        metadata: { hook: videoData.hook, cta: videoData.cta },
+        metadata: {
+          hook: videoData.hook,
+          cta: videoData.cta,
+          ...(platformsList.length > 1 && { platforms: platformsList }),
+        },
       });
 
       return { id: result.id, ...videoData, thumbnailUrl };

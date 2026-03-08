@@ -1,8 +1,14 @@
 import { z } from "zod";
+import { ENV } from "./env";
 import { notifyOwner } from "./notification";
-import { adminProcedure, publicProcedure, router } from "./trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./trpc";
 
 export const systemRouter = router({
+  /** Whether Forge LLM/image API is configured (so UI can show a friendly message if not). */
+  forgeConfigured: protectedProcedure.query(() => ({
+    configured: !!(ENV.forgeApiUrl?.trim() && ENV.forgeApiKey?.trim()),
+  })),
+
   health: publicProcedure
     .input(
       z.object({

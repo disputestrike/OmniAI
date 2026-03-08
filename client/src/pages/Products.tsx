@@ -7,11 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, Plus, Loader2, Sparkles, Trash2, ExternalLink, Tag, Target, Lightbulb, MessageSquare, Store, ShoppingCart, Download, RefreshCw, Image as ImageIcon } from "lucide-react";
+import { Package, Plus, Loader2, Sparkles, Trash2, ExternalLink, Tag, Target, Lightbulb, MessageSquare, Store, ShoppingCart, Download, RefreshCw, Image as ImageIcon, PenTool, Video } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
+import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 export default function Products() {
+  const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: products, isLoading } = trpc.product.list.useQuery();
   const createMut = trpc.product.create.useMutation({ onSuccess: () => { utils.product.list.invalidate(); setOpen(false); resetForm(); toast.success("Product added"); } });
@@ -164,6 +168,12 @@ export default function Products() {
                         {isExpanded ? "Hide" : "View"} Analysis
                       </Button>
                     )}
+                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setLocation(`/content?productId=${product.id}`)}>
+                      <PenTool className="h-3 w-3 mr-1" />Generate content
+                    </Button>
+                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setLocation(`/video-ads?productId=${product.id}`)}>
+                      <Video className="h-3 w-3 mr-1" />Create video ad
+                    </Button>
                     <Button size="sm" variant="outline" className="rounded-lg" disabled={generatePhotoMut.isPending}
                       onClick={() => generatePhotoMut.mutate({ productName: product.name, scenes: ["white background studio", "lifestyle setting"], count: 2 })}>
                       {generatePhotoMut.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}
@@ -254,6 +264,8 @@ export default function Products() {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/products"] ?? []} maxSteps={3} />
     </div>
   );
 }
