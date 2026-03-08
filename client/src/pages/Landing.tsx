@@ -49,6 +49,42 @@ const IMAGES = {
   multichannel: "https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/photo-team-collab-9cvSAsb2b2Gvyz4VdD97ZD.webp",
 };
 
+/** Replace with your own CDN URLs: photorealistic example creatives (people, products, UGC-style) for hero strip. */
+const HERO_CREATIVES = [
+  { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=200&fit=crop", alt: "Creator" },
+  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&h=200&fit=crop", alt: "Product" },
+  { src: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop", alt: "Professional" },
+  { src: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=200&h=200&fit=crop", alt: "Team" },
+  { src: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&h=200&fit=crop", alt: "Analytics" },
+];
+
+/** Replace with real OTOBI-generated outputs: one image + label per tile. */
+const EXAMPLE_CREATIVES = [
+  { src: IMAGES.adGrid, label: "Ad creatives" },
+  { src: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=300&h=300&fit=crop", label: "Social posts" },
+  { src: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=300&h=300&fit=crop", label: "UGC style" },
+  { src: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop", label: "Product ads" },
+  { src: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=300&fit=crop", label: "Video stills" },
+  { src: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=300&h=300&fit=crop", label: "Campaigns" },
+];
+
+/** Circular headshots for testimonials. Replace with real customer photos. */
+const TESTIMONIAL_AVATARS = [
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+];
+
+/** AI actor headshots for Video section. Replace with your AI avatar outputs. */
+const AI_ACTOR_AVATARS = [
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&h=120&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=120&h=120&fit=crop&crop=face",
+];
+
 /* ─── Animated counter hook ─── */
 function useCounter(end: number, duration = 2000, start = 0) {
   const [count, setCount] = useState(start);
@@ -124,7 +160,7 @@ const pricingPlans = [
   {
     name: "Free",
     price: "$0",
-    period: "",
+    period: "/month",
     description: "Try OTOBI AI risk-free",
     features: [
       "5 AI content generations/month",
@@ -143,7 +179,7 @@ const pricingPlans = [
     features: [
       "50 AI content generations/month",
       "15 AI images/month",
-      "All 14 platforms",
+      "All 14+ platforms",
       "Scheduler & A/B testing",
       "AI marketing agent",
     ],
@@ -383,10 +419,6 @@ export default function Landing() {
     window.location.href = "/api/auth/google";
   };
 
-  const stat1 = useCounter(22, 1500);
-  const stat2 = useCounter(21, 1500);
-  const stat3 = useCounter(30, 1500);
-
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-[#1a1a1a]">
       {/* ═══════════════ NAVIGATION ═══════════════ */}
@@ -435,24 +467,17 @@ export default function Landing() {
               </div>
             </FadeSection>
             <FadeSection delay={100}>
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight leading-[1.08] mb-6">
-                Market{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                  Anything
-                </span>{" "}
-                to{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                  Anyone
-                </span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] mb-6">
+                Your Marketing Team.
                 <br />
-                <span className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#6b5e4f]">
-                  Across Every Platform, Instantly
+                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
+                  One Subscription.
                 </span>
               </h1>
             </FadeSection>
             <FadeSection delay={200}>
               <p className="text-lg sm:text-xl text-[#6b5e4f] max-w-2xl mx-auto mb-8 leading-relaxed">
-                One AI creates your ads, videos, blogs, SEO, emails, and social posts — then publishes across 21+ platforms. From product to viral campaign in minutes.
+                One AI creates your ads, videos, blogs, SEO, emails, and social posts — then publishes across 21+ platforms. From product URL to live campaign in minutes.
               </p>
             </FadeSection>
             <FadeSection delay={300}>
@@ -480,7 +505,21 @@ export default function Landing() {
                 <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Continue with Google
               </button>
-              <p className="text-sm text-[#9b8e7e] mt-3">No credit card required. Free plan available forever.</p>
+              <p className="text-sm text-[#9b8e7e] mt-3">✓ Free plan forever · No credit card required · Cancel anytime</p>
+            </FadeSection>
+            {/* Photorealistic example creatives — people & real outputs only */}
+            <FadeSection delay={350}>
+              <div className="flex flex-wrap justify-center gap-3 mt-10 mb-6">
+                {HERO_CREATIVES.map((img, i) => (
+                  <div
+                    key={i}
+                    className="rounded-2xl overflow-hidden border-2 border-white shadow-xl shadow-amber-900/10 ring-1 ring-[#e8e0d4] transition-transform hover:scale-105"
+                    style={{ transform: `rotate(${[-2, 1.5, -1, 2, -1.5][i] ?? 0}deg)` }}
+                  >
+                    <img src={img.src} alt={img.alt} className="w-20 h-20 sm:w-24 sm:h-24 object-cover" loading="lazy" />
+                  </div>
+                ))}
+              </div>
             </FadeSection>
           </div>
 
@@ -514,60 +553,103 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════════════ STATS BAR ═══════════════ */}
-      <section className="py-12 bg-gradient-to-r from-amber-50/80 via-[#FDFBF7] to-orange-50/80 border-y border-[#e8e0d4]/50">
+      {/* ═══════════════ STATS BAR (dark band) ═══════════════ */}
+      <section className="py-10 bg-[#1a1a1a] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div ref={stat1.ref}>
-              <div className="text-4xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{stat1.count}+</div>
-              <div className="text-sm text-[#6b5e4f] mt-1 font-medium">Content Types</div>
-            </div>
-            <div ref={stat2.ref}>
-              <div className="text-4xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{stat2.count}+</div>
-              <div className="text-sm text-[#6b5e4f] mt-1 font-medium">Platforms</div>
-            </div>
-            <div ref={stat3.ref}>
-              <div className="text-4xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">{stat3.count}+</div>
-              <div className="text-sm text-[#6b5e4f] mt-1 font-medium">Languages</div>
-            </div>
-            <div>
-              <div className="text-4xl font-black bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">10x</div>
-              <div className="text-sm text-[#6b5e4f] mt-1 font-medium">Faster Than Manual</div>
-            </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">347%</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Avg. ROI Increase</div></div>
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">12x</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Return on Ad Spend</div></div>
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">21+</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Platforms Published</div></div>
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">22</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Content Types</div></div>
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">89K</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Leads Generated</div></div>
+            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">10x</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Faster Than Manual</div></div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ AD EXAMPLES SHOWCASE ═══════════════ */}
-      <section className="py-16 lg:py-24 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ═══════════════ STACK KILLER — $725 vs $79 ═══════════════ */}
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/40">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeSection>
             <div className="text-center mb-12">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">The Real ROI</p>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
-                AI Creates <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Scroll-Stopping Ads</span> in Seconds
+                Stop Paying $500+/month
+                <br />
+                <span className="text-[#6b5e4f] font-bold">for 6 Separate Tools</span>
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                From fashion to SaaS, food to real estate — our AI generates professional ad creatives for every industry and platform.
+                Every tool you're currently paying for is already built into OTOBI AI — at a fraction of the combined cost.
               </p>
             </div>
           </FadeSection>
-          <FadeSection delay={200}>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-900/10 border border-[#e8e0d4]">
-              <img
-                src={IMAGES.adGrid}
-                alt="Grid of 12 AI-generated marketing ad creatives across different industries"
-                className="w-full h-auto"
-                loading="lazy"
-              />
+          <FadeSection delay={100}>
+            <div className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
+              <div className="bg-white rounded-2xl border border-[#e8e0d4] p-6 shadow-lg w-full max-w-sm">
+                <p className="text-xs font-semibold text-[#9b8e7e] uppercase mb-4">Your stack total</p>
+                <ul className="space-y-2 text-sm">
+                  {["Jasper AI — $99/mo", "AdCreative.ai — $129/mo", "Hootsuite — $99/mo", "HubSpot CRM — $50/mo", "SimilarWeb — $249/mo", "Unbounce — $99/mo"].map((line, i) => (
+                    <li key={i} className="flex justify-between text-[#6b5e4f]">
+                      <span className="line-through">{line.split("—")[0].trim()}</span>
+                      <span className="line-through">{line.split("—")[1]}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-4 pt-4 border-t border-[#e8e0d4] text-lg font-black text-[#1a1a1a]">$725/month</p>
+              </div>
+              <div className="text-2xl text-amber-500 font-bold">→</div>
+              <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-8 text-white shadow-xl text-center w-full max-w-sm">
+                <p className="text-sm font-semibold opacity-90 uppercase tracking-wider mb-1">OTOBI AI PRO</p>
+                <p className="text-4xl font-black mb-1">$79<span className="text-lg font-bold opacity-90">/month</span></p>
+                <p className="text-sm font-medium opacity-95">Everything included</p>
+                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 text-sm font-bold">
+                  <Check className="w-4 h-4" /> Save $646/month — 89% less than your current stack
+                </div>
+              </div>
             </div>
           </FadeSection>
-          <FadeSection delay={300}>
-            <div className="text-center mt-8">
-              <Button
-                size="lg"
-                onClick={handleGetStarted}
-                className="gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/25 border-0 rounded-xl"
-              >
+        </div>
+      </section>
+
+      {/* ═══════════════ OUTPUT SHOWCASE — One URL, Infinite Campaigns ═══════════════ */}
+      <section className="py-20 lg:py-28 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeSection>
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Real Output</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                One Product URL.{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Infinite Campaigns.</span>
+              </h2>
+              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+                Paste any product URL and watch OTOBI AI generate every asset you need — across every platform — in seconds.
+              </p>
+            </div>
+          </FadeSection>
+          <FadeSection delay={100}>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-amber-900/10 border border-[#e8e0d4]">
+              <img src={IMAGES.adGrid} alt="Campaign outputs across platforms" className="w-full h-auto" loading="lazy" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+              {[
+                "Instagram · Image Ad — 1080×1350 · Reel-ready",
+                "Google Ads · Search Copy · Headlines + Descriptions",
+                "TikTok · UGC Script · 30s · Trending format",
+                "LinkedIn · Sponsored · B2B Lead Gen · 1200×628",
+                "Email Campaign · 7-Email Welcome Series · A/B variants",
+                "Blog/SEO · 2,400 Words · SEO Pillar Article",
+                "Facebook · Carousel · 4-Slide Retargeting",
+                "YouTube · Video Script + AI Avatar · 12 ethnicities · 30+ languages",
+              ].map((label, i) => (
+                <div key={i} className="rounded-xl border border-[#e8e0d4] bg-white p-4 text-sm font-medium text-[#6b5e4f] hover:border-amber-300 transition-colors">
+                  {label}
+                </div>
+              ))}
+            </div>
+          </FadeSection>
+          <FadeSection delay={200}>
+            <div className="text-center mt-10">
+              <Button size="lg" onClick={handleGetStarted} className="gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg border-0 rounded-xl">
                 Create Your First Ad <Sparkles className="w-5 h-5" />
               </Button>
             </div>
@@ -587,7 +669,7 @@ export default function Landing() {
                 From Product to <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Viral Campaign</span> in Minutes
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                Not days. Not weeks. Minutes. Here's how it works.
+                Not days. Not weeks. Not a team of six. Just you, OTOBI AI, and results.
               </p>
             </div>
           </FadeSection>
@@ -597,21 +679,21 @@ export default function Landing() {
               {
                 step: "01",
                 title: "Bring Your Product",
-                description: "Paste a URL, upload images, or just describe it. Our AI instantly understands features, benefits, audience, positioning, and competitive landscape.",
+                description: "Paste a URL, upload images, or just describe it. OTOBI AI instantly understands your product's features, benefits, audience, positioning, and competitive landscape — in seconds.",
                 icon: <Search className="w-8 h-8" />,
                 gradient: "from-amber-400 to-orange-500",
               },
               {
                 step: "02",
                 title: "AI Creates Everything",
-                description: "Blog posts, ad copy, video scripts, SEO content, email campaigns, social captions, PR releases, visual ads, AI avatar videos — all generated in seconds.",
+                description: "Blog posts, ad copy, video scripts, SEO content, email campaigns, social captions, PR releases, visual ads, AI avatar videos — all generated simultaneously across 22 content types.",
                 icon: <Sparkles className="w-8 h-8" />,
                 gradient: "from-orange-400 to-rose-500",
               },
               {
                 step: "03",
                 title: "Launch & Dominate",
-                description: "Publish across 21+ platforms with optimal timing. Run funnels and forms to convert. A/B test variants automatically. Track and assign leads. Share one-click reports with clients. Watch AI optimize and scale what works.",
+                description: "Publish across 21+ platforms with optimal timing. Run funnels. A/B test automatically. Track leads. Share one-click client reports. Watch AI optimize what works and scale it.",
                 icon: <Megaphone className="w-8 h-8" />,
                 gradient: "from-rose-400 to-purple-500",
               },
@@ -640,100 +722,66 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════════════ AI BRAIN — VALUE PROP ═══════════════ */}
-      <section className="py-20 lg:py-28">
+      {/* ═══════════════ WHY OTOBI AI (6 cards) ═══════════════ */}
+      <section id="capabilities" className="py-20 lg:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <FadeSection>
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-br from-purple-400/10 to-amber-400/10 rounded-3xl blur-2xl" />
-                <img
-                  src={IMAGES.aiBrain}
-                  alt="AI Marketing Brain processing ads, videos, social media, and analytics simultaneously"
-                  className="relative w-full h-auto rounded-2xl shadow-2xl"
-                  loading="lazy"
-                />
-              </div>
-            </FadeSection>
-            <FadeSection delay={200}>
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                  AI-Powered Intelligence
+          <FadeSection>
+            <div className="text-center mb-16">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Why OTOBI AI</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                Not Another Marketing Tool.{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">The Only One You Need.</span>
+              </h2>
+              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+                Built with real marketing intelligence — not just a content generator bolted onto a scheduler.
+              </p>
+            </div>
+          </FadeSection>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: <Brain className="w-6 h-6" />, title: "Thinks Like a CMO", desc: "Psychological targeting, persuasion frameworks (AIDA, Cialdini, PAS), audience psychographics, and emotional trigger mapping — all automated. Your AI marketing team never sleeps.", gradient: "from-purple-400 to-indigo-500", bg: "bg-purple-50" },
+              { icon: <Rocket className="w-6 h-6" />, title: "Creates AND Publishes", desc: "Most tools stop at content creation. OTOBI AI deploys across 21+ platforms with optimal timing — smart scheduling built in, no third-party tools needed.", gradient: "from-amber-400 to-orange-500", bg: "bg-amber-50" },
+              { icon: <TrendingUp className="w-6 h-6" />, title: "Predicts Before You Spend", desc: "Predictive scoring rates every ad before launch. A/B testing finds winners automatically. Campaign momentum analysis doubles down on what's already working.", gradient: "from-rose-400 to-pink-500", bg: "bg-rose-50" },
+              { icon: <Eye className="w-6 h-6" />, title: "Competitor Intelligence", desc: "Website intelligence rivaling SimilarWeb. Traffic estimates, SEO analysis, tech stack detection, and actionable competitive insights — all inside your dashboard.", gradient: "from-emerald-400 to-teal-500", bg: "bg-emerald-50" },
+              { icon: <Users className="w-6 h-6" />, title: "Runs Your Sales Pipeline", desc: "CRM, lead tracking, deal pipeline, round-robin assignment, funnels, forms, and email automation. Not just marketing assets — the full revenue operation.", gradient: "from-blue-400 to-cyan-500", bg: "bg-blue-50" },
+              { icon: <Globe className="w-6 h-6" />, title: "Reach Anyone, Anywhere", desc: "30+ languages with automatic localization. Every major platform. Every ad format. From TikTok to LinkedIn to Amazon to TV/radio scripts — one tool, zero limits.", gradient: "from-orange-400 to-red-500", bg: "bg-orange-50" },
+            ].map((prop, i) => (
+              <FadeSection key={i} delay={i * 100}>
+                <div className={`${prop.bg} rounded-2xl p-7 border border-[#e8e0d4] hover:border-amber-300 hover:shadow-lg transition-all h-full`}>
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${prop.gradient} flex items-center justify-center text-white mb-5 shadow-lg`}>{prop.icon}</div>
+                  <h3 className="text-lg font-bold mb-2 text-[#1a1a1a]">{prop.title}</h3>
+                  <p className="text-[#6b5e4f] text-sm leading-relaxed">{prop.desc}</p>
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-6">
-                  An AI That Thinks Like a{" "}
-                  <span className="bg-gradient-to-r from-purple-600 to-amber-500 bg-clip-text text-transparent">
-                    Chief Marketing Officer
-                  </span>
-                </h2>
-                <p className="text-lg text-[#6b5e4f] mb-8 leading-relaxed">
-                  Psychological targeting, persuasion frameworks, audience psychographics, emotional trigger mapping, and micro-targeting — all automated. Your AI marketing team never sleeps.
-                </p>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { icon: <Brain className="w-5 h-5" />, label: "6 AI Strategy Modes" },
-                    { icon: <Target className="w-5 h-5" />, label: "Psychographic Targeting" },
-                    { icon: <TrendingUp className="w-5 h-5" />, label: "Viral Amplification" },
-                    { icon: <Globe className="w-5 h-5" />, label: "30+ Languages" },
-                    { icon: <Eye className="w-5 h-5" />, label: "Competitor Intelligence" },
-                    { icon: <Shield className="w-5 h-5" />, label: "Predictive Scoring" },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white border border-[#e8e0d4]">
-                      <span className="text-amber-600">{item.icon}</span>
-                      <span className="text-sm font-medium text-[#1a1a1a]">{item.label}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeSection>
+              </FadeSection>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ CONTENT CREATION ═══════════════ */}
+      {/* ═══════════════ 22 CONTENT TYPES ═══════════════ */}
       <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <FadeSection>
-              <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                  22 Content Types
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-6">
-                  One AI Brain.{" "}
-                  <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                    Infinite Content.
-                  </span>
-                </h2>
-                <p className="text-lg text-[#6b5e4f] mb-8 leading-relaxed">
-                  Feed it any product, idea, or person. Watch it generate blog posts, ad copy, video scripts, SEO content, email campaigns, social captions, PR releases, podcast outlines, landing pages, and more.
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {[
-                    "Ad Copy", "Blog Posts", "Video Scripts", "SEO Content",
-                    "Email Campaigns", "Social Captions", "PR Releases", "Podcast Scripts",
-                    "Landing Pages", "Product Listings", "UGC Scripts", "TV/Radio Ads",
-                  ].map((type, i) => (
-                    <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-[#e8e0d4] text-sm font-medium text-[#1a1a1a] hover:border-amber-300 transition-colors">
-                      <Check className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                      {type}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </FadeSection>
-            <FadeSection delay={200}>
-              <div className="relative">
-                <div className="absolute -inset-4 bg-gradient-to-br from-emerald-400/10 to-amber-400/10 rounded-3xl blur-2xl" />
-                <img
-                  src={IMAGES.contentCreation}
-                  alt="AI Content Creation — Blog posts, ads, videos, SEO, emails generated simultaneously"
-                  className="relative w-full h-auto rounded-2xl shadow-2xl border border-[#e8e0d4]"
-                  loading="lazy"
-                />
-              </div>
-            </FadeSection>
-          </div>
+          <FadeSection>
+            <div className="text-center mb-10">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">22 Content Types</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                One AI Brain.{" "}
+                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Infinite Content.</span>
+              </h2>
+              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+                Feed it any product, idea, or person. Watch it generate everything your marketing team would take weeks to produce.
+              </p>
+            </div>
+          </FadeSection>
+          <FadeSection delay={100}>
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {["Ad Copy", "Video Scripts", "Email Campaigns", "Blog Posts", "SEO Content", "Social Captions", "PR Releases", "Landing Pages", "Podcast Scripts", "Product Listings", "UGC Scripts", "TV/Radio Ads", "Amazon Listings", "SMS Campaigns", "Newsletter Copy", "Funnel Pages", "Review Responses", "Competitor Briefs", "AI Avatar Videos", "Storyboards", "Client Reports", "A/B Test Variants"].map((type, i) => (
+                <span key={i} className={`px-4 py-2 rounded-full border text-sm font-medium ${i < 4 ? "bg-amber-100 border-amber-300 text-amber-900" : "bg-white border-[#e8e0d4] text-[#6b5e4f] hover:border-amber-300"}`}>
+                  {type}
+                </span>
+              ))}
+            </div>
+          </FadeSection>
         </div>
       </section>
 
@@ -742,9 +790,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeSection>
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                Omnichannel Distribution
-              </div>
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">21+ Platforms</p>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
                 Publish Everywhere.{" "}
                 <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
@@ -752,7 +798,7 @@ export default function Landing() {
                 </span>
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                Every platform has different formats, character limits, aspect ratios, and peak engagement times. Our AI knows them all.
+                Every platform has different formats, character limits, aspect ratios, and peak engagement times. OTOBI AI knows them all — and auto-optimizes for each one.
               </p>
             </div>
           </FadeSection>
@@ -776,6 +822,60 @@ export default function Landing() {
                   {platform}
                 </span>
               ))}
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
+      {/* ═══════════════ COMPARISON TABLE — Better than Bacon ═══════════════ */}
+      <section className="py-20 lg:py-28 bg-gradient-to-b from-amber-50/40 to-[#FDFBF7]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeSection>
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">OTOBI AI vs. The Stack</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                Why Pay for 6 Tools
+                <br />
+                <span className="text-[#6b5e4f] font-bold">When One Does More?</span>
+              </h2>
+              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+                OTOBI AI isn't just a creative tool — it's the full marketing operation, at one price.
+              </p>
+            </div>
+          </FadeSection>
+          <FadeSection delay={100}>
+            <div className="overflow-x-auto rounded-2xl border border-[#e8e0d4] bg-white shadow-lg">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#e8e0d4] bg-amber-50/50">
+                    <th className="text-left p-4 font-bold text-[#1a1a1a]">Capability</th>
+                    <th className="p-4 font-medium text-[#9b8e7e]">Creative-Only Tools<br /><span className="text-xs">(e.g. Bacon, AdCreative)</span></th>
+                    <th className="p-4 font-medium text-[#9b8e7e]">Content Tools<br /><span className="text-xs">(e.g. Jasper)</span></th>
+                    <th className="p-4 font-bold text-amber-700 bg-amber-50">OTOBI AI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["AI Image & Video Ads", "✓", "✗", "✓"],
+                    ["Blog, SEO & Email Copy", "✗", "✓", "✓"],
+                    ["Publish to 21+ Platforms", "✗", "✗", "✓"],
+                    ["A/B Testing + Predictive Scoring", "✗", "✗", "✓"],
+                    ["CRM, Leads & Deal Pipeline", "✗", "✗", "✓"],
+                    ["Funnels & Landing Pages", "✗", "✗", "✓"],
+                    ["Competitor Intelligence", "✗", "✗", "✓"],
+                    ["AI Avatar Videos", "Partial", "✗", "12 ethnicities, 30+ languages"],
+                    ["White-Label + API", "✗", "Limited", "✓ Business tier"],
+                    ["Monthly Cost", "$129–$299/mo", "$99–$149/mo", "From $29/mo"],
+                  ].map((row, i) => (
+                    <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-[#FDFBF7]"}>
+                      <td className="p-4 font-medium text-[#1a1a1a]">{row[0]}</td>
+                      <td className="p-4 text-center text-[#6b5e4f]">{row[1]}</td>
+                      <td className="p-4 text-center text-[#6b5e4f]">{row[2]}</td>
+                      <td className="p-4 text-center font-semibold text-amber-800 bg-amber-50/50">{row[3]}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </FadeSection>
         </div>
@@ -815,6 +915,21 @@ export default function Landing() {
                     </div>
                   ))}
                 </div>
+                <div className="mb-6">
+                  <p className="text-xs font-semibold text-[#9b8e7e] uppercase tracking-wider mb-2">AI-Generated Video Actors</p>
+                  <div className="flex flex-wrap gap-2">
+                    {AI_ACTOR_AVATARS.map((avatar, j) => (
+                      <img
+                        key={j}
+                        src={avatar}
+                        alt=""
+                        role="presentation"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md ring-1 ring-[#e8e0d4]"
+                        loading="lazy"
+                      />
+                    ))}
+                  </div>
+                </div>
                 <Button
                   onClick={handleGetStarted}
                   className="gap-2 bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white shadow-lg shadow-rose-500/25 border-0 rounded-xl"
@@ -838,85 +953,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════════════ VALUE PROPOSITIONS ═══════════════ */}
-      <section id="capabilities" className="py-20 lg:py-28">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeSection>
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                Why OTOBI AI
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
-                Not Another Marketing Tool.{" "}
-                <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
-                  The Only One You Need.
-                </span>
-              </h2>
-              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                Stop paying $500+/month for 6 different tools. Get everything in one place.
-              </p>
-            </div>
-          </FadeSection>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[
-              {
-                icon: <Rocket className="w-6 h-6" />,
-                title: "Launch in Minutes",
-                description: "Complete marketing campaign — ads, copy, visuals, video scripts, SEO — ready to publish across 21+ platforms.",
-                gradient: "from-amber-400 to-orange-500",
-                bg: "bg-amber-50",
-              },
-              {
-                icon: <Brain className="w-6 h-6" />,
-                title: "AI CMO Intelligence",
-                description: "Psychological targeting, persuasion frameworks (AIDA, Cialdini, PAS), audience psychographics, emotional triggers.",
-                gradient: "from-purple-400 to-indigo-500",
-                bg: "bg-purple-50",
-              },
-              {
-                icon: <Target className="w-6 h-6" />,
-                title: "Reach Anyone, Anywhere",
-                description: "30+ languages, every major platform, every ad format. From TikTok to LinkedIn to Amazon to TV scripts.",
-                gradient: "from-blue-400 to-cyan-500",
-                bg: "bg-blue-50",
-              },
-              {
-                icon: <TrendingUp className="w-6 h-6" />,
-                title: "Make Anything Viral",
-                description: "Viral amplification, trend detection, content remixing, A/B testing with AI-powered winner selection.",
-                gradient: "from-rose-400 to-pink-500",
-                bg: "bg-rose-50",
-              },
-              {
-                icon: <Eye className="w-6 h-6" />,
-                title: "Competitor Intelligence",
-                description: "Website intelligence rivaling SimilarWeb. Traffic estimates, SEO analysis, tech stack detection, actionable insights.",
-                gradient: "from-emerald-400 to-teal-500",
-                bg: "bg-emerald-50",
-              },
-              {
-                icon: <Layers className="w-6 h-6" />,
-                title: "Replace Your Entire Stack",
-                description: "Content + design + video + scheduling + CRM + analytics + SEO + ad management + team collaboration — all in one.",
-                gradient: "from-orange-400 to-red-500",
-                bg: "bg-orange-50",
-              },
-            ].map((prop, i) => (
-              <FadeSection key={i} delay={i * 100}>
-                <div className={`${prop.bg} rounded-2xl p-7 border border-[#e8e0d4] hover:border-amber-300 hover:shadow-lg transition-all duration-300 h-full`}>
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${prop.gradient} flex items-center justify-center text-white mb-5 shadow-lg`}>
-                    {prop.icon}
-                  </div>
-                  <h3 className="text-lg font-bold mb-2 text-[#1a1a1a]">{prop.title}</h3>
-                  <p className="text-[#6b5e4f] text-sm leading-relaxed">{prop.description}</p>
-                </div>
-              </FadeSection>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ═══════════════ RESULTS / EVIDENCE ═══════════════ */}
       <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -934,9 +970,7 @@ export default function Landing() {
             </FadeSection>
             <FadeSection delay={200}>
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                  Proven Results
-                </div>
+                <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Proven Results</p>
                 <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-6">
                   Results That{" "}
                   <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
@@ -970,24 +1004,31 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeSection>
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-4 uppercase tracking-wider">
-                Trusted by marketers
-              </div>
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Trusted by Marketers</p>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
-                What <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">people say</span>
+                What <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">People Say</span>
               </h2>
             </div>
           </FadeSection>
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {[
-              { quote: "OTOBI AI cut our content production time by 80%. One tool for everything from ads to email to social.", name: "Sarah M.", role: "Head of Marketing, SaaS" },
-              { quote: "We run funnels, forms, and reports from one place. Our clients love the one-click report links.", name: "James K.", role: "Agency Owner" },
-              { quote: "The AI CMO agent and predictive scoring help us ship winning campaigns faster. Game changer.", name: "Alex T.", role: "Growth Lead" },
+              { quote: "OTOBI AI cut our content production time by 80%. One tool for everything — ads, email, social. I cancelled 4 other subscriptions in the first week.", name: "Sarah M.", role: "Head of Marketing, SaaS Company", avatar: TESTIMONIAL_AVATARS[0] },
+              { quote: "We run funnels, forms, and client reports from one place. Our clients love the one-click report links — it's made us look like a much bigger agency than we are.", name: "James K.", role: "Agency Owner", avatar: TESTIMONIAL_AVATARS[1] },
+              { quote: "The AI CMO agent and predictive scoring are genuinely different from anything I've used. We ship winning campaigns faster and spend way less time guessing what will work.", name: "Alex T.", role: "Growth Lead, E-commerce Brand", avatar: TESTIMONIAL_AVATARS[2] },
             ].map((t, i) => (
               <FadeSection key={i} delay={i * 100}>
                 <div className="bg-white rounded-2xl p-6 border border-[#e8e0d4] shadow-sm h-full flex flex-col">
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1,2,3,4,5].map((s) => <Star key={s} className="w-4 h-4 fill-amber-400 text-amber-400" />)}
+                  </div>
                   <p className="text-[#6b5e4f] mb-4 flex-1">&ldquo;{t.quote}&rdquo;</p>
-                  <div><span className="font-semibold text-sm text-[#1a1a1a]">{t.name}</span><span className="text-xs text-[#9b8e7e] block">{t.role}</span></div>
+                  <div className="flex items-center gap-3">
+                    <img src={t.avatar} alt={t.name} className="w-12 h-12 rounded-full object-cover border-2 border-amber-100" loading="lazy" />
+                    <div>
+                      <span className="font-semibold text-sm text-[#1a1a1a] block">{t.name}</span>
+                      <span className="text-xs text-[#9b8e7e]">{t.role}</span>
+                    </div>
+                  </div>
                 </div>
               </FadeSection>
             ))}
@@ -1160,14 +1201,19 @@ export default function Landing() {
                 <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto mb-8">
                   Join thousands of businesses using OTOBI AI to create, publish, and optimize marketing campaigns across every platform.
                 </p>
-                <Button
-                  size="lg"
-                  onClick={handleGetStarted}
-                  className="text-base px-10 py-6 gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-xl shadow-amber-500/30 border-0 rounded-xl"
-                >
-                  Start Creating for Free <ArrowRight className="w-5 h-5" />
-                </Button>
-                <p className="text-sm text-[#9b8e7e] mt-4">No credit card required. Cancel anytime.</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button
+                    size="lg"
+                    onClick={handleGetStarted}
+                    className="text-base px-10 py-6 gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-xl shadow-amber-500/30 border-0 rounded-xl"
+                  >
+                    Start Creating for Free <ArrowRight className="w-5 h-5" />
+                  </Button>
+                  <Button size="lg" variant="outline" className="rounded-xl border-[#d4c9b8] text-[#6b5e4f] hover:bg-amber-50" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}>
+                    See How It Works
+                  </Button>
+                </div>
+                <p className="text-sm text-[#9b8e7e] mt-4">No credit card required · Free plan available forever · Cancel anytime</p>
               </div>
             </div>
           </FadeSection>
@@ -1201,10 +1247,11 @@ export default function Landing() {
             <div>
               <h4 className="font-bold text-sm mb-3 text-[#1a1a1a]">Capabilities</h4>
               <div className="space-y-2">
-                <span className="block text-sm text-[#6b5e4f]">AI Content & Creatives</span>
-                <span className="block text-sm text-[#6b5e4f]">Funnels & Forms</span>
-                <span className="block text-sm text-[#6b5e4f]">Reviews & Reports</span>
-                <span className="block text-sm text-[#6b5e4f]">Lead CRM & Campaigns</span>
+                <a href="#capabilities" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">AI Content & Creatives</a>
+                <a href="#capabilities" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Funnels & Forms</a>
+                <a href="#capabilities" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Reviews & Reports</a>
+                <a href="#capabilities" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Lead CRM & Campaigns</a>
+                <a href="#capabilities" className="block text-sm text-[#6b5e4f] hover:text-[#1a1a1a]">Video Ad Studio</a>
               </div>
             </div>
             <div>
@@ -1219,7 +1266,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-[#e8e0d4] text-center text-sm text-[#9b8e7e]">
-            &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved.
+            &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved. · Built for marketers who ship fast.
           </div>
         </div>
       </footer>
