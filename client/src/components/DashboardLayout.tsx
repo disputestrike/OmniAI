@@ -197,7 +197,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
   const { loading, user } = useAuth();
   const search = useSearch();
-  const hasError = typeof window !== "undefined" && new URLSearchParams(search).get("error");
+  const params = typeof window !== "undefined" ? new URLSearchParams(search) : new URLSearchParams();
+  const hasError = params.get("error");
+  const hintDb = params.get("hint") === "database";
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -210,9 +212,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           {hasError && (
-            <p className="text-sm text-destructive font-medium text-center">
-              Sign-in did not complete. Please try again.
-            </p>
+            <div className="text-sm text-center space-y-1">
+              <p className="font-medium text-destructive">
+                Sign-in did not complete. Please try again.
+              </p>
+              {hintDb && (
+                <p className="text-muted-foreground max-w-sm">
+                  The app could not reach the database. In Railway, set <strong>DATABASE_URL</strong> (or <strong>MYSQL_URL</strong>) on the <strong>OmniAI</strong> service to your MySQL connection string from the MySQL service.
+                </p>
+              )}
+            </div>
           )}
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-3">

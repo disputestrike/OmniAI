@@ -57,7 +57,9 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 /** Railway injects MYSQL_URL when MySQL service is in the same project; app may also set DATABASE_URL. */
 function getDatabaseUrl(): string | undefined {
-  return process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PUBLIC_URL;
+  const raw = process.env.DATABASE_URL || process.env.MYSQL_URL || process.env.MYSQL_PUBLIC_URL;
+  if (!raw || /^\s*\$\{\{/.test(raw) || /\}\}\s*$/.test(raw)) return undefined;
+  return raw;
 }
 
 export async function getDb() {

@@ -186,9 +186,12 @@ export function registerGoogleOAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       console.log("[Google OAuth] Session set, redirecting to dashboard");
       res.redirect(302, dashboardUrl);
-    } catch (err) {
-      console.error("[Google OAuth] Callback error:", err);
-      res.redirect(`${dashboardUrl}?error=google_auth_error`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      const stack = err instanceof Error ? err.stack : undefined;
+      console.error("[Google OAuth] Callback error:", msg, stack ?? "");
+      const hint = msg.includes("Database") || msg.includes("ECONNREFUSED") || msg.includes("connect") ? "&hint=database" : "";
+      res.redirect(`${dashboardUrl}?error=google_auth_error${hint}`);
     }
   });
 }
