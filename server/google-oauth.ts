@@ -10,6 +10,14 @@ import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { createSessionToken } from "./_core/auth";
 
+/** Send 200 + HTML that redirects so the browser commits the Set-Cookie before navigating (avoids cookie loss on 302 in some browsers). */
+function sendRedirectWithCookie(res: Response, url: string): void {
+  const escaped = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  res.status(200).setHeader("Content-Type", "text/html; charset=utf-8").end(
+    `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${escaped}"></head><body>Redirecting to dashboard…</body></html>`
+  );
+}
+
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
@@ -185,7 +193,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       console.log("[Google OAuth] Session set, redirecting to dashboard");
-      res.redirect(302, dashboardUrl);
+      sendRedirectWithCookie(res, dashboardUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       const stack = err instanceof Error ? err.stack : undefined;

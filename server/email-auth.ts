@@ -37,6 +37,13 @@ function getRedirectBase(req: Request): string {
   return `${useHttps ? "https" : proto}://${host}`;
 }
 
+function sendRedirectWithCookie(res: Response, url: string): void {
+  const escaped = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  res.status(200).setHeader("Content-Type", "text/html; charset=utf-8").end(
+    `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${escaped}"></head><body>Redirecting to dashboard…</body></html>`
+  );
+}
+
 export function registerEmailAuthRoutes(app: Express): void {
   app.post("/api/auth/email/register", async (req: Request, res: Response) => {
     const base = getRedirectBase(req);
@@ -73,7 +80,7 @@ export function registerEmailAuthRoutes(app: Express): void {
       });
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.redirect(302, dashboardUrl);
+      sendRedirectWithCookie(res, dashboardUrl);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg === "EMAIL_TAKEN") {
@@ -122,7 +129,7 @@ export function registerEmailAuthRoutes(app: Express): void {
       });
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.redirect(302, dashboardUrl);
+      sendRedirectWithCookie(res, dashboardUrl);
     } catch (err: unknown) {
       console.error("[Email Auth] Login error:", err);
       res.redirect(`${loginUrl}?error=login_failed&mode=login`);

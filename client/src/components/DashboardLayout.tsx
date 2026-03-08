@@ -200,12 +200,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const params = typeof window !== "undefined" ? new URLSearchParams(search) : new URLSearchParams();
   const hasError = params.get("error");
   const hintDb = params.get("hint") === "database";
+  const reloadAttempted = useRef(false);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
-  if (loading) return <DashboardLayoutSkeleton />;
+  // One-time reload when we have no user after login redirect (cookie may not have been sent on first request)
+  const shouldRetryReload = typeof window !== "undefined" && !loading && !user && !sessionStorage.getItem("otobi_dashboard_reload");
+  useEffect(() => {
+    if (!shouldRetryReload || reloadAttempted.current) return;
+    reloadAttempted.current = true;
+    sessionStorage.setItem("otobi_dashboard_reload", "1");
+    window.location.reload();
+  }, [shouldRetryReload]);
+
+  if (loading || (shouldRetryReload && !user)) return <DashboardLayoutSkeleton />;
 
   if (!user) {
     return (
