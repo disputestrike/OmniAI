@@ -65,7 +65,7 @@ If your plan supports it, you can reference the MySQL service URL, e.g.:
 
 - `DATABASE_URL` = `${{MySQL.MYSQL_PUBLIC_URL}}` (replace `MySQL` with your MySQL service name if different).
 
-The app reads **either** `DATABASE_URL` or `MYSQL_URL` (or `MYSQL_PUBLIC_URL`). Set one of them so the app can connect.
+The app reads **either** `DATABASE_URL` or `MYSQL_URL` (or `MYSQL_PUBLIC_URL`). Set one of them so the app can connect. **Google sign-in creates users in the `users` table** — if the database is not connected or the `users` table is missing, sign-in will fail (you’ll be redirected to the dashboard with an error). Check deploy logs for `[Google OAuth]` and `[Database]` to debug.
 
 ---
 

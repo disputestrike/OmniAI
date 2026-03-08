@@ -46,9 +46,16 @@ export function registerGoogleOAuthRoutes(app: Express) {
   }
 
   // Initiate Google OAuth flow
-  app.get("/api/auth/google", (req: Request, res: Response) => {
+  app.get("/api/auth/google", async (req: Request, res: Response) => {
     if (!isGoogleOAuthConfigured()) {
       res.status(503).json({ error: "Google OAuth is not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Settings > Secrets." });
+      return;
+    }
+
+    const canDb = await db.ping();
+    if (!canDb) {
+      console.error("[Google OAuth] Database not reachable. Set DATABASE_URL or MYSQL_URL on this service and ensure migrations have run.");
+      res.status(503).json({ error: "Database not ready. Please configure DATABASE_URL (or MYSQL_URL) on this service and try again." });
       return;
     }
 
@@ -111,7 +118,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
     const redirectUri = `${origin.replace(/\/$/, "")}/api/auth/google/callback`;
 
     try {
-      // Exchange code for tokens
+      console.log("[Google OAuth] Exchanging code for tokens...");
       const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -132,8 +139,8 @@ export function registerGoogleOAuthRoutes(app: Express) {
       }
 
       const tokens = await tokenResponse.json() as { access_token: string; id_token?: string; refresh_token?: string };
+      console.log("[Google OAuth] Tokens received, fetching user info...");
 
-      // Get user info from Google
       const userInfoResponse = await fetch(GOOGLE_USERINFO_URL, {
         headers: { Authorization: `Bearer ${tokens.access_token}` },
       });
@@ -159,6 +166,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       const googleOpenId = `google_${googleUser.id}`;
 
+      console.log("[Google OAuth] Upserting user into database:", googleUser.email);
       await db.upsertUser({
         openId: googleOpenId,
         name: googleUser.name || null,
@@ -166,6 +174,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
         loginMethod: "google",
         lastSignedIn: new Date(),
       });
+      console.log("[Google OAuth] User upserted successfully");
 
       const referredUser = await db.getUserByOpenId(googleOpenId);
       if (refCode && referredUser) {
@@ -186,6 +195,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+      console.log("[Google OAuth] Session set, redirecting to dashboard");
       res.redirect(302, dashboardUrl);
     } catch (err) {
       console.error("[Google OAuth] Callback error:", err);

@@ -89,7 +89,10 @@ export async function ping(): Promise<boolean> {
 export async function upsertUser(user: InsertUser): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
-  if (!db) { console.warn("[Database] Cannot upsert user: database not available"); return; }
+  if (!db) {
+    console.error("[Database] Cannot upsert user: no database connection. Set DATABASE_URL or MYSQL_URL on this service.");
+    throw new Error("Database not available");
+  }
   try {
     const values: InsertUser = { openId: user.openId };
     const updateSet: Record<string, unknown> = {};
