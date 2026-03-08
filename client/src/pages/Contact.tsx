@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLocation } from "wouter";
 import { ArrowLeft, Zap, Mail, MessageSquare, BookOpen, Rocket, CheckCircle2 } from "lucide-react";
-import { getLoginUrl } from "@/const";
+import { getLoginPageUrl } from "@/const";
 import { toast } from "sonner";
 
 export default function Contact() {
@@ -44,7 +44,7 @@ export default function Contact() {
               <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-[#6b5e4f]">
                 <ArrowLeft className="w-4 h-4" /> Back to Home
               </Button>
-              <Button size="sm" onClick={() => window.location.href = getLoginUrl()} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0">
+              <Button size="sm" onClick={() => window.location.href = getLoginPageUrl()} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0">
                 Get Started Free
               </Button>
             </div>
@@ -175,7 +175,7 @@ export default function Contact() {
                   <p className="text-sm text-[#6b5e4f] mb-2">Available for Professional and Business plan users</p>
                   <Button
                     size="sm"
-                    onClick={() => window.location.href = getLoginUrl()}
+                    onClick={() => window.location.href = getLoginPageUrl()}
                     className="bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 text-xs"
                   >
                     Open Chat in Dashboard

@@ -78,6 +78,20 @@ export async function runMigrations(): Promise<void> {
       }
     }
     console.log("[migrate] Done. Created:", ok, "| Already existed:", skipped, "| Failed:", failed);
+
+    // Optional: ensure users.passwordHash exists for email auth (ignore if already present)
+    const ER_DUP_FIELD = 1060;
+    try {
+      await connection!.query("ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL");
+      console.log("[migrate] Added users.passwordHash for email auth.");
+    } catch (alterErr: unknown) {
+      const e = alterErr as { errno?: number };
+      if (e.errno === ER_DUP_FIELD) {
+        // Column already exists
+      } else {
+        console.warn("[migrate] passwordHash column:", (alterErr as Error).message);
+      }
+    }
   } catch (err: unknown) {
     console.error("[migrate] Connection or migration error:", (err as Error).message);
   } finally {

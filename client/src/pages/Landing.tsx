@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { getLoginUrl } from "@/const";
+import { getLoginPageUrl } from "@/const";
 import { Link, useLocation } from "wouter";
 import {
   ArrowRight,
@@ -348,7 +348,7 @@ function InteractiveDemo() {
                         Try Another Platform
                       </Button>
                       <Button
-                        onClick={() => { window.location.href = getLoginUrl(); }}
+                        onClick={() => { window.location.href = getLoginPageUrl(); }}
                         className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0"
                       >
                         Create Your Own <ArrowRight className="w-4 h-4 ml-2" />
@@ -376,7 +376,7 @@ export default function Landing() {
   }, [isAuthenticated, loading]);
 
   const handleGetStarted = () => {
-    window.location.href = getLoginUrl();
+    window.location.href = getLoginPageUrl();
   };
 
   const handleGoogleSignIn = () => {

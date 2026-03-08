@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FileText, BarChart3, TrendingUp, Zap } from "lucide-react";
-import { getLoginUrl } from "@/const";
+import { getLoginPageUrl } from "@/const";
 
 export default function ReportView() {
   const [, params] = useRoute("/report/:shareToken");
@@ -97,7 +97,7 @@ export default function ReportView() {
               <p className="font-medium">Create reports like this with OTOBI AI</p>
               <p className="text-sm text-muted-foreground">One platform for content, campaigns, analytics, and more.</p>
             </div>
-            <Button onClick={() => { window.location.href = getLoginUrl(); }}>
+            <Button onClick={() => { window.location.href = getLoginPageUrl(); }}>
               <Zap className="h-4 w-4 mr-2" /> Get started free
             </Button>
           </CardContent>

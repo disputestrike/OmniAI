@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ArrowLeft, Zap, Target, Globe, Brain, Rocket, Users, Shield, TrendingUp } from "lucide-react";
-import { getLoginUrl } from "@/const";
+import { getLoginPageUrl } from "@/const";
 
 export default function AboutUs() {
   const [, navigate] = useLocation();
@@ -24,7 +24,7 @@ export default function AboutUs() {
               <Button variant="ghost" size="sm" onClick={() => navigate("/")} className="gap-1.5 text-[#6b5e4f]">
                 <ArrowLeft className="w-4 h-4" /> Back to Home
               </Button>
-              <Button size="sm" onClick={() => window.location.href = getLoginUrl()} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0">
+              <Button size="sm" onClick={() => window.location.href = getLoginPageUrl()} className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white border-0">
                 Get Started Free
               </Button>
             </div>
@@ -173,7 +173,7 @@ export default function AboutUs() {
           <p className="text-[#6b5e4f] mb-8 text-lg">Start free. No credit card required. Your first campaign in minutes.</p>
           <Button
             size="lg"
-            onClick={() => window.location.href = getLoginUrl()}
+            onClick={() => window.location.href = getLoginPageUrl()}
             className="text-base px-10 py-6 gap-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-xl shadow-amber-500/30 border-0 rounded-xl"
           >
             Start Creating for Free <Rocket className="w-5 h-5" />

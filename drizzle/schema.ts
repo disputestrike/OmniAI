@@ -14,6 +14,7 @@ export const users = mysqlTable("users", {
   stripeCustomerId: varchar("stripeCustomerId", { length: 128 }),
   subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "starter", "professional", "business", "enterprise"]).default("free").notNull(),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 128 }),
+  passwordHash: varchar("passwordHash", { length: 255 }),
 });
 
 export type User = typeof users.$inferSelect;

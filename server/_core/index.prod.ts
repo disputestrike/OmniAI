@@ -7,6 +7,7 @@ import express from "express";
 import { createServer } from "http";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerGoogleOAuthRoutes } from "../google-oauth";
+import { registerEmailAuthRoutes } from "../email-auth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
@@ -30,6 +31,7 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerGoogleOAuthRoutes(app);
+  registerEmailAuthRoutes(app);
   app.use("/api/trpc/content.generate", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-gen" }));
   app.use("/api/trpc/product.analyze", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-analyze" }));
   app.use("/api/trpc/creative.generate", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-creative" }));

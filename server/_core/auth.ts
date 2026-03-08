@@ -20,7 +20,7 @@ function getSecret(): Uint8Array {
 
 export async function createSessionToken(
   openId: string,
-  options: { expiresInMs?: number; name?: string } = {}
+  options: { expiresInMs?: number; name?: string; email?: string | null; loginMethod?: string | null } = {}
 ): Promise<string> {
   const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
   const exp = Math.floor((Date.now() + expiresInMs) / 1000);
@@ -28,6 +28,8 @@ export async function createSessionToken(
     openId,
     appId: APP_ID,
     name: options.name ?? "",
+    email: options.email ?? "",
+    loginMethod: options.loginMethod ?? "",
   })
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .setExpirationTime(exp)
@@ -36,15 +38,17 @@ export async function createSessionToken(
 
 export async function verifySession(
   cookieValue: string | undefined | null
-): Promise<{ openId: string; appId: string; name: string } | null> {
+): Promise<{ openId: string; appId: string; name: string; email?: string; loginMethod?: string } | null> {
   if (!cookieValue) return null;
   try {
     const { payload } = await jwtVerify(cookieValue, getSecret(), { algorithms: ["HS256"] });
     const openId = payload.openId as string;
     const appId = payload.appId as string;
     const name = (payload.name as string) ?? "";
+    const email = typeof payload.email === "string" ? payload.email : undefined;
+    const loginMethod = typeof payload.loginMethod === "string" ? payload.loginMethod : undefined;
     if (typeof openId !== "string" || openId.length === 0) return null;
-    return { openId, appId, name };
+    return { openId, appId, name, email, loginMethod };
   } catch {
     return null;
   }
@@ -62,7 +66,23 @@ export async function authenticateRequest(req: Request): Promise<User | null> {
   const session = await verifySession(sessionCookie);
   if (!session) return null;
 
-  const user = await db.getUserByOpenId(session.openId);
+  let user = await db.getUserByOpenId(session.openId);
+  if (!user) {
+    // Lazy sync from session (same as Manus: session set at login, user created on first request)
+    try {
+      await db.upsertUser({
+        openId: session.openId,
+        name: session.name || null,
+        email: session.email ?? null,
+        loginMethod: session.loginMethod ?? null,
+        lastSignedIn: new Date(),
+      });
+      user = await db.getUserByOpenId(session.openId);
+    } catch (e) {
+      console.error("[Auth] Failed to sync user from session:", e);
+      return null;
+    }
+  }
   if (!user) return null;
 
   await db.upsertUser({ openId: user.openId, lastSignedIn: new Date() });

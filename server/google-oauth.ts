@@ -155,30 +155,30 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       const googleOpenId = `google_${googleUser.id}`;
 
-      console.log("[Google OAuth] Upserting user into database:", googleUser.email);
-      await db.upsertUser({
-        openId: googleOpenId,
-        name: googleUser.name || null,
-        email: googleUser.email,
-        loginMethod: "google",
-        lastSignedIn: new Date(),
-      });
-      console.log("[Google OAuth] User upserted successfully");
-
-      const referredUser = await db.getUserByOpenId(googleOpenId);
-      if (refCode && referredUser) {
-        const refRow = await db.getReferralCodeByCode(refCode);
-        if (refRow && refRow.userId !== referredUser.id) {
-          try {
+      // Optional: write user to DB now if available (same as Manus: DB optional at login, sync on first request)
+      try {
+        await db.upsertUser({
+          openId: googleOpenId,
+          name: googleUser.name || null,
+          email: googleUser.email,
+          loginMethod: "google",
+          lastSignedIn: new Date(),
+        });
+        const referredUser = await db.getUserByOpenId(googleOpenId);
+        if (refCode && referredUser) {
+          const refRow = await db.getReferralCodeByCode(refCode);
+          if (refRow && refRow.userId !== referredUser.id) {
             await db.recordReferralSignup(refRow.userId, referredUser.id);
-          } catch (e) {
-            console.warn("[Google OAuth] Referral record failed:", e);
           }
         }
+      } catch (dbErr: unknown) {
+        console.warn("[Google OAuth] DB upsert/referral skipped (will sync on first request):", dbErr instanceof Error ? dbErr.message : dbErr);
       }
 
       const sessionToken = await createSessionToken(googleOpenId, {
         name: googleUser.name || googleUser.email,
+        email: googleUser.email,
+        loginMethod: "google",
         expiresInMs: ONE_YEAR_MS,
       });
 

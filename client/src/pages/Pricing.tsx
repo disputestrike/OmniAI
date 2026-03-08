@@ -7,7 +7,7 @@ import { Check, Sparkles, Crown, Zap, Loader2, Building2, Rocket, Users, X } fro
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useSearch } from "wouter";
-import { getLoginUrl } from "@/const";
+import { getLoginPageUrl } from "@/const";
 
 const plans = [
   {
@@ -181,7 +181,7 @@ export default function Pricing() {
 
   const handleCheckout = async (planKey: string) => {
     if (!isAuthenticated) {
-      window.location.href = getLoginUrl();
+      window.location.href = getLoginPageUrl();
       return;
     }
 

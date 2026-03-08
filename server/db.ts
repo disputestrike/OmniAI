@@ -123,6 +123,34 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+/** Normalize email for email-auth openId (lowercase, trim). */
+export function normalizeEmailForOpenId(email: string): string {
+  return email.trim().toLowerCase();
+}
+
+/** Create a new user for email/password auth. openId = email_${normalized}. Throws if email already registered. */
+export async function createEmailUser(data: {
+  email: string;
+  name: string | null;
+  passwordHash: string;
+}): Promise<{ id: number; openId: string }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const normalized = normalizeEmailForOpenId(data.email);
+  const openId = `email_${normalized}`;
+  const existing = await getUserByOpenId(openId);
+  if (existing) throw new Error("EMAIL_TAKEN");
+  const result = await db.insert(users).values({
+    openId,
+    name: data.name ?? null,
+    email: data.email.trim(),
+    loginMethod: "email",
+    passwordHash: data.passwordHash,
+    lastSignedIn: new Date(),
+  });
+  return { id: result[0].insertId, openId };
+}
+
 // ─── Products ────────────────────────────────────────────────────────
 export async function createProduct(data: InsertProduct) {
   const db = await getDb(); if (!db) throw new Error("DB unavailable");
