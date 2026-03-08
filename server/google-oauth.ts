@@ -32,6 +32,19 @@ export function registerGoogleOAuthRoutes(app: Express) {
     res.json({ configured: isGoogleOAuthConfigured() });
   });
 
+  // Build callback base URL for OAuth. Must be HTTPS in production; Railway often sends http internally.
+  function getCallbackBaseUrl(req: Request): string {
+    const envBase = (process.env.PUBLIC_URL || process.env.BASE_URL || "").replace(/\/$/, "");
+    if (envBase) return envBase;
+    const origin = req.headers.origin;
+    if (origin && origin.startsWith("https://")) return origin;
+    const host = (req.headers["x-forwarded-host"] as string) || req.get("host") || "";
+    const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol;
+    // Railway/public hosts: always use HTTPS for OAuth (Google requires it)
+    const useHttps = proto === "https" || /\.railway\.app$|\.up\.railway\.app$/i.test(host);
+    return `${useHttps ? "https" : proto}://${host}`;
+  }
+
   // Initiate Google OAuth flow
   app.get("/api/auth/google", (req: Request, res: Response) => {
     if (!isGoogleOAuthConfigured()) {
@@ -40,7 +53,8 @@ export function registerGoogleOAuthRoutes(app: Express) {
     }
 
     const config = getGoogleConfig();
-    const redirectUri = `${req.headers.origin || `${req.protocol}://${req.get("host")}`}/api/auth/google/callback`;
+    const base = getCallbackBaseUrl(req);
+    const redirectUri = `${base.replace(/\/$/, "")}/api/auth/google/callback`;
     
     const ref = (req.query.ref as string) || "";
     const state = btoa(JSON.stringify({
@@ -84,11 +98,14 @@ export function registerGoogleOAuthRoutes(app: Express) {
       origin = stateData.origin || "";
       refCode = stateData.ref;
     } catch {
-      origin = `${req.protocol}://${req.get("host")}`;
+      const host = (req.headers["x-forwarded-host"] as string) || req.get("host") || "";
+      const proto = (req.headers["x-forwarded-proto"] as string) || req.protocol;
+      const useHttps = proto === "https" || /\.railway\.app$|\.up\.railway\.app$/i.test(host);
+      origin = `${useHttps ? "https" : proto}://${host}`;
     }
 
     const config = getGoogleConfig();
-    const redirectUri = `${origin}/api/auth/google/callback`;
+    const redirectUri = `${origin.replace(/\/$/, "")}/api/auth/google/callback`;
 
     try {
       // Exchange code for tokens

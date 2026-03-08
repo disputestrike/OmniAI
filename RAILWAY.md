@@ -28,7 +28,22 @@ Add these in **Railway → OmniAI service → Variables**.
 | `BUILT_IN_FORGE_API_KEY` | LLM + image generation (Content Studio, AI Agent, etc.) |
 | `BUILT_IN_FORGE_API_URL` | Forge API base URL if different from default |
 | `VITE_APP_ID`, `OAUTH_SERVER_URL` | Manus OAuth (primary login) |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Sign-In |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Sign-In (see **Google OAuth redirect URIs** below) |
+
+### Google OAuth — redirect URIs to add in Google Cloud Console
+
+In **Google Cloud Console** → your project → **APIs & Services** → **Credentials** → open your **OAuth 2.0 Client ID** (Web application) → **Authorized redirect URIs**, add **exactly**:
+
+| Environment | Redirect URI |
+|-------------|--------------|
+| **Production (Railway)** | `https://omniai-production-778d.up.railway.app/api/auth/google/callback` |
+| **Local dev** | `http://localhost:5000/api/auth/google/callback` |
+
+- Use **HTTPS** for Railway (the app uses `X-Forwarded-Proto` so the callback URL is built with `https` when behind the proxy).
+- If your Railway app has a **custom domain**, add: `https://<your-domain>/api/auth/google/callback`.
+- No trailing slash. Path is exactly: `/api/auth/google/callback`.
+- **If redirect still fails:** set **`PUBLIC_URL`** (or **`BASE_URL`**) on Railway to your full app URL, e.g. `https://omniai-production-778d.up.railway.app`. The app will use it to build the callback URL.
+- In the same OAuth client, under **Authorized JavaScript origins**, add: `https://omniai-production-778d.up.railway.app` and (for local) `http://localhost:5000`.
 | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY` | Billing |
 | `VITE_FRONTEND_FORGE_API_KEY` | Frontend AI usage (if split from backend key) |
 
