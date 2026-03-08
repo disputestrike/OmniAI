@@ -150,15 +150,7 @@ function DashboardRouter() {
 function Router() {
   return (
     <Switch>
-      {/* Public pages */}
-      <Route path="/" component={Landing} />
-      <Route path="/about" component={AboutUs} />
-      <Route path="/report/:shareToken" component={ReportView} />
-      <Route path="/form/:slug" component={FormView} />
-      <Route path="/terms" component={Terms} />
-      <Route path="/privacy" component={Privacy} />
-      <Route path="/contact" component={Contact} />
-      {/* All dashboard routes */}
+      {/* Dashboard first so /dashboard always wins; never fall through to Landing */}
       <Route path="/dashboard" component={DashboardRouter} />
       <Route path="/products" component={DashboardRouter} />
       <Route path="/content" component={DashboardRouter} />
@@ -222,6 +214,13 @@ function Router() {
       <Route path="/forms" component={DashboardRouter} />
       <Route path="/help" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
+      <Route path="/about" component={AboutUs} />
+      <Route path="/report/:shareToken" component={ReportView} />
+      <Route path="/form/:slug" component={FormView} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/" component={Landing} />
       <Route component={NotFound} />
     </Switch>
   );

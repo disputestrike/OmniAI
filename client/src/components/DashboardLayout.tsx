@@ -83,7 +83,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
@@ -196,6 +196,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
+  const search = useSearch();
+  const hasError = typeof window !== "undefined" && new URLSearchParams(search).get("error");
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -207,6 +209,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
+          {hasError && (
+            <p className="text-sm text-destructive font-medium text-center">
+              Sign-in did not complete. Please try again.
+            </p>
+          )}
           <div className="flex flex-col items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">

@@ -74,15 +74,18 @@ export function registerGoogleOAuthRoutes(app: Express) {
     res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
   });
 
-  // Google OAuth callback
+  // Google OAuth callback — always redirect to /dashboard (never "/") so user never lands on landing page.
   app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
+    const base = getCallbackBaseUrl(req).replace(/\/$/, "");
+    const dashboardUrl = `${base}/dashboard`;
+
     const code = req.query.code as string;
     const stateParam = req.query.state as string;
     const error = req.query.error as string;
 
     if (error) {
       console.error("[Google OAuth] Error:", error);
-      res.redirect("/?error=google_auth_failed");
+      res.redirect(`${dashboardUrl}?error=google_auth_failed`);
       return;
     }
 
@@ -124,7 +127,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       if (!tokenResponse.ok) {
         const errorData = await tokenResponse.text();
         console.error("[Google OAuth] Token exchange failed:", errorData);
-        res.redirect("/?error=google_token_failed");
+        res.redirect(`${dashboardUrl}?error=google_token_failed`);
         return;
       }
 
@@ -137,7 +140,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       if (!userInfoResponse.ok) {
         console.error("[Google OAuth] Failed to get user info");
-        res.redirect("/?error=google_userinfo_failed");
+        res.redirect(`${dashboardUrl}?error=google_userinfo_failed`);
         return;
       }
 
@@ -150,7 +153,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       };
 
       if (!googleUser.id || !googleUser.email) {
-        res.redirect("/?error=google_missing_info");
+        res.redirect(`${dashboardUrl}?error=google_missing_info`);
         return;
       }
 
@@ -183,11 +186,10 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      const base = getCallbackBaseUrl(req);
-      res.redirect(302, `${base}/dashboard`);
+      res.redirect(302, dashboardUrl);
     } catch (err) {
       console.error("[Google OAuth] Callback error:", err);
-      res.redirect("/?error=google_auth_error");
+      res.redirect(`${dashboardUrl}?error=google_auth_error`);
     }
   });
 }
