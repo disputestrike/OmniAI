@@ -1350,7 +1350,7 @@ export async function createFunnelStepEvent(data: InsertFunnelStepEvent) {
   await db.insert(funnelStepEvents).values(data);
 }
 
-export async function getFunnelStepEventCounts(funnelId: number): Promise<{ stepId: number; views: number; completes: number }[]> {
+export async function getFunnelStepEventCounts(funnelId: number): Promise<{ stepId: number; stepTitle: string; orderIndex: number; views: number; completes: number }[]> {
   const db = await getDb(); if (!db) return [];
   const steps = await db.select().from(funnelSteps).where(eq(funnelSteps.funnelId, funnelId)).orderBy(funnelSteps.orderIndex);
   const events = await db.select().from(funnelStepEvents).where(eq(funnelStepEvents.funnelId, funnelId));

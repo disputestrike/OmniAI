@@ -121,6 +121,7 @@ export default function VideoAds() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [localizeOpen, setLocalizeOpen] = useState<number | null>(null);
   const [platform, setPlatform] = useState("tiktok");
+  const [platforms, setPlatforms] = useState<string[]>(["tiktok"]);
   const [duration, setDuration] = useState("30");
   const [productId, setProductId] = useState("");
   const [customPrompt, setCustomPrompt] = useState("");
@@ -367,7 +368,7 @@ export default function VideoAds() {
                               onCheckedChange={(c) => {
                                 let next: string[];
                                 if (c) next = [...platforms, p.value].filter((v, i, a) => a.indexOf(v) === i).sort();
-                                else next = platforms.filter(x => x !== p.value).length ? platforms.filter(x => x !== p.value) : [p.value];
+                                else next = platforms.filter((x: string) => x !== p.value).length ? platforms.filter((x: string) => x !== p.value) : [p.value];
                                 setPlatforms(next);
                                 if (!next.includes(platform)) setPlatform(next[0]);
                               }}
@@ -483,7 +484,7 @@ export default function VideoAds() {
                 avatarName: selectedActor || undefined,
                 includeSubtitles,
                 includeBroll,
-                platforms: platforms.length > 1 ? platforms : undefined,
+                platforms: platforms.length > 1 ? (platforms as ("tiktok" | "youtube_shorts" | "instagram_reels" | "youtube" | "facebook" | "snapchat" | "pinterest")[]) : undefined,
               })}>
                 {generateMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Generating AI Video Ad...</> : <><Sparkles className="h-4 w-4 mr-2" />Generate Video Ad</>}
               </Button>

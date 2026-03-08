@@ -73,6 +73,7 @@ export default function Forms() {
   };
 
   const shareUrl = typeof window !== "undefined" && formDetail?.slug && formDetail?.status === "active" ? `${window.location.origin}/form/${formDetail.slug}` : "";
+  const responses: { id: number; data: Record<string, string>; createdAt: string }[] = [];
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -105,7 +106,7 @@ export default function Forms() {
             <Card className="border-0 shadow-sm"><CardContent className="p-6 text-center text-muted-foreground text-sm">No forms yet. Create one to collect responses.</CardContent></Card>
           ) : (
             <div className="space-y-2">
-              {forms.map((f: { id: number; name: string; slug: string; status: string; submissionCount: number }) => (
+              {forms.map((f) => (
                 <Card key={f.id} className={`cursor-pointer border transition-all ${selectedId === f.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedId(f.id)}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">

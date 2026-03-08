@@ -130,10 +130,11 @@ export const formsRouter = router({
 
   submit: publicProcedure.input(z.object({
     formId: z.number(),
-    data: z.record(z.string()),
+    data: z.record(z.string(), z.string()),
   })).mutation(async ({ input, ctx }) => {
     try {
-      checkRateLimit(ctx.req?.ip || "unknown", "form-submit", 60000, 30);
+      const ip = typeof ctx.req?.ip === "string" ? ctx.req.ip : "unknown";
+      checkRateLimit(ip, "form-submit", 60000, 30);
     } catch (e) {
       throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many submissions. Try again in a minute." });
     }
@@ -150,10 +151,10 @@ export const formsRouter = router({
     if (form.createLeadOnSubmit && (input.data.email || input.data.name)) {
       const lead = await db.createLead({
         userId: form.userId,
-        name: input.data.name ?? input.data.email ?? null,
-        email: input.data.email ?? null,
-        phone: input.data.phone ?? null,
-        company: input.data.company ?? null,
+        name: (input.data.name ?? input.data.email ?? null) as string | null,
+        email: (input.data.email ?? null) as string | null,
+        phone: (input.data.phone ?? null) as string | null,
+        company: (input.data.company ?? null) as string | null,
         source: `Form: ${form.name}`,
         status: "new",
         score: 0,

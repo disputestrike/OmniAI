@@ -87,7 +87,7 @@ export default function Team() {
           </Select>
           <Button size="sm" disabled={saveAssignment.isPending} onClick={() => {
             const memberOrder = leadAssignMode === "round_robin" && user?.id
-              ? [user.id, ...(members ?? []).filter((m: { userId?: number }) => m.userId).map((m: { userId: number }) => m.userId)]
+              ? [user.id, ...(members ?? []).filter((m) => m.userId != null).map((m) => m.userId as number)]
               : [];
             saveAssignment.mutate({ mode: leadAssignMode, memberOrder });
           }}>

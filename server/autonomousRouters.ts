@@ -69,7 +69,8 @@ export const selfLearningRouter = router({
         ],
         responseFormat: { type: "json_object" as const },
       });
-      const text = res.choices[0]?.message?.content;
+      const rawContent = res.choices[0]?.message?.content;
+      const text = typeof rawContent === "string" ? rawContent : Array.isArray(rawContent) ? rawContent.map((c: { type?: string; text?: string }) => (c.type === "text" && c.text ? c.text : "")).join(" ") : "";
       if (!text) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No LLM response" });
       let parsed: { platform?: string; format?: string; hookLength?: string; emotion?: string; summary?: string };
       try {
@@ -105,7 +106,8 @@ export const narrativeRouter = router({
         ],
         responseFormat: { type: "json_object" as const },
       });
-      const text = res.choices[0]?.message?.content;
+      const rawContent = res.choices[0]?.message?.content;
+      const text = typeof rawContent === "string" ? rawContent : Array.isArray(rawContent) ? rawContent.map((c: { type?: string; text?: string }) => (c.type === "text" && c.text ? c.text : "")).join(" ") : "";
       if (!text) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No LLM response" });
       const parsed = JSON.parse(text) as { summary: string; topics?: string[]; emotion?: string; suggestedAngles?: string[] };
       const id = await db.createNarrative({

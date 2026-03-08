@@ -68,7 +68,7 @@ export const funnelRouter = router({
     landingPageId: z.number().optional(),
     formId: z.number().optional(),
     stripePriceId: z.string().optional(),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   })).mutation(async ({ ctx, input }) => {
     const funnel = await db.getFunnelById(input.funnelId);
     if (!funnel || funnel.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND", message: "Funnel not found" });
@@ -93,7 +93,7 @@ export const funnelRouter = router({
     landingPageId: z.number().nullable().optional(),
     formId: z.number().nullable().optional(),
     stripePriceId: z.string().nullable().optional(),
-    config: z.record(z.unknown()).optional(),
+    config: z.record(z.string(), z.unknown()).optional(),
   })).mutation(async ({ ctx, input }) => {
     const { id, ...data } = input;
     await db.updateFunnelStep(id, data);

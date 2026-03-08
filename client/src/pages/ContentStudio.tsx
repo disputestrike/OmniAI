@@ -108,15 +108,15 @@ export default function ContentStudio() {
   const [repurposeContentId, setRepurposeContentId] = useState<number | null>(null);
   const [repurposeTargets, setRepurposeTargets] = useState<string[]>([]);
 
-  const search = useSearch();
+  const urlSearch = useSearch();
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
 
   // Pre-select product when opened from Products page (e.g. /content?productId=5)
   useEffect(() => {
-    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    const params = new URLSearchParams(typeof urlSearch === "string" ? urlSearch : "");
     const id = params.get("productId");
     if (id) setProductId(id);
-  }, [search]);
+  }, [urlSearch]);
 
   const filtered = useMemo(() => {
     if (!contents) return [];

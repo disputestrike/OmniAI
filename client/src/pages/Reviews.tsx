@@ -122,7 +122,7 @@ export default function Reviews() {
               <CardContent>
                 {!reviews?.length ? <p className="text-sm text-muted-foreground">No reviews for this source. Add one manually or connect the platform API.</p> : (
                   <div className="space-y-4">
-                    {(reviews as { id: number; authorName: string | null; rating: number; text: string | null; reply: string | null; reviewedAt: string }[]).map(r => (
+                    {(reviews as unknown as { id: number; authorName: string | null; rating: number; text: string | null; reply: string | null; reviewedAt: string }[]).map(r => (
                       <div key={r.id} className="p-4 rounded-lg border bg-muted/20">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-sm">{r.authorName || "Anonymous"}</span>

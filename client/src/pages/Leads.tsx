@@ -27,7 +27,7 @@ export default function Leads() {
   const assignableUsers = useMemo(() => {
     const list: { id: number; label: string }[] = [];
     if (user?.id) list.push({ id: user.id, label: "Me" });
-    (teamMembers ?? []).forEach((m: { userId?: number; id: number; email: string; name?: string | null }) => {
+    (teamMembers ?? []).forEach((m) => {
       const uid = m.userId ?? m.id;
       if (uid && uid !== user?.id) list.push({ id: uid, label: m.name || m.email || `User ${uid}` });
     });

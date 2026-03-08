@@ -12,7 +12,7 @@ export type DashboardStats = {
   leads?: number;
   creatives?: number;
   videoAds?: number;
-  analytics?: { totalImpressions?: number; totalClicks?: number; totalConversions?: number; totalRevenue?: number };
+  analytics?: { totalImpressions?: number; totalClicks?: number; totalConversions?: number; totalRevenue?: number | string; totalSpend?: string } | null;
 };
 
 /** Pipeline IDs for the three main goals (used for progress). */
