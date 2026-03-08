@@ -1065,3 +1065,41 @@ CREATE TABLE IF NOT EXISTS `referral_signups` (
 	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `referral_signups_id` PRIMARY KEY(`id`)
 );
+CREATE TABLE IF NOT EXISTS `user_monthly_usage` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`periodStart` timestamp NOT NULL,
+	`periodEnd` timestamp NOT NULL,
+	`aiGenerationsUsed` int NOT NULL DEFAULT 0,
+	`aiImagesUsed` int NOT NULL DEFAULT 0,
+	`videoScriptsUsed` int NOT NULL DEFAULT 0,
+	`videoMinutesUsed` int NOT NULL DEFAULT 0,
+	`websiteAnalysesUsed` int NOT NULL DEFAULT 0,
+	`abTestsUsed` int NOT NULL DEFAULT 0,
+	`scheduledPostsUsed` int NOT NULL DEFAULT 0,
+	`updatedAt` timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `user_monthly_usage_id` PRIMARY KEY(`id`),
+	CONSTRAINT `user_monthly_usage_userId_unique` UNIQUE(`userId`)
+);
+CREATE TABLE IF NOT EXISTS `credit_wallets` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`purchasedCredits` int NOT NULL DEFAULT 0,
+	`lifetimePurchased` int NOT NULL DEFAULT 0,
+	`lifetimeUsed` int NOT NULL DEFAULT 0,
+	`lastPurchaseAt` timestamp,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `credit_wallets_id` PRIMARY KEY(`id`),
+	CONSTRAINT `credit_wallets_userId_unique` UNIQUE(`userId`)
+);
+CREATE TABLE IF NOT EXISTS `credit_transactions` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`amount` int NOT NULL,
+	`actionType` varchar(64) NOT NULL,
+	`stripePaymentId` varchar(128),
+	`balanceAfter` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	CONSTRAINT `credit_transactions_id` PRIMARY KEY(`id`)
+);

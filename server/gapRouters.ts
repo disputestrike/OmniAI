@@ -7,6 +7,9 @@ import { notifyOwner } from "./_core/notification";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
 import crypto from "crypto";
+import { checkLimit, consumeLimit } from "./creditsAndUsage";
+
+const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
 
 // ─── Brand Voice Router ────────────────────────────────────────────
 export const brandVoiceRouter = router({
@@ -24,6 +27,9 @@ export const brandVoiceRouter = router({
     documentUrls: z.array(z.string()).optional(),
     sampleText: z.string().optional(),
   })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+
     const result = await db.createBrandVoice({
       userId: ctx.user.id,
       name: input.name,
@@ -68,6 +74,7 @@ export const brandVoiceRouter = router({
 
       const voiceProfile = JSON.parse(String(response.choices[0].message.content) || "{}");
       await db.updateBrandVoice(result.id, { voiceProfile, status: "ready" });
+      await consumeLimit(ctx.user.id, "ai_generation", limit);
     } catch (e) {
       await db.updateBrandVoice(result.id, { status: "failed" });
     }
@@ -868,6 +875,7 @@ export const imageEditorRouter = router({
       prompt: "Remove the background completely, make it transparent/white. Keep only the main subject.",
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
+    await consumeLimit(ctx.user.id, "ai_image", limit);
     return { url };
   }),
 
@@ -897,16 +905,20 @@ export const imageEditorRouter = router({
       prompt: `Resize and recompose this image to fit ${width}x${height} pixels (${input.platform} format). Maintain the subject and visual quality. Fill any new space naturally.`,
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
+    await consumeLimit(ctx.user.id, "ai_image", limit);
     return { url, dimensions: size };
   }),
 
   upscale: protectedProcedure.input(z.object({
     imageUrl: z.string(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_image");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const { url } = await generateImage({
       prompt: "Upscale this image to higher resolution. Enhance details, sharpen edges, improve quality while maintaining the original composition and style.",
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
+    await consumeLimit(ctx.user.id, "ai_image", limit);
     return { url };
   }),
 
@@ -929,6 +941,7 @@ export const imageEditorRouter = router({
       prompt: `${filterPrompts[input.filter]}. Keep the original composition and subject.`,
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
+    await consumeLimit(ctx.user.id, "ai_image", limit);
     return { url };
   }),
 
@@ -955,7 +968,9 @@ export const multiLanguageRouter = router({
     text: z.string(),
     targetLanguage: z.string(),
     sourceLanguage: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const response = await invokeLLM({
       messages: [
         { role: "system", content: `You are a professional translator. Translate the following text to ${input.targetLanguage}. Maintain the tone, style, and marketing effectiveness. ${input.sourceLanguage ? `Source language: ${input.sourceLanguage}.` : "Auto-detect the source language."} Return ONLY the translated text, no explanations.` },
@@ -974,6 +989,7 @@ export const multiLanguageRouter = router({
         { role: "user", content: input.text },
       ],
     });
+    await consumeLimit(ctx.user.id, "ai_generation", limit);
     return { language: String(response.choices[0].message.content || "").trim() || "Unknown" };
   }),
 
@@ -998,6 +1014,7 @@ export const multiLanguageRouter = router({
         { role: "user", content: input.prompt },
       ],
     });
+    await consumeLimit(ctx.user.id, "ai_generation", limit);
     return { content: String(response.choices[0].message.content) || "" };
   }),
 });
@@ -1007,7 +1024,9 @@ export const competitorSpyRouter = router({
   analyzeAds: protectedProcedure.input(z.object({
     competitorUrl: z.string(),
     platform: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     // Fetch competitor page
     let pageContent = "";
     try {
@@ -1055,6 +1074,7 @@ export const competitorSpyRouter = router({
       },
     });
 
+    await consumeLimit(ctx.user.id, "ai_generation", limit);
     return JSON.parse(String(response.choices[0].message.content) || "{}");
   }),
 });

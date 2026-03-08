@@ -97,6 +97,7 @@ export async function runMigrations(): Promise<void> {
       "ALTER TABLE `users` ADD COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free'",
       "subscriptionPlan"
     );
+    await runAlter("ALTER TABLE `users` ADD COLUMN `trialUsed` boolean DEFAULT false", "trialUsed");
     // Expand enum if column already existed with old values (free/pro/enterprise)
     try {
       await connection!.query(
@@ -105,6 +106,21 @@ export async function runMigrations(): Promise<void> {
       console.log("[migrate] Updated users.subscriptionPlan enum.");
     } catch {
       // Column may not exist or already correct
+    }
+    // Subscriptions: add period start and trial end for usage reset and trial banner
+    try {
+      await connection!.query("ALTER TABLE `subscriptions` ADD COLUMN `currentPeriodStart` timestamp NULL");
+      console.log("[migrate] Added subscriptions.currentPeriodStart");
+    } catch (e: unknown) {
+      const err = e as { errno?: number };
+      if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.currentPeriodStart:", (e as Error).message);
+    }
+    try {
+      await connection!.query("ALTER TABLE `subscriptions` ADD COLUMN `trialEndsAt` timestamp NULL");
+      console.log("[migrate] Added subscriptions.trialEndsAt");
+    } catch (e: unknown) {
+      const err = e as { errno?: number };
+      if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.trialEndsAt:", (e as Error).message);
     }
   } catch (err: unknown) {
     console.error("[migrate] Connection or migration error:", (err as Error).message);

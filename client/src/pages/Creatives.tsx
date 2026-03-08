@@ -12,6 +12,7 @@ import { Image, Loader2, Sparkles, Trash2, Download, Camera, Palette, Megaphone,
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { WhatsNextCard } from "@/components/WhatsNextCard";
+import { FreeTierWatermark } from "@/components/FreeTierWatermark";
 import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const creativeTypes = [
@@ -44,6 +45,8 @@ export default function Creatives() {
   const utils = trpc.useUtils();
   const { data: creatives, isLoading } = trpc.creative.list.useQuery();
   const { data: products } = trpc.product.list.useQuery();
+  const { data: subStatus } = trpc.subscription.status.useQuery();
+  const isFreePlan = subStatus?.plan === "free";
   const generateMut = trpc.creative.generate.useMutation({
     onSuccess: () => { utils.creative.list.invalidate(); setOpen(false); toast.success("Creative generated!"); },
     onError: (e) => toast.error(e.message),
@@ -309,6 +312,11 @@ export default function Creatives() {
                     {creative.imageUrl ? (
                       <div className="relative aspect-square bg-muted">
                         <img src={creative.imageUrl} alt={creative.type} className="w-full h-full object-cover" />
+                        {isFreePlan && (
+                          <div className="absolute bottom-1 right-1">
+                            <FreeTierWatermark className="text-white/80 drop-shadow" />
+                          </div>
+                        )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                           <div className="flex gap-2">
                             <Button size="sm" variant="secondary" className="rounded-lg" onClick={() => window.open(creative.imageUrl!, "_blank")}>

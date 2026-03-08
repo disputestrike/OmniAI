@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -273,6 +274,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 function DashboardLayoutContent({ children, setSidebarWidth }: { children: React.ReactNode; setSidebarWidth: (w: number) => void }) {
   const { user, logout } = useAuth();
+  const { data: subStatus } = trpc.subscription.status.useQuery(undefined, { enabled: !!user });
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -399,6 +401,21 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 {activeMenuItem?.label ?? "Menu"}
               </span>
             </div>
+          </div>
+        )}
+        {subStatus?.trialEndsAt && new Date(subStatus.trialEndsAt) > new Date() && (
+          <div className="bg-amber-100 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-900">
+            {(() => {
+              const end = new Date(subStatus.trialEndsAt);
+              const days = Math.max(0, Math.ceil((end.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+              return `${days} day${days !== 1 ? "s" : ""} remaining in your free trial — your card will be charged on ${end.toLocaleDateString()}.`;
+            })()}
+          </div>
+        )}
+        {subStatus?.usage && subStatus.usage.aiGenerationsUsed != null && (
+          <div className="border-b bg-muted/30 px-4 py-1.5 text-center text-xs text-muted-foreground">
+            Generations: {subStatus.usage.aiGenerationsUsed} used this period
+            {subStatus.purchasedCredits != null && subStatus.purchasedCredits > 0 && ` · ${subStatus.purchasedCredits} credits in wallet`}
           </div>
         )}
         <main className="flex-1 p-4 md:p-6">{children}</main>

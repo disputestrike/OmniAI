@@ -10,6 +10,22 @@ export const ENV = {
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
+  trialDays: parseInt(process.env.TRIAL_DAYS ?? "7", 10) || 7,
+  // Subscription price IDs (from Stripe Dashboard)
+  stripePriceStarterMonthly: process.env.STRIPE_PRICE_STARTER_MONTHLY ?? "",
+  stripePriceStarterAnnual: process.env.STRIPE_PRICE_STARTER_ANNUAL ?? "",
+  stripePriceProMonthly: process.env.STRIPE_PRICE_PRO_MONTHLY ?? "",
+  stripePriceProAnnual: process.env.STRIPE_PRICE_PRO_ANNUAL ?? "",
+  stripePriceBizMonthly: process.env.STRIPE_PRICE_BIZ_MONTHLY ?? "",
+  stripePriceBizAnnual: process.env.STRIPE_PRICE_BIZ_ANNUAL ?? "",
+  stripePriceAgencyMonthly: process.env.STRIPE_PRICE_AGENCY_MONTHLY ?? "",
+  stripePriceAgencyAnnual: process.env.STRIPE_PRICE_AGENCY_ANNUAL ?? "",
+  // Credit pack one-time price IDs
+  stripePriceCredits50: process.env.STRIPE_PRICE_CREDITS_50 ?? "",
+  stripePriceCredits150: process.env.STRIPE_PRICE_CREDITS_150 ?? "",
+  stripePriceCredits400: process.env.STRIPE_PRICE_CREDITS_400 ?? "",
+  stripePriceCredits1000: process.env.STRIPE_PRICE_CREDITS_1000 ?? "",
+  stripePriceCredits5000: process.env.STRIPE_PRICE_CREDITS_5000 ?? "",
   // Video Generation APIs (user provides key later)
   runwayApiKey: process.env.RUNWAY_API_KEY ?? "",
   lumaApiKey: process.env.LUMA_API_KEY ?? "",

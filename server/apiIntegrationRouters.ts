@@ -7,6 +7,9 @@ import { z } from "zod";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import { TRPCError } from "@trpc/server";
+import { checkLimit, consumeLimit } from "./creditsAndUsage";
+
+const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
 import { generateVideo, checkVideoStatus, getVideoProviders } from "./videoGeneration";
 import { generateVoiceover, listVoices, getVoiceoverProviders } from "./voiceover";
 import { generateAvatarVideo, checkHeyGenStatus, listAvatars, getAvatarProviders } from "./avatarGeneration";
@@ -346,11 +349,13 @@ export const memeRouter = router({
       },
     });
     const concept = JSON.parse(String(conceptResponse.choices[0].message.content));
+    await consumeLimit(ctx.user.id, "ai_generation", limitGen);
 
     // Step 2: Generate the meme image
     const imageResult = await generateImage({
       prompt: `Meme image: ${concept.imagePrompt}. Funny, shareable, high quality, meme format, bold impact font text overlay: "${concept.topText}" at top and "${concept.bottomText}" at bottom.`,
     });
+    await consumeLimit(ctx.user.id, "ai_image", limitImg);
 
     return {
       ...concept,
@@ -362,7 +367,9 @@ export const memeRouter = router({
     topic: z.string().min(1),
     count: z.number().min(1).max(5).optional(),
     style: z.enum(["classic", "modern", "corporate", "gen-z", "surreal"]).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limitGen = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limitGen.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const count = input.count || 3;
     const batchResponse = await invokeLLM({
       messages: [
@@ -400,14 +407,18 @@ export const memeRouter = router({
       },
     });
     const { memes } = JSON.parse(String(batchResponse.choices[0].message.content));
+    await consumeLimit(ctx.user.id, "ai_generation", limitGen);
 
     // Generate images for each meme
     const results = [];
     for (const meme of memes) {
+      const limitImg = await checkLimit(ctx.user.id, "ai_image");
+      if (!limitImg.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       try {
         const imageResult = await generateImage({
           prompt: `Meme image: ${meme.imagePrompt}. Funny, meme format.`,
         });
+        await consumeLimit(ctx.user.id, "ai_image", limitImg);
         results.push({ ...meme, imageUrl: imageResult.url });
       } catch (e) {
         results.push({ ...meme, imageUrl: null, error: "Image generation failed" });
@@ -429,11 +440,15 @@ export const creativeEngineRouter = router({
     adType: z.enum(["product-showcase", "lifestyle", "before-after", "testimonial", "sale", "announcement"]).optional(),
     headline: z.string().optional(),
     cta: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limitImg = await checkLimit(ctx.user.id, "ai_image");
+    if (!limitImg.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     // Step 1: Generate ad copy if not provided
     let headline = input.headline;
     let cta = input.cta;
     if (!headline || !cta) {
+      const limitGen = await checkLimit(ctx.user.id, "ai_generation");
+      if (!limitGen.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       const copyResponse = await invokeLLM({
         messages: [
           { role: "system", content: "Generate a compelling ad headline and CTA for this product. Return JSON." },
@@ -460,6 +475,7 @@ export const creativeEngineRouter = router({
       const copy = JSON.parse(String(copyResponse.choices[0].message.content));
       headline = headline || copy.headline;
       cta = cta || copy.cta;
+      await consumeLimit(ctx.user.id, "ai_generation", limitGen);
     }
 
     // Step 2: Generate the ad image
@@ -506,7 +522,7 @@ export const creativeEngineRouter = router({
     productImageUrl: z.string().optional(),
     scenes: z.array(z.string()).optional(),
     count: z.number().min(1).max(6).optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
     const scenes = input.scenes || [
       "Clean white studio background with soft shadows",
       "Lifestyle setting on a modern desk with accessories",
@@ -517,11 +533,14 @@ export const creativeEngineRouter = router({
 
     const photos = [];
     for (let i = 0; i < count; i++) {
+      const limitImg = await checkLimit(ctx.user.id, "ai_image");
+      if (!limitImg.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       try {
         const result = await generateImage({
           prompt: `Professional product photography of ${input.productName}. Scene: ${scenes[i]}. High-end commercial photography, perfect lighting, sharp focus, 4K quality.`,
           ...(input.productImageUrl ? { originalImages: [{ url: input.productImageUrl, mimeType: "image/jpeg" as const }] } : {}),
         });
+        await consumeLimit(ctx.user.id, "ai_image", limitImg);
         photos.push({ scene: scenes[i], imageUrl: result.url });
       } catch (e) {
         photos.push({ scene: scenes[i], imageUrl: null, error: "Generation failed" });

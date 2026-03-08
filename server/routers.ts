@@ -7,6 +7,9 @@ import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
+import { checkLimit, consumeLimit } from "./creditsAndUsage";
+
+const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
 import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { storagePut } from "./storage";
@@ -170,6 +173,9 @@ Return a JSON object with these fields:
       platform: z.string().optional(),
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "ai_generation");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+
       let productContext = "";
       if (input.productId) {
         const product = await db.getProductById(input.productId);
@@ -227,6 +233,7 @@ Return a JSON object with these fields:
         status: "draft",
       });
 
+      await consumeLimit(ctx.user.id, "ai_generation", limit);
       return { id: result.id, title, body: generatedContent };
     }),
     update: protectedProcedure.input(z.object({
@@ -252,6 +259,8 @@ Return a JSON object with these fields:
       targetType: z.enum(["ad_copy_short", "ad_copy_long", "blog_post", "seo_meta", "social_caption", "video_script", "email_copy", "pr_release", "podcast_script", "tv_script", "radio_script", "copywriting", "amazon_listing", "google_ads", "youtube_seo", "twitter_thread", "linkedin_article", "whatsapp_broadcast", "sms_copy", "story_content", "ugc_script", "landing_page"]).optional(),
       platform: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "ai_generation");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       const response = await invokeLLM({
         messages: [
           { role: "system", content: "You are an expert content remixer. Take the given content and recreate it — make it better, more engaging, more persuasive, and more effective. Maintain the core message but elevate everything: the hook, the structure, the emotional appeal, and the CTA. If a target format is specified, adapt the content to that format." },
@@ -269,12 +278,15 @@ Return a JSON object with these fields:
         status: "draft",
         metadata: { remixedFrom: input.originalContent.substring(0, 200) },
       });
+      await consumeLimit(ctx.user.id, "ai_generation", limit);
       return { id: result.id, title, body: remixed };
     }),
     repurpose: protectedProcedure.input(z.object({
       contentId: z.number(),
       targetTypes: z.array(z.string()).min(1),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "ai_generation");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       const original = await db.getContentById(input.contentId);
       if (!original) throw new TRPCError({ code: "NOT_FOUND" });
       const response = await invokeLLM({
@@ -325,6 +337,7 @@ Return a JSON object with these fields:
         });
         created.push({ id: r.id, type: piece.type, title: piece.title });
       }
+      await consumeLimit(ctx.user.id, "ai_generation", limit);
       return { created };
     }),
   }),
@@ -473,6 +486,7 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       try {
         const { url } = await generateImage({ prompt });
         await db.updateCreative(creativeRecord.id, { imageUrl: url, status: "completed" });
+        await consumeLimit(ctx.user.id, "ai_image", limit);
         return { id: creativeRecord.id, imageUrl: url, status: "completed" };
       } catch (error) {
         await db.updateCreative(creativeRecord.id, { status: "failed" });
@@ -491,6 +505,8 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       url: z.string().min(1),
       depth: z.enum(["quick", "standard", "deep"]).default("standard"),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "website_analysis");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       // Real-time website scraping: fetch actual page data before AI analysis
       let scrapedData = "";
       try {
@@ -672,6 +688,7 @@ Return JSON with:
         },
       });
 
+      await consumeLimit(ctx.user.id, "website_analysis", limit);
       return JSON.parse(response.choices[0].message.content as string);
     }),
     generateHookVariations: protectedProcedure.input(z.object({
@@ -731,6 +748,9 @@ Return JSON with:
       musicStyle: z.string().optional(),
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "video_script");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+
       let productContext = "";
       if (input.productId) {
         const product = await db.getProductById(input.productId);
@@ -821,6 +841,7 @@ Return JSON with:
         // Thumbnail generation is optional
       }
 
+      await consumeLimit(ctx.user.id, "video_script", limit);
       const result = await db.createVideoAd({
         userId: ctx.user.id,
         productId: input.productId ?? null,
@@ -1424,11 +1445,80 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
   // ─── Subscription ────────────────────────────────────────────────
   subscription: router({
     status: protectedProcedure.query(async ({ ctx }) => {
+      const { getCurrentPeriod, getOrCreateUserUsage, getOrCreateCreditWallet, getSubscriptionForUser } = await import("./creditsAndUsage");
+      const plan = (ctx.user.subscriptionPlan || "free") as string;
+      const period = await getCurrentPeriod(ctx.user.id);
+      const usage = await getOrCreateUserUsage(ctx.user.id, period.start, period.end);
+      const wallet = await getOrCreateCreditWallet(ctx.user.id);
+      const sub = await getSubscriptionForUser(ctx.user.id);
       return {
-        plan: ctx.user.subscriptionPlan || "free",
+        plan,
         stripeCustomerId: ctx.user.stripeCustomerId || null,
         stripeSubscriptionId: ctx.user.stripeSubscriptionId || null,
+        trialEndsAt: sub?.trialEndsAt?.toISOString() ?? null,
+        periodEnd: sub?.currentPeriodEnd?.toISOString() ?? period.end.toISOString(),
+        usage: usage
+          ? {
+              aiGenerationsUsed: usage.aiGenerationsUsed,
+              aiImagesUsed: usage.aiImagesUsed,
+              videoScriptsUsed: usage.videoScriptsUsed,
+              videoMinutesUsed: usage.videoMinutesUsed,
+              websiteAnalysesUsed: usage.websiteAnalysesUsed,
+              abTestsUsed: usage.abTestsUsed,
+              scheduledPostsUsed: usage.scheduledPostsUsed,
+            }
+          : null,
+        purchasedCredits: wallet?.purchasedCredits ?? 0,
       };
+    }),
+  }),
+
+  // ─── Pricing (public — for pricing page / landing; never hardcode prices in frontend) ─
+  pricing: router({
+    list: publicProcedure.query(async () => {
+      const { PRICING_TIERS } = await import("./pricingConfig");
+      return PRICING_TIERS;
+    }),
+  }),
+
+  // ─── Credits ───────────────────────────────────────────────────────
+  credits: router({
+    balance: protectedProcedure.query(async ({ ctx }) => {
+      const { getOrCreateCreditWallet, getCurrentPeriod, getOrCreateUserUsage } = await import("./creditsAndUsage");
+      const wallet = await getOrCreateCreditWallet(ctx.user.id);
+      const period = await getCurrentPeriod(ctx.user.id);
+      const usage = await getOrCreateUserUsage(ctx.user.id, period.start, period.end);
+      const { TIER_LIMITS } = await import("./tierLimits");
+      const tier = (ctx.user.subscriptionPlan || "free") as keyof typeof TIER_LIMITS;
+      const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
+      return {
+        purchasedCredits: wallet?.purchasedCredits ?? 0,
+        periodStart: period.start.toISOString(),
+        periodEnd: period.end.toISOString(),
+        usage: usage
+          ? {
+              aiGenerationsUsed: usage.aiGenerationsUsed,
+              aiImagesUsed: usage.aiImagesUsed,
+              aiGenerationsLimit: limits.aiGenerationsMonthly,
+              aiImagesLimit: limits.aiImagesMonthly,
+            }
+          : null,
+      };
+    }),
+    packages: protectedProcedure.query(async ({ ctx }) => {
+      const { CREDIT_PACKS } = await import("./tierLimits");
+      const { TIER_LIMITS } = await import("./tierLimits");
+      const tier = (ctx.user.subscriptionPlan || "free") as keyof typeof TIER_LIMITS;
+      const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
+      const discount = limits.creditTopupDiscountPercent ?? 0;
+      return CREDIT_PACKS.map((p) => ({
+        id: p.id,
+        name: p.name,
+        credits: p.credits,
+        priceCents: p.priceCents,
+        priceCentsAfterDiscount: Math.round((p.priceCents * (100 - discount)) / 100),
+        discountPercent: discount,
+      }));
     }),
   }),
 

@@ -15,6 +15,7 @@ export const users = mysqlTable("users", {
   subscriptionPlan: mysqlEnum("subscriptionPlan", ["free", "starter", "professional", "business", "enterprise"]).default("free").notNull(),
   stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 128 }),
   passwordHash: varchar("passwordHash", { length: 255 }),
+  trialUsed: boolean("trialUsed").default(false),
 });
 
 export type User = typeof users.$inferSelect;
@@ -228,13 +229,58 @@ export const subscriptions = mysqlTable("subscriptions", {
   stripePriceId: varchar("stripePriceId", { length: 128 }).notNull(),
   status: mysqlEnum("status", ["active", "past_due", "canceled", "incomplete", "trialing"]).default("active").notNull(),
   currentPeriodEnd: timestamp("currentPeriodEnd"),
+  currentPeriodStart: timestamp("currentPeriodStart"),
   cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  trialEndsAt: timestamp("trialEndsAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+// ─── User monthly usage (reset on invoice.payment_succeeded) ─────────
+export const userMonthlyUsage = mysqlTable("user_monthly_usage", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  periodStart: timestamp("periodStart").notNull(),
+  periodEnd: timestamp("periodEnd").notNull(),
+  aiGenerationsUsed: int("aiGenerationsUsed").default(0).notNull(),
+  aiImagesUsed: int("aiImagesUsed").default(0).notNull(),
+  videoScriptsUsed: int("videoScriptsUsed").default(0).notNull(),
+  videoMinutesUsed: int("videoMinutesUsed").default(0).notNull(),
+  websiteAnalysesUsed: int("websiteAnalysesUsed").default(0).notNull(),
+  abTestsUsed: int("abTestsUsed").default(0).notNull(),
+  scheduledPostsUsed: int("scheduledPostsUsed").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ─── Credit wallets (purchased credits never expire) ───────────────────
+export const creditWallets = mysqlTable("credit_wallets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  purchasedCredits: int("purchasedCredits").default(0).notNull(),
+  lifetimePurchased: int("lifetimePurchased").default(0).notNull(),
+  lifetimeUsed: int("lifetimeUsed").default(0).notNull(),
+  lastPurchaseAt: timestamp("lastPurchaseAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ─── Credit transactions (audit log) ──────────────────────────────────
+export const creditTransactions = mysqlTable("credit_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  amount: int("amount").notNull(),
+  actionType: varchar("actionType", { length: 64 }).notNull(),
+  stripePaymentId: varchar("stripePaymentId", { length: 128 }),
+  balanceAfter: int("balanceAfter").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = typeof subscriptions.$inferInsert;
+
+export type UserMonthlyUsage = typeof userMonthlyUsage.$inferSelect;
+export type CreditWallet = typeof creditWallets.$inferSelect;
+export type CreditTransaction = typeof creditTransactions.$inferSelect;
 
 // ─── CRM Deals (Pipeline Automation) ────────────────────────────────
 export const deals = mysqlTable("deals", {

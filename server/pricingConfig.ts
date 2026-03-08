@@ -1,0 +1,60 @@
+/**
+ * Phase 1 display pricing for API. Never hardcode in frontend — read from pricing.list.
+ * When Phase 3+ changes prices, update here or read from env.
+ */
+export const PRICING_TIERS = [
+  {
+    key: "free",
+    name: "Free",
+    monthlyPrice: 0,
+    annualPrice: 0,
+    tagline: "Try OTOBI AI risk-free",
+    cta: "Start Free — No Card Required",
+    popular: false,
+    contactSales: false,
+  },
+  {
+    key: "starter",
+    name: "Starter",
+    monthlyPrice: 49,
+    annualPrice: 41,
+    annualTotal: 492,
+    tagline: "For solopreneurs getting started",
+    cta: "Start 7-Day Free Trial",
+    popular: false,
+    contactSales: false,
+  },
+  {
+    key: "professional",
+    name: "Professional",
+    monthlyPrice: 97,
+    annualPrice: 81,
+    annualTotal: 972,
+    tagline: "For growing businesses and marketing teams",
+    cta: "Start 7-Day Free Trial",
+    popular: true,
+    contactSales: false,
+  },
+  {
+    key: "business",
+    name: "Business",
+    monthlyPrice: 197,
+    annualPrice: 163,
+    annualTotal: 1956,
+    tagline: "For agencies and marketing departments",
+    cta: "Start 7-Day Free Trial",
+    popular: false,
+    contactSales: false,
+  },
+  {
+    key: "agency",
+    name: "Agency",
+    monthlyPrice: 497,
+    annualPrice: 413,
+    annualTotal: 4956,
+    tagline: "Agencies managing multiple clients",
+    cta: "Contact Sales",
+    popular: false,
+    contactSales: true,
+  },
+] as const;
