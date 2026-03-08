@@ -44,6 +44,12 @@ import {
   forms, InsertForm, formFields, InsertFormField, formResponses, InsertFormResponse,
   reportSnapshots, InsertReportSnapshot,
   assignmentSettings, InsertAssignmentSetting,
+  flywheelPatterns, InsertFlywheelPattern,
+  campaignWinningPatterns, InsertCampaignWinningPattern,
+  narratives, InsertNarrative,
+  influenceNodes, InsertInfluenceNode,
+  referralCodes, InsertReferralCode,
+  referralSignups, InsertReferralSignup,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1485,4 +1491,87 @@ export async function upsertAssignmentSetting(userId: number, data: Partial<Inse
   const existing = await getAssignmentSetting(userId);
   if (existing) await db.update(assignmentSettings).set({ ...data, updatedAt: new Date() }).where(eq(assignmentSettings.userId, userId));
   else await db.insert(assignmentSettings).values({ userId, mode: data.mode ?? "manual", memberOrder: data.memberOrder ?? [], lastAssignedIndex: data.lastAssignedIndex ?? 0 });
+}
+
+// ─── Flywheel (central anonymized patterns) ───────────────────────────
+export async function createFlywheelPattern(data: InsertFlywheelPattern) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(flywheelPatterns).values(data);
+  return { id: result[0].insertId };
+}
+export async function getFlywheelPatterns(limit = 100) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(flywheelPatterns).orderBy(desc(flywheelPatterns.updatedAt)).limit(limit);
+}
+
+// ─── Campaign winning patterns (self-learning) ────────────────────────
+export async function createCampaignWinningPattern(data: InsertCampaignWinningPattern) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(campaignWinningPatterns).values(data);
+  return { id: result[0].insertId };
+}
+export async function getCampaignWinningPatternsByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(campaignWinningPatterns).where(eq(campaignWinningPatterns.userId, userId)).orderBy(desc(campaignWinningPatterns.createdAt));
+}
+export async function getCampaignWinningPatternsByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(campaignWinningPatterns).where(eq(campaignWinningPatterns.campaignId, campaignId)).orderBy(desc(campaignWinningPatterns.createdAt));
+}
+
+// ─── Narratives (market narrative engine) ─────────────────────────────
+export async function createNarrative(data: InsertNarrative) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(narratives).values(data);
+  return { id: result[0].insertId };
+}
+export async function getNarrativesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(narratives).where(eq(narratives.userId, userId)).orderBy(desc(narratives.detectedAt));
+}
+
+// ─── Influence nodes ─────────────────────────────────────────────────
+export async function createInfluenceNode(data: InsertInfluenceNode) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(influenceNodes).values(data);
+  return { id: result[0].insertId };
+}
+export async function getInfluenceNodesByUser(userId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(influenceNodes).where(eq(influenceNodes.userId, userId)).orderBy(desc(influenceNodes.createdAt));
+}
+export async function getInfluenceNodeById(id: number, userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(influenceNodes).where(and(eq(influenceNodes.id, id), eq(influenceNodes.userId, userId))).limit(1);
+  return r[0];
+}
+export async function deleteInfluenceNode(id: number, userId: number) {
+  const db = await getDb(); if (!db) return;
+  await db.delete(influenceNodes).where(and(eq(influenceNodes.id, id), eq(influenceNodes.userId, userId)));
+}
+
+// ─── Referral ────────────────────────────────────────────────────────
+export async function createReferralCode(userId: number, code: string) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(referralCodes).values({ userId, code });
+  return { id: result[0].insertId };
+}
+export async function getReferralCodeByUserId(userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(referralCodes).where(eq(referralCodes.userId, userId)).limit(1);
+  return r[0];
+}
+export async function getReferralCodeByCode(code: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(referralCodes).where(eq(referralCodes.code, code)).limit(1);
+  return r[0];
+}
+export async function recordReferralSignup(referrerUserId: number, referredUserId: number) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(referralSignups).values({ referrerUserId, referredUserId });
+  return { id: result[0].insertId };
+}
+export async function getReferralsByReferrer(referrerUserId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(referralSignups).where(eq(referralSignups.referrerUserId, referrerUserId)).orderBy(desc(referralSignups.createdAt));
 }

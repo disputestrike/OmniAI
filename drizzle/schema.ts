@@ -1209,3 +1209,90 @@ export const assignmentSettings = mysqlTable("assignment_settings", {
 
 export type AssignmentSetting = typeof assignmentSettings.$inferSelect;
 export type InsertAssignmentSetting = typeof assignmentSettings.$inferInsert;
+
+// ─── Data flywheel (anonymized aggregated patterns for central learning) ───
+export const flywheelPatterns = mysqlTable("flywheel_patterns", {
+  id: int("id").autoincrement().primaryKey(),
+  platform: varchar("platform", { length: 64 }).notNull(),
+  format: varchar("format", { length: 128 }),
+  hookLengthBand: varchar("hookLengthBand", { length: 32 }),
+  emotion: varchar("emotion", { length: 64 }),
+  ctrBand: varchar("ctrBand", { length: 32 }),
+  conversionBand: varchar("conversionBand", { length: 32 }),
+  sampleSize: int("sampleSize").default(0).notNull(),
+  patternSummary: text("patternSummary"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type FlywheelPattern = typeof flywheelPatterns.$inferSelect;
+export type InsertFlywheelPattern = typeof flywheelPatterns.$inferInsert;
+
+// ─── Self-learning: per-campaign winning patterns (fed into flywheel when anonymized) ───
+export const campaignWinningPatterns = mysqlTable("campaign_winning_patterns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  campaignId: int("campaignId"),
+  platform: varchar("platform", { length: 64 }),
+  format: varchar("format", { length: 128 }),
+  hookLength: varchar("hookLength", { length: 32 }),
+  emotion: varchar("emotion", { length: 64 }),
+  ctr: text("ctr"),
+  conversionRate: text("conversionRate"),
+  summary: text("summary"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CampaignWinningPattern = typeof campaignWinningPatterns.$inferSelect;
+export type InsertCampaignWinningPattern = typeof campaignWinningPatterns.$inferInsert;
+
+// ─── Market narrative engine ───
+export const narratives = mysqlTable("narratives", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  summary: text("summary").notNull(),
+  topics: json("topics").$type<string[]>(),
+  emotion: varchar("emotion", { length: 64 }),
+  suggestedAngles: json("suggestedAngles").$type<string[]>(),
+  sourceUrl: text("sourceUrl"),
+  detectedAt: timestamp("detectedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Narrative = typeof narratives.$inferSelect;
+export type InsertNarrative = typeof narratives.$inferInsert;
+
+// ─── Audience influence graph ───
+export const influenceNodes = mysqlTable("influence_nodes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: mysqlEnum("type", ["persona", "channel"]).notNull(),
+  segmentId: int("segmentId"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type InfluenceNode = typeof influenceNodes.$inferSelect;
+export type InsertInfluenceNode = typeof influenceNodes.$inferInsert;
+
+// ─── Referral (growth lever) ───
+export const referralCodes = mysqlTable("referral_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReferralCode = typeof referralCodes.$inferSelect;
+export type InsertReferralCode = typeof referralCodes.$inferInsert;
+
+export const referralSignups = mysqlTable("referral_signups", {
+  id: int("id").autoincrement().primaryKey(),
+  referrerUserId: int("referrerUserId").notNull(),
+  referredUserId: int("referredUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ReferralSignup = typeof referralSignups.$inferSelect;
+export type InsertReferralSignup = typeof referralSignups.$inferInsert;

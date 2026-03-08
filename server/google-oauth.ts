@@ -42,6 +42,11 @@ export function registerGoogleOAuthRoutes(app: Express) {
     const config = getGoogleConfig();
     const redirectUri = `${req.headers.origin || `${req.protocol}://${req.get("host")}`}/api/auth/google/callback`;
     
+    const ref = (req.query.ref as string) || "";
+    const state = btoa(JSON.stringify({
+      origin: req.headers.origin || req.protocol + "://" + req.get("host"),
+      ref: ref || undefined,
+    }));
     const params = new URLSearchParams({
       client_id: config.clientId,
       redirect_uri: redirectUri,
@@ -49,7 +54,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       scope: "openid email profile",
       access_type: "offline",
       prompt: "consent",
-      state: btoa(JSON.stringify({ origin: req.headers.origin || req.protocol + "://" + req.get("host") })),
+      state,
     });
 
     res.redirect(`${GOOGLE_AUTH_URL}?${params.toString()}`);
@@ -73,9 +78,11 @@ export function registerGoogleOAuthRoutes(app: Express) {
     }
 
     let origin = "";
+    let refCode: string | undefined;
     try {
       const stateData = JSON.parse(atob(stateParam || ""));
       origin = stateData.origin || "";
+      refCode = stateData.ref;
     } catch {
       origin = `${req.protocol}://${req.get("host")}`;
     }
@@ -139,6 +146,18 @@ export function registerGoogleOAuthRoutes(app: Express) {
         loginMethod: "google",
         lastSignedIn: new Date(),
       });
+
+      const referredUser = await db.getUserByOpenId(googleOpenId);
+      if (refCode && referredUser) {
+        const refRow = await db.getReferralCodeByCode(refCode);
+        if (refRow && refRow.userId !== referredUser.id) {
+          try {
+            await db.recordReferralSignup(refRow.userId, referredUser.id);
+          } catch (e) {
+            console.warn("[Google OAuth] Referral record failed:", e);
+          }
+        }
+      }
 
       const sessionToken = await createSessionToken(googleOpenId, {
         name: googleUser.name || googleUser.email,

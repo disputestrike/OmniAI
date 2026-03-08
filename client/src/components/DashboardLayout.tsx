@@ -149,11 +149,10 @@ const menuSections = [
       { icon: Search, label: "SEO Audits", path: "/seo-audits" },
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
+      { icon: Zap, label: "Growth & Learning", path: "/growth-learning" },
       { icon: Bot, label: "AI Agents", path: "/ai-agents" },
-      { icon: Eye, label: "Competitor Spy", path: "/competitor-spy" },
+      { icon: Eye, label: "Competitor Intelligence", path: "/competitor-intelligence" },
       { icon: Users, label: "Customer Intel", path: "/customer-intel" },
-      { icon: Search, label: "Competitor Intel", path: "/competitor-intel" },
-      { icon: Monitor, label: "Competitor Monitor", path: "/competitor-monitor" },
     ],
   },
   {

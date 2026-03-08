@@ -999,3 +999,68 @@ CREATE TABLE IF NOT EXISTS `assignment_settings` (
 	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `assignment_settings_userId` PRIMARY KEY(`userId`)
 );
+CREATE TABLE IF NOT EXISTS `flywheel_patterns` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`platform` varchar(64) NOT NULL,
+	`format` varchar(128),
+	`hookLengthBand` varchar(32),
+	`emotion` varchar(64),
+	`ctrBand` varchar(32),
+	`conversionBand` varchar(32),
+	`sampleSize` int NOT NULL DEFAULT 0,
+	`patternSummary` text,
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `flywheel_patterns_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `campaign_winning_patterns` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`campaignId` int,
+	`platform` varchar(64),
+	`format` varchar(128),
+	`hookLength` varchar(32),
+	`emotion` varchar(64),
+	`ctr` text,
+	`conversionRate` text,
+	`summary` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `campaign_winning_patterns_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `narratives` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`summary` text NOT NULL,
+	`topics` json,
+	`emotion` varchar(64),
+	`suggestedAngles` json,
+	`sourceUrl` text,
+	`detectedAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `narratives_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `influence_nodes` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`type` enum('persona','channel') NOT NULL,
+	`segmentId` int,
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `influence_nodes_id` PRIMARY KEY(`id`)
+);
+CREATE TABLE IF NOT EXISTS `referral_codes` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`code` varchar(32) NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `referral_codes_id` PRIMARY KEY(`id`),
+	CONSTRAINT `referral_codes_code_unique` UNIQUE(`code`)
+);
+CREATE TABLE IF NOT EXISTS `referral_signups` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`referrerUserId` int NOT NULL,
+	`referredUserId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `referral_signups_id` PRIMARY KEY(`id`)
+);

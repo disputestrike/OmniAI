@@ -17,6 +17,8 @@ AI-powered marketing automation platform: create content, run campaigns, manage 
 | [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) | Deploy to Railway (env vars, MySQL, build) |
 | [COMPETITIVE_RANKING.md](./COMPETITIVE_RANKING.md) | Competitive positioning and feature comparison |
 | [PLATFORM_ASSESSMENT.md](./PLATFORM_ASSESSMENT.md) | How good we are now, what's wired, what's missing |
+| [docs/API_KEYS_OVERLAP.md](./docs/API_KEYS_OVERLAP.md) | API key overlaps (video, voice, music): pick one per category, minimum set |
+| [docs/ARCHITECTURE_OVERVIEW_AND_RECOMMENDATIONS.md](./docs/ARCHITECTURE_OVERVIEW_AND_RECOMMENDATIONS.md) | Intelligence layer, data flywheel, 5+ recommendations (merge competitor, self-learning, narrative, influence graph) |
 
 ## Sidebar (where to find what)
 

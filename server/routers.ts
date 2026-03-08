@@ -29,6 +29,7 @@ import { creatorProfileRouter } from "./creatorProfileRouter";
 import { publisherRouter } from "./publisherRouter";
 import { advancedFeaturesRouter } from "./advancedFeaturesRouter";
 import { enhancedChatRouter } from "./enhancedChatRouter";
+import { flywheelRouter, selfLearningRouter, narrativeRouter, influenceRouter, referralRouter } from "./autonomousRouters";
 import { brandKits } from "../drizzle/schema";
 
 export const appRouter = router({
@@ -1684,12 +1685,16 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
       else if (input.entityType === "creative") entityData = await db.getCreativeById(input.entityId);
       if (!entityData) throw new TRPCError({ code: "NOT_FOUND", message: "Entity not found" });
 
-      // Get historical performance data for context
+      // Get historical performance data and flywheel patterns (central learning) for context
       const analytics = await db.getAnalyticsByUser(ctx.user.id);
+      const flywheelPatterns = await db.getFlywheelPatterns(30);
+      const flywheelContext = flywheelPatterns.length > 0
+        ? `\nPlatform learning (anonymized patterns from all users): ${JSON.stringify(flywheelPatterns.slice(0, 15).map(p => ({ platform: p.platform, ctrBand: p.ctrBand, patternSummary: p.patternSummary })))}`
+        : "";
       const response = await invokeLLM({
         messages: [
-          { role: "system", content: "You are a predictive marketing analytics AI. Score the given marketing entity based on historical data and best practices. Return JSON with predicted performance metrics." },
-          { role: "user", content: `Entity type: ${input.entityType}\nEntity data: ${JSON.stringify(entityData)}\nHistorical analytics (last 20): ${JSON.stringify(analytics.slice(0, 20))}\n\nPredict: CTR, conversion rate, ROAS, engagement score (0-100), virality score (0-100), quality score (0-100), and provide recommendations.` }
+          { role: "system", content: "You are a predictive marketing analytics AI. Score the given marketing entity based on historical data, best practices, and any platform learning patterns provided. Return JSON with predicted performance metrics." },
+          { role: "user", content: `Entity type: ${input.entityType}\nEntity data: ${JSON.stringify(entityData)}\nHistorical analytics (last 20): ${JSON.stringify(analytics.slice(0, 20))}${flywheelContext}\n\nPredict: CTR, conversion rate, ROAS, engagement score (0-100), virality score (0-100), quality score (0-100), and provide recommendations.` }
         ],
         response_format: { type: "json_schema", json_schema: { name: "prediction", strict: true, schema: { type: "object", properties: { predictedCtr: { type: "string" }, predictedConversionRate: { type: "string" }, predictedRoas: { type: "string" }, engagementScore: { type: "integer" }, viralityScore: { type: "integer" }, qualityScore: { type: "integer" }, recommendations: { type: "array", items: { type: "string" } }, confidence: { type: "string" } }, required: ["predictedCtr", "predictedConversionRate", "predictedRoas", "engagementScore", "viralityScore", "qualityScore", "recommendations", "confidence"], additionalProperties: false } } }
       });
@@ -2313,6 +2318,11 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
   publisher: publisherRouter,
   advanced: advancedFeaturesRouter,
   enhanced: enhancedChatRouter,
+  flywheel: flywheelRouter,
+  selfLearning: selfLearningRouter,
+  narrative: narrativeRouter,
+  influence: influenceRouter,
+  referral: referralRouter,
   brandKit: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const db2 = await getDb(); if (!db2) return [];

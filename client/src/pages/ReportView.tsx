@@ -1,8 +1,10 @@
 import { useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, BarChart3, TrendingUp } from "lucide-react";
+import { FileText, BarChart3, TrendingUp, Zap } from "lucide-react";
+import { getLoginUrl } from "@/const";
 
 export default function ReportView() {
   const [, params] = useRoute("/report/:shareToken");
@@ -87,6 +89,17 @@ export default function ReportView() {
             {(!data || (type !== "dashboard" && type !== "analytics" && type !== "ad_performance")) && (
               <pre className="p-4 rounded-lg bg-muted text-xs overflow-auto max-h-96">{JSON.stringify(payload ?? report.payload, null, 2)}</pre>
             )}
+          </CardContent>
+        </Card>
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="font-medium">Create reports like this with OTOBI AI</p>
+              <p className="text-sm text-muted-foreground">One platform for content, campaigns, analytics, and more.</p>
+            </div>
+            <Button onClick={() => { window.location.href = getLoginUrl(); }}>
+              <Zap className="h-4 w-4 mr-2" /> Get started free
+            </Button>
           </CardContent>
         </Card>
       </div>

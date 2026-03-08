@@ -60,6 +60,8 @@ import ContentCalendar from "./pages/ContentCalendar";
 import PerformanceTracking from "./pages/PerformanceTracking";
 import SocialPlanner from "./pages/SocialPlanner";
 import CompetitorMonitor from "./pages/CompetitorMonitor";
+import CompetitorIntelligenceHub from "./pages/CompetitorIntelligenceHub";
+import AutonomousGrowth from "./pages/AutonomousGrowth";
 import Projects from "./pages/Projects";
 import CreatorProfile from "./pages/CreatorProfile";
 import Funnels from "./pages/Funnels";
@@ -97,6 +99,7 @@ function DashboardRouter() {
         <Route path="/ad-platforms" component={AdPlatforms} />
         <Route path="/seo-audits" component={SeoAudits} />
         <Route path="/predictive" component={Predictive} />
+        <Route path="/growth-learning" component={AutonomousGrowth} />
         <Route path="/approvals" component={Approvals} />
         <Route path="/team" component={Team} />
         <Route path="/platform-intel" component={PlatformIntel} />
@@ -105,7 +108,8 @@ function DashboardRouter() {
         <Route path="/social-publish" component={SocialPublish} />
         <Route path="/video-render" component={VideoRender} />
         <Route path="/image-editor" component={ImageEditor} />
-        <Route path="/competitor-spy" component={CompetitorSpy} />
+        <Route path="/competitor-intelligence" component={CompetitorIntelligenceHub} />
+        <Route path="/competitor-spy" component={CompetitorIntelligenceHub} />
         <Route path="/webhooks" component={Webhooks} />
         <Route path="/translate" component={Translate} />
         <Route path="/brand-voice" component={BrandVoice} />
@@ -113,7 +117,7 @@ function DashboardRouter() {
         <Route path="/landing-pages" component={LandingPageBuilder} />
         <Route path="/automations" component={Automations} />
         <Route path="/video-studio" component={VideoStudio} />
-        <Route path="/competitor-intel" component={CompetitorIntel} />
+        <Route path="/competitor-intel" component={CompetitorIntelligenceHub} />
         <Route path="/customer-intel" component={CustomerIntel} />
         <Route path="/ai-avatars" component={AiAvatars} />
         <Route path="/meme-generator" component={MemeGenerator} />
@@ -130,7 +134,7 @@ function DashboardRouter() {
         <Route path="/content-calendar" component={ContentCalendar} />
         <Route path="/performance" component={PerformanceTracking} />
         <Route path="/social-planner" component={SocialPlanner} />
-        <Route path="/competitor-monitor" component={CompetitorMonitor} />
+        <Route path="/competitor-monitor" component={CompetitorIntelligenceHub} />
         <Route path="/projects" component={Projects} />
         <Route path="/creator-profile" component={CreatorProfile} />
         <Route path="/funnels" component={Funnels} />
@@ -175,6 +179,7 @@ function Router() {
       <Route path="/ad-platforms" component={DashboardRouter} />
       <Route path="/seo-audits" component={DashboardRouter} />
       <Route path="/predictive" component={DashboardRouter} />
+      <Route path="/growth-learning" component={DashboardRouter} />
       <Route path="/approvals" component={DashboardRouter} />
       <Route path="/team" component={DashboardRouter} />
       <Route path="/platform-intel" component={DashboardRouter} />
@@ -183,6 +188,7 @@ function Router() {
       <Route path="/social-publish" component={DashboardRouter} />
       <Route path="/video-render" component={DashboardRouter} />
       <Route path="/image-editor" component={DashboardRouter} />
+      <Route path="/competitor-intelligence" component={DashboardRouter} />
       <Route path="/competitor-spy" component={DashboardRouter} />
       <Route path="/webhooks" component={DashboardRouter} />
       <Route path="/translate" component={DashboardRouter} />

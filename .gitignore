@@ -10,6 +10,9 @@ build/
 # Environment variables
 .env
 .env.local
+# Google OAuth client secret (never commit)
+client_secret_*.json
+**/client_secret_*.json
 .env.development.local
 .env.test.local
 .env.production.local
