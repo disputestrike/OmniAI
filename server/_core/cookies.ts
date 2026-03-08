@@ -39,10 +39,14 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  const host = req.get("host") || "";
+  const isRailway = /\.railway\.app$|\.up\.railway\.app$/i.test(host);
+  const secure = isSecureRequest(req) || isRailway;
+
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    sameSite: "lax",
+    secure,
   };
 }

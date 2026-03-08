@@ -183,7 +183,8 @@ export function registerGoogleOAuthRoutes(app: Express) {
 
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-      res.redirect(302, "/dashboard");
+      const base = getCallbackBaseUrl(req);
+      res.redirect(302, `${base}/dashboard`);
     } catch (err) {
       console.error("[Google OAuth] Callback error:", err);
       res.redirect("/?error=google_auth_error");

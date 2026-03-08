@@ -371,9 +371,9 @@ export default function Landing() {
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      navigate("/dashboard");
+      window.location.replace("/dashboard");
     }
-  }, [isAuthenticated, loading, navigate]);
+  }, [isAuthenticated, loading]);
 
   const handleGetStarted = () => {
     window.location.href = getLoginUrl();
