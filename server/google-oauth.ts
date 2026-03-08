@@ -9,6 +9,7 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { createSessionToken } from "./_core/auth";
+import { ENV } from "./_core/env";
 
 /** Send 200 + HTML that redirects so the browser commits the Set-Cookie before navigating (avoids cookie loss on 302 in some browsers). */
 function sendRedirectWithCookie(res: Response, url: string): void {
@@ -53,10 +54,16 @@ export function registerGoogleOAuthRoutes(app: Express) {
     return `${useHttps ? "https" : proto}://${host}`;
   }
 
-  // Initiate Google OAuth flow — no DB check here; if DB is missing we'll fail at callback when upserting user
+  // Initiate Google OAuth flow — require JWT_SECRET so we can create session after callback
   app.get("/api/auth/google", (req: Request, res: Response) => {
     if (!isGoogleOAuthConfigured()) {
       res.status(503).json({ error: "Google OAuth is not configured. Please add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Settings > Secrets." });
+      return;
+    }
+    if (!ENV.cookieSecret) {
+      res.status(503).json({
+        error: "JWT_SECRET is required for authentication. Add JWT_SECRET in Railway → OmniAI service → Variables (e.g. run: openssl rand -base64 32).",
+      });
       return;
     }
 
@@ -86,6 +93,12 @@ export function registerGoogleOAuthRoutes(app: Express) {
   app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
     const base = getCallbackBaseUrl(req).replace(/\/$/, "");
     const dashboardUrl = `${base}/dashboard`;
+
+    if (!ENV.cookieSecret) {
+      console.error("[Google OAuth] JWT_SECRET is not set; cannot create session.");
+      res.redirect(`${dashboardUrl}?error=google_auth_error&hint=jwt_secret`);
+      return;
+    }
 
     const code = req.query.code as string;
     const stateParam = req.query.state as string;

@@ -43,10 +43,23 @@ export function getSessionCookieOptions(
   const isRailway = /\.railway\.app$|\.up\.railway\.app$/i.test(host);
   const secure = isSecureRequest(req) || isRailway;
 
+  // When PUBLIC_URL (or BASE_URL) is set, set cookie domain to that host so the cookie is sent when the user visits the public URL (avoids proxy Host mismatch).
+  let domain: string | undefined;
+  const publicUrl = (process.env.PUBLIC_URL || process.env.BASE_URL || "").trim();
+  if (publicUrl) {
+    try {
+      const u = new URL(publicUrl);
+      if (u.hostname && !LOCAL_HOSTS.has(u.hostname) && !isIpAddress(u.hostname)) domain = u.hostname;
+    } catch {
+      // ignore
+    }
+  }
+
   return {
     httpOnly: true,
     path: "/",
     sameSite: "lax",
     secure,
+    ...(domain && { domain }),
   };
 }

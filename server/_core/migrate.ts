@@ -79,18 +79,32 @@ export async function runMigrations(): Promise<void> {
     }
     console.log("[migrate] Done. Created:", ok, "| Already existed:", skipped, "| Failed:", failed);
 
-    // Optional: ensure users.passwordHash exists for email auth (ignore if already present)
+    // Ensure users table has required columns (ALTERs may not have run if CREATE TABLE failed earlier)
     const ER_DUP_FIELD = 1060;
-    try {
-      await connection!.query("ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL");
-      console.log("[migrate] Added users.passwordHash for email auth.");
-    } catch (alterErr: unknown) {
-      const e = alterErr as { errno?: number };
-      if (e.errno === ER_DUP_FIELD) {
-        // Column already exists
-      } else {
-        console.warn("[migrate] passwordHash column:", (alterErr as Error).message);
+    const runAlter = async (sql: string, name: string) => {
+      try {
+        await connection!.query(sql);
+        console.log("[migrate] Added users." + name);
+      } catch (err: unknown) {
+        const e = err as { errno?: number };
+        if (e.errno !== ER_DUP_FIELD) console.warn("[migrate]", name, ":", (err as Error).message);
       }
+    };
+    await runAlter("ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL", "passwordHash");
+    await runAlter("ALTER TABLE `users` ADD COLUMN `stripeCustomerId` varchar(128) NULL", "stripeCustomerId");
+    await runAlter("ALTER TABLE `users` ADD COLUMN `stripeSubscriptionId` varchar(128) NULL", "stripeSubscriptionId");
+    await runAlter(
+      "ALTER TABLE `users` ADD COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free'",
+      "subscriptionPlan"
+    );
+    // Expand enum if column already existed with old values (free/pro/enterprise)
+    try {
+      await connection!.query(
+        "ALTER TABLE `users` MODIFY COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free'"
+      );
+      console.log("[migrate] Updated users.subscriptionPlan enum.");
+    } catch {
+      // Column may not exist or already correct
     }
   } catch (err: unknown) {
     console.error("[migrate] Connection or migration error:", (err as Error).message);

@@ -200,6 +200,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const params = typeof window !== "undefined" ? new URLSearchParams(search) : new URLSearchParams();
   const hasError = params.get("error");
   const hintDb = params.get("hint") === "database";
+  const hintJwtSecret = params.get("hint") === "jwt_secret";
   const reloadAttempted = useRef(false);
 
   useEffect(() => {
@@ -229,6 +230,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {hintDb && (
                 <p className="text-muted-foreground max-w-sm">
                   The app could not reach the database. In Railway, set <strong>DATABASE_URL</strong> (or <strong>MYSQL_URL</strong>) on the <strong>OmniAI</strong> service to your MySQL connection string from the MySQL service.
+                </p>
+              )}
+              {hintJwtSecret && (
+                <p className="text-muted-foreground max-w-sm">
+                  Session could not be created. Add <strong>JWT_SECRET</strong> in Railway → OmniAI service → Variables (e.g. run <code className="text-xs bg-muted px-1 rounded">openssl rand -base64 32</code> and paste the result).
                 </p>
               )}
             </div>
