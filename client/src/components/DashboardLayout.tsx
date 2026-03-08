@@ -82,6 +82,7 @@ import {
   FileQuestion,
   Star,
   HelpCircle,
+  Target,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -125,6 +126,7 @@ const menuSections = [
     label: "Manage",
     items: [
       { icon: Megaphone, label: "Campaigns", path: "/campaigns" },
+      { icon: Target, label: "Programmatic Ads", path: "/programmatic-ads" },
       { icon: GitBranch, label: "Funnels", path: "/funnels" },
       { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
       { icon: Calendar, label: "Scheduler", path: "/scheduler" },

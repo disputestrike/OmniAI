@@ -2,13 +2,42 @@ import express from "express";
 import Stripe from "stripe";
 import { ENV } from "./_core/env";
 import { getDb } from "./db";
-import { users, subscriptions } from "../drizzle/schema";
+import { users, subscriptions, dspAdWallets, dspWalletTransactions } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { addCreditsToWallet } from "./creditsAndUsage";
 import { resetUserUsage } from "./creditsAndUsage";
 import { CREDIT_PACKS } from "./tierLimits";
+import { createEpomAccount, fundEpomWallet, isEpomConfigured } from "./services/epom.service";
 
 let _stripe: Stripe | null = null;
+
+/** Create DSP fund checkout URL (for tRPC or server use). */
+export async function createDspFundCheckout(userId: number, amountCents: number, origin: string): Promise<{ url: string | null }> {
+  const stripe = getStripe();
+  if (!stripe) return { url: null };
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      line_items: [{
+        price_data: {
+          currency: "usd",
+          unit_amount: Math.round(Number(amountCents)),
+          product_data: { name: "OTOBI AI — Ad Wallet Fund" },
+        },
+        quantity: 1,
+      }],
+      success_url: `${origin}/programmatic-ads?fund=success`,
+      cancel_url: `${origin}/programmatic-ads`,
+      client_reference_id: String(userId),
+      metadata: { type: "dsp_fund", user_id: String(userId) },
+    });
+    return { url: session.url };
+  } catch (err: any) {
+    console.error("[Stripe] DSP fund checkout error:", err);
+    return { url: null };
+  }
+}
 
 function getStripe(): Stripe | null {
   if (!_stripe && ENV.stripeSecretKey) {
@@ -102,13 +131,74 @@ export function registerStripeRoutes(app: express.Application) {
           }
 
           if (userId && mode === "payment" && session.payment_status === "paid") {
-            const creditPackId = session.metadata?.credit_pack;
-            if (creditPackId) {
-              const pack = CREDIT_PACKS.find((p) => p.id === creditPackId);
-              if (pack) {
-                await addCreditsToWallet(parseInt(userId), pack.credits, session.payment_intent as string || null, "purchase");
+            const metaType = session.metadata?.type;
+            if (metaType === "dsp_fund") {
+              const grossCents = session.amount_total ?? 0;
+              const db = await getDb();
+              if (grossCents > 0 && db) {
+                const uid = parseInt(userId);
+                const userRows = await db.select({ subscriptionPlan: users.subscriptionPlan }).from(users).where(eq(users.id, uid)).limit(1);
+                const tier = (userRows[0]?.subscriptionPlan ?? "free") as string;
+                const markupBps = { free: 0, starter: 4000, professional: 3500, pro: 3500, business: 3000, agency: 2500, enterprise: 2500 }[tier] ?? 0;
+                const markupCents = Math.round((grossCents * markupBps) / 10000);
+                const netCents = grossCents - markupCents;
+                let walletRows = await db.select().from(dspAdWallets).where(eq(dspAdWallets.userId, uid)).limit(1);
+                if (walletRows.length === 0) {
+                  await db.insert(dspAdWallets).values({ userId: uid, balanceCents: 0, totalDepositedCents: 0, totalSpentCents: 0, totalMarkupEarnedCents: 0 });
+                  walletRows = await db.select().from(dspAdWallets).where(eq(dspAdWallets.userId, uid)).limit(1);
+                }
+                let wallet = walletRows[0];
+                let epomAccountId = wallet?.epomAccountId ?? null;
+                if (isEpomConfigured() && netCents > 0) {
+                  if (!epomAccountId) {
+                    const userRows = await db.select({ email: users.email }).from(users).where(eq(users.id, uid)).limit(1);
+                    const email = userRows[0]?.email ?? `user-${uid}@otobi.local`;
+                    try {
+                      const epomRes = await createEpomAccount(String(uid), email);
+                      epomAccountId = (epomRes as any).accountId ?? (epomRes as any).id ?? null;
+                      if (epomAccountId && wallet) await db.update(dspAdWallets).set({ epomAccountId, isActive: true, activatedAt: new Date() }).where(eq(dspAdWallets.userId, uid));
+                      else if (epomAccountId) wallet = (await db.select().from(dspAdWallets).where(eq(dspAdWallets.userId, uid)).limit(1))[0];
+                    } catch (e) {
+                      console.warn("[Stripe Webhook] Epom account create failed:", e);
+                    }
+                  }
+                  if (epomAccountId) await fundEpomWallet(epomAccountId, netCents);
+                }
+                const balanceAfter = (wallet?.balanceCents ?? 0) + grossCents;
+                await db.insert(dspWalletTransactions).values({
+                  userId: uid,
+                  transactionType: "deposit",
+                  grossAmountCents: grossCents,
+                  markupCents,
+                  netAmountCents: netCents,
+                  stripePaymentId: session.payment_intent as string ?? null,
+                  balanceAfterCents: balanceAfter,
+                });
+                await db.update(dspAdWallets).set({
+                  balanceCents: balanceAfter,
+                  totalDepositedCents: (wallet?.totalDepositedCents ?? 0) + grossCents,
+                  totalMarkupEarnedCents: (wallet?.totalMarkupEarnedCents ?? 0) + markupCents,
+                }).where(eq(dspAdWallets.userId, uid));
+              }
+            } else {
+              const creditPackId = session.metadata?.credit_pack;
+              if (creditPackId) {
+                const pack = CREDIT_PACKS.find((p) => p.id === creditPackId);
+                if (pack) {
+                  await addCreditsToWallet(parseInt(userId), pack.credits, session.payment_intent as string || null, "purchase");
+                }
               }
             }
+          }
+          break;
+        }
+
+        case "customer.subscription.trial_will_end": {
+          const sub = event.data.object as Stripe.Subscription;
+          const trialEnd = (sub as any).trial_end;
+          if (trialEnd) {
+            const daysLeft = Math.ceil((trialEnd * 1000 - Date.now()) / (24 * 60 * 60 * 1000));
+            console.log(`[Stripe Webhook] Trial will end in ${daysLeft} days for subscription ${sub.id}. Send Day 6 email / show in-app banner.`);
           }
           break;
         }
@@ -282,6 +372,15 @@ export function registerStripeRoutes(app: express.Application) {
       console.error("[Stripe] Credit checkout error:", err);
       res.status(500).json({ error: err.message });
     }
+  });
+
+  app.post("/api/stripe/create-dsp-fund-checkout", express.json(), async (req, res) => {
+    const { userId, amountCents } = req.body;
+    if (!userId || !amountCents || amountCents < 100) return res.status(400).json({ error: "userId and amountCents (min 100) required" });
+    const origin = req.headers.origin || req.headers.referer?.replace(/\/$/, "") || "";
+    const { url } = await createDspFundCheckout(parseInt(userId), amountCents, origin);
+    if (!url) return res.status(500).json({ error: "Stripe not configured or session failed" });
+    res.json({ url });
   });
 
   // Create customer portal session for managing subscription

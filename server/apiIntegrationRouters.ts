@@ -321,7 +321,11 @@ export const memeRouter = router({
     platform: z.enum(["instagram", "twitter", "linkedin", "tiktok", "general"]).optional(),
     productName: z.string().optional(),
     brandVoice: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limitGen = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limitGen.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+    const limitImg = await checkLimit(ctx.user.id, "ai_image");
+    if (!limitImg.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     // Step 1: Generate meme concept using LLM
     const conceptResponse = await invokeLLM({
       messages: [

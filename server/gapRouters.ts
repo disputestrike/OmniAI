@@ -870,7 +870,9 @@ export const webhookRouter = router({
 export const imageEditorRouter = router({
   removeBackground: protectedProcedure.input(z.object({
     imageUrl: z.string(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_image");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const { url } = await generateImage({
       prompt: "Remove the background completely, make it transparent/white. Keep only the main subject.",
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
@@ -883,7 +885,9 @@ export const imageEditorRouter = router({
     imageUrl: z.string(),
     platform: z.string(),
     format: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_image");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const platformSizes: Record<string, string> = {
       "instagram-post": "1080x1080",
       "instagram-story": "1080x1920",
@@ -925,7 +929,9 @@ export const imageEditorRouter = router({
   applyFilter: protectedProcedure.input(z.object({
     imageUrl: z.string(),
     filter: z.enum(["vintage", "noir", "vibrant", "warm", "cool", "dramatic", "soft", "hdr"]),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_image");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const filterPrompts: Record<string, string> = {
       vintage: "Apply a warm vintage film photography filter with slight grain and faded colors",
       noir: "Convert to dramatic black and white with high contrast film noir style",
@@ -977,12 +983,15 @@ export const multiLanguageRouter = router({
         { role: "user", content: input.text },
       ],
     });
+    await consumeLimit(ctx.user.id, "ai_generation", limit);
     return { translated: String(response.choices[0].message.content) || "" };
   }),
 
   detectLanguage: protectedProcedure.input(z.object({
     text: z.string(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const response = await invokeLLM({
       messages: [
         { role: "system", content: "Detect the language of the following text. Return ONLY the language name in English (e.g., 'English', 'Spanish', 'French', 'Japanese')." },
@@ -1007,7 +1016,9 @@ export const multiLanguageRouter = router({
     prompt: z.string(),
     language: z.string(),
     contentType: z.string().optional(),
-  })).mutation(async ({ input }) => {
+  })).mutation(async ({ ctx, input }) => {
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
     const response = await invokeLLM({
       messages: [
         { role: "system", content: `You are a marketing copywriter who writes natively in ${input.language}. Generate the requested content directly in ${input.language} (not translated from English). Ensure cultural relevance and natural phrasing for ${input.language}-speaking audiences. Content type: ${input.contentType || "marketing copy"}.` },

@@ -46,6 +46,7 @@ import CustomerIntel from "./pages/CustomerIntel";
 import AiAvatars from "./pages/AiAvatars";
 import MemeGenerator from "./pages/MemeGenerator";
 import ContentRepurposer from "./pages/ContentRepurposer";
+import ProgrammaticAds from "./pages/ProgrammaticAds";
 import ContentIngest from "./pages/ContentIngest";
 import ContentLibrary from "./pages/ContentLibrary";
 import ContentTemplates from "./pages/ContentTemplates";
@@ -159,6 +160,7 @@ function Router() {
       <Route path="/creatives" component={DashboardRouter} />
       <Route path="/video-ads" component={DashboardRouter} />
       <Route path="/campaigns" component={DashboardRouter} />
+      <Route path="/programmatic-ads" component={DashboardRouter} />
       <Route path="/ab-testing" component={DashboardRouter} />
       <Route path="/scheduler" component={DashboardRouter} />
       <Route path="/leads" component={DashboardRouter} />

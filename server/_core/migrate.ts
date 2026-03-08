@@ -122,6 +122,23 @@ export async function runMigrations(): Promise<void> {
       const err = e as { errno?: number };
       if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.trialEndsAt:", (e as Error).message);
     }
+
+    // Seed tier_limits_config (Spec v4) — ON DUPLICATE KEY UPDATE so safe to re-run
+    const seedTierLimits = `
+INSERT INTO tier_limits_config (tier, displayName, priceMonthlyCents, priceAnnualCents, maxAiGenerations, maxAiImages, maxVideoScripts, maxVideoMinutes, maxScheduledPosts, maxAbTests, maxWebsiteAnalyses, maxProducts, maxCampaigns, maxLeads, maxTeamSeats, maxAdPlatformConnections, featureScheduling, featureAbTesting, featureVoiceInput, featureVideoGeneration, featureAvatars, featureCrm, featureCompetitorIntel, featurePredictiveAi, featureApiAccess, featureWhiteLabel, featureMusicStudio, featureDspAccess, dspMinAdSpendCents, dspMarkupRateBps, creditTopupDiscountBps, watermarkContent, aiChatModel)
+VALUES
+('free','Free',0,0,5,2,1,0,0,0,0,1,2,25,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,'forge'),
+('starter','Starter',4900,49200,50,15,5,0,25,3,3,5,10,500,1,0,1,1,0,0,0,0,1,0,0,0,0,1,10000,4000,0,0,'forge'),
+('professional','Professional',9700,97200,200,50,20,2,-1,-1,10,25,-1,-1,5,3,1,1,1,1,1,1,1,1,0,0,0,1,25000,3500,0,0,'claude_haiku'),
+('business','Business',19700,195600,800,200,-1,8,-1,-1,-1,-1,-1,-1,15,-1,1,1,1,1,1,1,1,1,1,1,1,1,50000,3000,1000,0,'claude_haiku'),
+('agency','Agency',49700,495600,3000,500,-1,30,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,1,1,100000,2500,1500,0,'claude_haiku')
+ON DUPLICATE KEY UPDATE updatedAt = CURRENT_TIMESTAMP`;
+    try {
+      await connection!.query(seedTierLimits);
+      console.log("[migrate] Seeded tier_limits_config");
+    } catch (e: unknown) {
+      console.warn("[migrate] tier_limits_config seed:", (e as Error).message);
+    }
   } catch (err: unknown) {
     console.error("[migrate] Connection or migration error:", (err as Error).message);
   } finally {

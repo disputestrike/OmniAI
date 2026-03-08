@@ -33,6 +33,13 @@ export const ENV = {
   // Voiceover APIs
   elevenLabsApiKey: process.env.ELEVENLABS_API_KEY ?? "",
   openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  // Claude Haiku (Spec v4: strategy/analysis tasks)
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY ?? "",
+  // Epom DSP (Spec v4: programmatic ad buying)
+  epomApiKey: process.env.EPOM_API_KEY ?? "",
+  epomBaseUrl: process.env.EPOM_BASE_URL ?? "https://api.epom.com/v1",
+  epomAccountId: process.env.EPOM_ACCOUNT_ID ?? "",
+  dspEnabled: process.env.DSP_ENABLED === "true",
   // AI Avatar APIs
   heygenApiKey: process.env.HEYGEN_API_KEY ?? "",
   // Social Media OAuth

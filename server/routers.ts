@@ -448,6 +448,8 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       style: z.string().optional(),
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
+      const limit = await checkLimit(ctx.user.id, "ai_image");
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
       let productInfo = "";
       if (input.productId) {
         const product = await db.getProductById(input.productId);
@@ -1473,13 +1475,78 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
     }),
   }),
 
-  // ─── Pricing (public — for pricing page / landing; never hardcode prices in frontend) ─
+  // ─── Pricing (public — read from tier_limits_config when available; never hardcode in frontend) ─
   pricing: router({
     list: publicProcedure.query(async () => {
+      const { getDb } = await import("./db");
+      const { tierLimitsConfig } = await import("../drizzle/schema");
+      const { asc } = await import("drizzle-orm");
+      const db = await getDb();
+      if (db && typeof db.select === "function") {
+        try {
+          const rows = await db.select().from(tierLimitsConfig).orderBy(asc(tierLimitsConfig.priceMonthlyCents));
+          if (rows.length > 0) {
+            return rows.map((r) => ({
+              key: r.tier,
+              name: r.displayName,
+              monthlyPrice: Math.round(r.priceMonthlyCents / 100),
+              annualPrice: Math.round(r.priceAnnualCents / 100 / 12),
+              annualTotal: Math.round(r.priceAnnualCents / 100),
+              tagline: r.tier === "free" ? "Try OTOBI AI risk-free" : r.tier === "agency" ? "Agencies managing multiple clients" : "For growing teams",
+              cta: r.tier === "free" ? "Start Free — No Card Required" : r.tier === "agency" ? "Contact Sales" : "Start 7-Day Free Trial",
+              popular: r.tier === "professional",
+              contactSales: r.tier === "agency",
+              featureDspAccess: !!r.featureDspAccess,
+              dspMinAdSpendCents: r.dspMinAdSpendCents ?? 0,
+            }));
+          }
+        } catch {
+          // fallback to config
+        }
+      }
       const { PRICING_TIERS } = await import("./pricingConfig");
       return PRICING_TIERS;
     }),
   }),
+
+  // ─── DSP / Programmatic Ads (Spec v4) ───────────────────────────────
+  dsp: router({
+    status: protectedProcedure.query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) return { balanceCents: 0, totalSpentCents: 0, totalMarkupEarnedCents: 0, campaigns: [], enabled: false };
+      const { dspAdWallets, dspCampaigns } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const wallets = await db.select().from(dspAdWallets).where(eq(dspAdWallets.userId, ctx.user.id)).limit(1);
+      const wallet = wallets[0] ?? null;
+      const campaigns = await db.select().from(dspCampaigns).where(eq(dspCampaigns.userId, ctx.user.id));
+      const { isEpomConfigured } = await import("./services/epom.service");
+      return {
+        balanceCents: wallet?.balanceCents ?? 0,
+        totalDepositedCents: wallet?.totalDepositedCents ?? 0,
+        totalSpentCents: wallet?.totalSpentCents ?? 0,
+        totalMarkupEarnedCents: wallet?.totalMarkupEarnedCents ?? 0,
+        campaigns: campaigns.map((c) => ({ id: c.id, name: c.name, status: c.status, impressions: c.impressions, clicks: c.clicks, spentCents: c.spentCents, aiQualityScore: c.aiQualityScore })),
+        enabled: isEpomConfigured(),
+      };
+    }),
+    fundCheckout: protectedProcedure.input(z.object({ amountCents: z.number().min(100) })).mutation(async ({ ctx, input }) => {
+      const { createDspFundCheckout } = await import("./stripe-routes");
+      const origin = process.env.PUBLIC_URL || process.env.BASE_URL || "https://localhost:5000";
+      const { url } = await createDspFundCheckout(ctx.user.id, input.amountCents, origin);
+      if (!url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Stripe not configured or session failed" });
+      return { url };
+    }),
+    campaigns: router({
+      list: protectedProcedure.query(async ({ ctx }) => {
+        const db = await getDb();
+        if (!db) return [];
+        const { dspCampaigns } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        return db.select().from(dspCampaigns).where(eq(dspCampaigns.userId, ctx.user.id));
+      }),
+    }),
+  }),
+
 
   // ─── Credits ───────────────────────────────────────────────────────
   credits: router({

@@ -4,8 +4,10 @@
  * - Public procedures are callable without auth
  * - Critical protected procedures are callable with auth (no unexpected throws)
  */
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
+
+vi.mock("./db", () => ({ getDb: vi.fn().mockResolvedValue(null) }));
 
 // ─── Expected routers (must exist on appRouter) ─────────────────────────────
 const EXPECTED_ROUTERS = [
@@ -24,6 +26,9 @@ const EXPECTED_ROUTERS = [
   "lead",
   "analytics",
   "subscription",
+  "pricing",
+  "credits",
+  "dsp",
   "deal",
   "activity",
   "adPlatform",
@@ -132,6 +137,19 @@ describe("Full-stack smoke (public procedures)", () => {
     const result = await caller.musicStudio.getMusicLibrary();
     expect(Array.isArray(result)).toBe(true);
   });
+
+  it("pricing.list is callable without auth (v4 wiring)", async () => {
+    const { appRouter } = await import("./routers");
+    const ctx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.pricing.list();
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.length).toBeGreaterThan(0);
+  });
 });
 
 describe("Full-stack smoke (protected procedures)", () => {
@@ -166,5 +184,27 @@ describe("Full-stack smoke (protected procedures)", () => {
     };
     const caller = appRouter.createCaller(ctx);
     await expect(caller.personalVideo.list()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("unauthenticated access to dsp.status throws UNAUTHORIZED (v4 wiring)", async () => {
+    const { appRouter } = await import("./routers");
+    const ctx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.dsp.status()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("unauthenticated access to subscription.status throws UNAUTHORIZED", async () => {
+    const { appRouter } = await import("./routers");
+    const ctx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: { clearCookie: vi.fn() } as unknown as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(ctx);
+    await expect(caller.subscription.status()).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 });

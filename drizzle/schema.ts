@@ -1343,3 +1343,166 @@ export const referralSignups = mysqlTable("referral_signups", {
 
 export type ReferralSignup = typeof referralSignups.$inferSelect;
 export type InsertReferralSignup = typeof referralSignups.$inferInsert;
+
+// ─── tier_limits_config (Spec v4: pricing page reads from here) ─────────────
+export const tierLimitsConfig = mysqlTable("tier_limits_config", {
+  id: int("id").autoincrement().primaryKey(),
+  tier: varchar("tier", { length: 20 }).notNull().unique(),
+  displayName: varchar("displayName", { length: 50 }).notNull(),
+  priceMonthlyCents: int("priceMonthlyCents").notNull(),
+  priceAnnualCents: int("priceAnnualCents").notNull(),
+  stripePriceMonthlyId: varchar("stripePriceMonthlyId", { length: 255 }),
+  stripePriceAnnualId: varchar("stripePriceAnnualId", { length: 255 }),
+  maxAiGenerations: int("maxAiGenerations").notNull(),
+  maxAiImages: int("maxAiImages").notNull(),
+  maxVideoScripts: int("maxVideoScripts").notNull(),
+  maxVideoMinutes: int("maxVideoMinutes").notNull(),
+  maxScheduledPosts: int("maxScheduledPosts").notNull(),
+  maxAbTests: int("maxAbTests").notNull(),
+  maxWebsiteAnalyses: int("maxWebsiteAnalyses").notNull(),
+  maxProducts: int("maxProducts").notNull(),
+  maxCampaigns: int("maxCampaigns").notNull(),
+  maxLeads: int("maxLeads").notNull(),
+  maxTeamSeats: int("maxTeamSeats").notNull(),
+  maxAdPlatformConnections: int("maxAdPlatformConnections").notNull(),
+  featureScheduling: boolean("featureScheduling").default(false),
+  featureAbTesting: boolean("featureAbTesting").default(false),
+  featureVoiceInput: boolean("featureVoiceInput").default(false),
+  featureVideoGeneration: boolean("featureVideoGeneration").default(false),
+  featureAvatars: boolean("featureAvatars").default(false),
+  featureCrm: boolean("featureCrm").default(false),
+  featureCompetitorIntel: boolean("featureCompetitorIntel").default(false),
+  featurePredictiveAi: boolean("featurePredictiveAi").default(false),
+  featureApiAccess: boolean("featureApiAccess").default(false),
+  featureWhiteLabel: boolean("featureWhiteLabel").default(false),
+  featureMusicStudio: boolean("featureMusicStudio").default(false),
+  featureDspAccess: boolean("featureDspAccess").default(false),
+  dspMinAdSpendCents: int("dspMinAdSpendCents").default(0),
+  dspMarkupRateBps: int("dspMarkupRateBps").default(0),
+  creditTopupDiscountBps: int("creditTopupDiscountBps").default(0),
+  watermarkContent: boolean("watermarkContent").default(true),
+  aiChatModel: varchar("aiChatModel", { length: 50 }).default("forge"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type TierLimitsConfig = typeof tierLimitsConfig.$inferSelect;
+export type InsertTierLimitsConfig = typeof tierLimitsConfig.$inferInsert;
+
+// ─── subscription_limits (Spec v4: per-user tier, usage, trial, DSP wallet) ─
+export const subscriptionLimits = mysqlTable("subscription_limits", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  tier: mysqlEnum("tier", ["free", "starter", "professional", "business", "agency"]).default("free").notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  stripePriceId: varchar("stripePriceId", { length: 255 }),
+  status: varchar("status", { length: 50 }).default("active"),
+  trialUsed: boolean("trialUsed").default(false),
+  trialEndsAt: timestamp("trialEndsAt"),
+  periodStart: timestamp("periodStart"),
+  periodEnd: timestamp("periodEnd"),
+  usedAiGenerations: int("usedAiGenerations").default(0),
+  usedAiImages: int("usedAiImages").default(0),
+  usedVideoScripts: int("usedVideoScripts").default(0),
+  usedVideoMinutes: int("usedVideoMinutes").default(0),
+  usedScheduledPosts: int("usedScheduledPosts").default(0),
+  usedAbTests: int("usedAbTests").default(0),
+  usedWebsiteAnalyses: int("usedWebsiteAnalyses").default(0),
+  dspWalletBalanceCents: int("dspWalletBalanceCents").default(0),
+  dspEpomAccountId: varchar("dspEpomAccountId", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubscriptionLimit = typeof subscriptionLimits.$inferSelect;
+export type InsertSubscriptionLimit = typeof subscriptionLimits.$inferInsert;
+
+// ─── dsp_ad_wallets (Spec v4: user ad budget, platform markup) ─────────────
+export const dspAdWallets = mysqlTable("dsp_ad_wallets", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  balanceCents: int("balanceCents").default(0).notNull(),
+  totalDepositedCents: int("totalDepositedCents").default(0).notNull(),
+  totalSpentCents: int("totalSpentCents").default(0).notNull(),
+  totalMarkupEarnedCents: int("totalMarkupEarnedCents").default(0).notNull(),
+  epomAccountId: varchar("epomAccountId", { length: 255 }),
+  isActive: boolean("isActive").default(false),
+  activatedAt: timestamp("activatedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DspAdWallet = typeof dspAdWallets.$inferSelect;
+export type InsertDspAdWallet = typeof dspAdWallets.$inferInsert;
+
+// ─── dsp_campaigns (Spec v4: Epom campaign + AI score) ────────────────────
+export const dspCampaigns = mysqlTable("dsp_campaigns", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  epomCampaignId: varchar("epomCampaignId", { length: 255 }),
+  name: varchar("name", { length: 255 }).notNull(),
+  status: varchar("status", { length: 50 }).default("draft"),
+  dailyBudgetCents: int("dailyBudgetCents"),
+  totalBudgetCents: int("totalBudgetCents"),
+  spentCents: int("spentCents").default(0),
+  markupEarnedCents: int("markupEarnedCents").default(0),
+  markupRateBps: int("markupRateBps").notNull(),
+  targetingGeo: json("targetingGeo").$type<Record<string, unknown>>(),
+  targetingDemographics: json("targetingDemographics").$type<Record<string, unknown>>(),
+  targetingInterests: json("targetingInterests").$type<Record<string, unknown>>(),
+  targetingDevices: json("targetingDevices").$type<Record<string, unknown>>(),
+  creativeType: varchar("creativeType", { length: 50 }),
+  creativeUrl: varchar("creativeUrl", { length: 500 }),
+  impressions: int("impressions").default(0),
+  clicks: int("clicks").default(0),
+  conversions: int("conversions").default(0),
+  ctr: int("ctr").default(0),
+  aiQualityScore: int("aiQualityScore"),
+  aiScoreReasoning: text("aiScoreReasoning"),
+  aiScoredAt: timestamp("aiScoredAt"),
+  aiModelUsed: varchar("aiModelUsed", { length: 50 }),
+  startsAt: timestamp("startsAt"),
+  endsAt: timestamp("endsAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type DspCampaign = typeof dspCampaigns.$inferSelect;
+export type InsertDspCampaign = typeof dspCampaigns.$inferInsert;
+
+// ─── dsp_wallet_transactions (Spec v4: fund, markup, net to Epom) ─────────
+export const dspWalletTransactions = mysqlTable("dsp_wallet_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  campaignId: int("campaignId"),
+  transactionType: varchar("transactionType", { length: 50 }).notNull(),
+  grossAmountCents: int("grossAmountCents").notNull(),
+  markupCents: int("markupCents").default(0).notNull(),
+  netAmountCents: int("netAmountCents").notNull(),
+  stripePaymentId: varchar("stripePaymentId", { length: 255 }),
+  epomReference: varchar("epomReference", { length: 255 }),
+  balanceAfterCents: int("balanceAfterCents").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DspWalletTransaction = typeof dspWalletTransactions.$inferSelect;
+export type InsertDspWalletTransaction = typeof dspWalletTransactions.$inferInsert;
+
+// ─── dsp_performance_snapshots (Spec v4: hourly sync from Epom) ───────────
+export const dspPerformanceSnapshots = mysqlTable("dsp_performance_snapshots", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull(),
+  snapshotDate: varchar("snapshotDate", { length: 10 }).notNull(),
+  impressions: int("impressions").default(0),
+  clicks: int("clicks").default(0),
+  conversions: int("conversions").default(0),
+  spendCents: int("spendCents").default(0),
+  ctr: int("ctr").default(0),
+  cpm: int("cpm").default(0),
+  rawData: json("rawData"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DspPerformanceSnapshot = typeof dspPerformanceSnapshots.$inferSelect;
+export type InsertDspPerformanceSnapshot = typeof dspPerformanceSnapshots.$inferInsert;

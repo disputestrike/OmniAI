@@ -35,6 +35,7 @@ import {
   GitBranch,
   FileQuestion,
   FileBarChart,
+  Wallet,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 
@@ -473,7 +474,7 @@ export default function Landing() {
             </FadeSection>
             <FadeSection delay={200}>
               <p className="text-lg sm:text-xl text-[#6b5e4f] max-w-2xl mx-auto mb-8 leading-relaxed">
-                One AI creates your ads, videos, blogs, SEO, emails, and social posts — then publishes across 21+ platforms. From product URL to live campaign in minutes.
+                One AI creates your ads, videos, blogs, SEO, emails, programmatic ads, and social posts — then publishes across 21+ platforms. Content, creatives, and DSP ad buying in one place. From product URL to live campaign in minutes.
               </p>
             </FadeSection>
             <FadeSection delay={300}>
@@ -555,6 +556,44 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ═══════════════ PROGRAMMATIC ADS (DSP) — One-Stop Ad Buying ═══════════════ */}
+      <section id="programmatic-ads" className="py-20 lg:py-28 bg-gradient-to-b from-amber-50/50 to-[#FDFBF7]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <FadeSection>
+            <div className="text-center mb-12">
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Programmatic Ads</p>
+              <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
+                Content, Creatives, and <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">DSP Ad Buying</span>
+                <br />
+                <span className="text-[#6b5e4f] font-bold">— All in One Place</span>
+              </h2>
+              <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
+                No separate DSP tool. Fund your ad wallet, launch programmatic campaigns, and track performance from the same dashboard where you create content and creatives. True one-stop shop.
+              </p>
+            </div>
+          </FadeSection>
+          <FadeSection delay={100}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="rounded-2xl border border-amber-200/60 bg-white p-6 shadow-md">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4"><Wallet className="w-6 h-6 text-amber-600" /></div>
+                <h3 className="font-bold text-lg mb-2">Ad Wallet</h3>
+                <p className="text-sm text-[#6b5e4f]">Add funds once. Run campaigns across programmatic inventory. Platform markup is transparent and tier-based.</p>
+              </div>
+              <div className="rounded-2xl border border-amber-200/60 bg-white p-6 shadow-md">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4"><Target className="w-6 h-6 text-amber-600" /></div>
+                <h3 className="font-bold text-lg mb-2">Campaigns & Targeting</h3>
+                <p className="text-sm text-[#6b5e4f]">Create campaigns, set budgets, target by geo and demographics. AI can score creatives and recommend audiences.</p>
+              </div>
+              <div className="rounded-2xl border border-amber-200/60 bg-white p-6 shadow-md">
+                <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mb-4"><TrendingUp className="w-6 h-6 text-amber-600" /></div>
+                <h3 className="font-bold text-lg mb-2">Performance in One Dashboard</h3>
+                <p className="text-sm text-[#6b5e4f]">Impressions, clicks, spend, and AI insights alongside your content and creative analytics. No switching tools.</p>
+              </div>
+            </div>
+          </FadeSection>
+        </div>
+      </section>
+
       {/* ═══════════════ STACK KILLER — $725 vs $79 ═══════════════ */}
       <section className="py-20 lg:py-28 bg-gradient-to-b from-[#FDFBF7] to-amber-50/40">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -567,7 +606,7 @@ export default function Landing() {
                 <span className="text-[#6b5e4f] font-bold">for 6 Separate Tools</span>
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                Every tool you're currently paying for is already built into OTOBI AI — at a fraction of the combined cost.
+                Every tool you're currently paying for — including programmatic ad buying (DSP) — is already built into OTOBI AI at a fraction of the combined cost.
               </p>
             </div>
           </FadeSection>
@@ -591,7 +630,7 @@ export default function Landing() {
                 <p className="text-4xl font-black mb-1">$79<span className="text-lg font-bold opacity-90">/month</span></p>
                 <p className="text-sm font-medium opacity-95">Everything included</p>
                 <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/20 text-sm font-bold">
-                  <Check className="w-4 h-4" /> Save $646/month — 89% less than your current stack
+                  <Check className="w-4 h-4" /> Content, creatives, CRM, and programmatic DSP — one subscription. Save 89% vs. your current stack.
                 </div>
               </div>
             </div>
