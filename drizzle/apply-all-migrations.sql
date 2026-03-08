@@ -1,17 +1,17 @@
-CREATE TABLE `users` (
+CREATE TABLE IF NOT EXISTS `users` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`openId` varchar(64) NOT NULL,
 	`name` text,
 	`email` varchar(320),
 	`loginMethod` varchar(64),
 	`role` enum('user','admin') NOT NULL DEFAULT 'user',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	`lastSignedIn` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`lastSignedIn` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`),
 	CONSTRAINT `users_openId_unique` UNIQUE(`openId`)
 );
-CREATE TABLE `ab_test_variants` (
+CREATE TABLE IF NOT EXISTS `ab_test_variants` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`testId` int NOT NULL,
 	`name` varchar(128) NOT NULL,
@@ -23,23 +23,23 @@ CREATE TABLE `ab_test_variants` (
 	`ctr` text,
 	`conversionRate` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `ab_test_variants_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `ab_tests` (
+CREATE TABLE IF NOT EXISTS `ab_tests` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
 	`name` varchar(255) NOT NULL,
 	`status` enum('draft','running','completed','cancelled') NOT NULL DEFAULT 'draft',
 	`winnerVariantId` int,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `ab_tests_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `analytics_events` (
+CREATE TABLE IF NOT EXISTS `analytics_events` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
@@ -51,11 +51,11 @@ CREATE TABLE `analytics_events` (
 	`spend` text,
 	`revenue` text,
 	`metadata` json,
-	`recordedAt` timestamp NOT NULL DEFAULT (now()),
+	`recordedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `analytics_events_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `campaigns` (
+CREATE TABLE IF NOT EXISTS `campaigns` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`productId` int,
@@ -69,12 +69,12 @@ CREATE TABLE `campaigns` (
 	`startDate` timestamp,
 	`endDate` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `campaigns_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `contents` (
+CREATE TABLE IF NOT EXISTS `contents` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`productId` int,
@@ -85,12 +85,12 @@ CREATE TABLE `contents` (
 	`body` text,
 	`metadata` json,
 	`status` enum('draft','approved','published','archived') NOT NULL DEFAULT 'draft',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `contents_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `creatives` (
+CREATE TABLE IF NOT EXISTS `creatives` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`productId` int,
@@ -102,11 +102,11 @@ CREATE TABLE `creatives` (
 	`dimensions` varchar(32),
 	`status` enum('generating','completed','failed','approved') NOT NULL DEFAULT 'generating',
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `creatives_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `leads` (
+CREATE TABLE IF NOT EXISTS `leads` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
@@ -121,12 +121,12 @@ CREATE TABLE `leads` (
 	`score` int DEFAULT 0,
 	`notes` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `leads_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `products` (
+CREATE TABLE IF NOT EXISTS `products` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -142,12 +142,12 @@ CREATE TABLE `products` (
 	`tone` varchar(64),
 	`analysisStatus` enum('pending','analyzing','completed','failed') NOT NULL DEFAULT 'pending',
 	`rawAnalysis` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `products_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `scheduled_posts` (
+CREATE TABLE IF NOT EXISTS `scheduled_posts` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
@@ -159,11 +159,11 @@ CREATE TABLE `scheduled_posts` (
 	`status` enum('scheduled','publishing','published','failed','cancelled') NOT NULL DEFAULT 'scheduled',
 	`postUrl` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `scheduled_posts_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `video_ads` (
+CREATE TABLE IF NOT EXISTS `video_ads` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`productId` int,
@@ -177,11 +177,11 @@ CREATE TABLE `video_ads` (
 	`thumbnailUrl` text,
 	`status` enum('draft','generating','completed','failed') NOT NULL DEFAULT 'draft',
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `video_ads_id` PRIMARY KEY(`id`)
 );
 ALTER TABLE `contents` MODIFY COLUMN `type` enum('ad_copy_short','ad_copy_long','blog_post','seo_meta','social_caption','video_script','email_copy','pr_release','podcast_script','tv_script','radio_script','copywriting','amazon_listing','google_ads','youtube_seo','twitter_thread','linkedin_article','whatsapp_broadcast','sms_copy','story_content','ugc_script','landing_page') NOT NULL;
-CREATE TABLE `subscriptions` (
+CREATE TABLE IF NOT EXISTS `subscriptions` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`stripeSubscriptionId` varchar(128) NOT NULL,
@@ -189,15 +189,15 @@ CREATE TABLE `subscriptions` (
 	`status` enum('active','past_due','canceled','incomplete','trialing') NOT NULL DEFAULT 'active',
 	`currentPeriodEnd` timestamp,
 	`cancelAtPeriodEnd` boolean DEFAULT false,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `subscriptions_id` PRIMARY KEY(`id`)
 );
 ;
 ALTER TABLE `users` ADD `stripeCustomerId` varchar(128);;
 ALTER TABLE `users` ADD `subscriptionPlan` enum('free','pro','enterprise') DEFAULT 'free' NOT NULL;;
 ALTER TABLE `users` ADD `stripeSubscriptionId` varchar(128);
-CREATE TABLE `activities` (
+CREATE TABLE IF NOT EXISTS `activities` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`dealId` int,
@@ -208,11 +208,11 @@ CREATE TABLE `activities` (
 	`dueDate` timestamp,
 	`completedAt` timestamp,
 	`status` enum('pending','completed','cancelled') NOT NULL DEFAULT 'pending',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `activities_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `ad_platform_campaigns` (
+CREATE TABLE IF NOT EXISTS `ad_platform_campaigns` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`connectionId` int NOT NULL,
@@ -228,11 +228,11 @@ CREATE TABLE `ad_platform_campaigns` (
 	`conversions` int DEFAULT 0,
 	`lastSyncedAt` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `ad_platform_campaigns_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `ad_platform_connections` (
+CREATE TABLE IF NOT EXISTS `ad_platform_connections` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`platform` varchar(64) NOT NULL,
@@ -244,12 +244,12 @@ CREATE TABLE `ad_platform_connections` (
 	`status` enum('connected','expired','disconnected','error') NOT NULL DEFAULT 'connected',
 	`scopes` json,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `ad_platform_connections_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `approval_workflows` (
+CREATE TABLE IF NOT EXISTS `approval_workflows` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`contentId` int,
@@ -263,11 +263,11 @@ CREATE TABLE `approval_workflows` (
 	`reviewerComment` text,
 	`reviewedAt` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `approval_workflows_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `deals` (
+CREATE TABLE IF NOT EXISTS `deals` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`leadId` int,
@@ -281,12 +281,12 @@ CREATE TABLE `deals` (
 	`actualCloseDate` timestamp,
 	`notes` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `deals_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `predictive_scores` (
+CREATE TABLE IF NOT EXISTS `predictive_scores` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`entityType` enum('campaign','content','creative','ad') NOT NULL,
@@ -300,11 +300,11 @@ CREATE TABLE `predictive_scores` (
 	`recommendations` json,
 	`confidence` text,
 	`metadata` json,
-	`scoredAt` timestamp NOT NULL DEFAULT (now()),
+	`scoredAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `predictive_scores_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `seo_audits` (
+CREATE TABLE IF NOT EXISTS `seo_audits` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`url` text NOT NULL,
@@ -318,11 +318,11 @@ CREATE TABLE `seo_audits` (
 	`competitors` json,
 	`recommendations` json,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `seo_audits_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `team_members` (
+CREATE TABLE IF NOT EXISTS `team_members` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`ownerId` int NOT NULL,
 	`userId` int,
@@ -332,12 +332,12 @@ CREATE TABLE `team_members` (
 	`inviteStatus` enum('pending','accepted','declined') NOT NULL DEFAULT 'pending',
 	`inviteToken` varchar(128),
 	`permissions` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `team_members_id` PRIMARY KEY(`id`)
 );
 ALTER TABLE `users` MODIFY COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free';
-CREATE TABLE `automation_workflows` (
+CREATE TABLE IF NOT EXISTS `automation_workflows` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -349,12 +349,12 @@ CREATE TABLE `automation_workflows` (
 	`lastRunAt` timestamp,
 	`runCount` int DEFAULT 0,
 	`status` enum('draft','active','paused','error') NOT NULL DEFAULT 'draft',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `automation_workflows_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `brand_voices` (
+CREATE TABLE IF NOT EXISTS `brand_voices` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -363,12 +363,12 @@ CREATE TABLE `brand_voices` (
 	`voiceProfile` json,
 	`isDefault` boolean DEFAULT false,
 	`status` enum('processing','ready','failed') NOT NULL DEFAULT 'processing',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `brand_voices_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `email_campaigns` (
+CREATE TABLE IF NOT EXISTS `email_campaigns` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
@@ -389,12 +389,12 @@ CREATE TABLE `email_campaigns` (
 	`bounced` int DEFAULT 0,
 	`unsubscribed` int DEFAULT 0,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `email_campaigns_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `email_contacts` (
+CREATE TABLE IF NOT EXISTS `email_contacts` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`listId` int NOT NULL,
@@ -403,33 +403,33 @@ CREATE TABLE `email_contacts` (
 	`tags` json,
 	`unsubscribed` boolean DEFAULT false,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `email_contacts_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `email_lists` (
+CREATE TABLE IF NOT EXISTS `email_lists` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
 	`description` text,
 	`contactCount` int DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `email_lists_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `form_submissions` (
+CREATE TABLE IF NOT EXISTS `form_submissions` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`landingPageId` int NOT NULL,
 	`data` json,
 	`ipAddress` varchar(64),
 	`userAgent` text,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `form_submissions_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `landing_pages` (
+CREATE TABLE IF NOT EXISTS `landing_pages` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`campaignId` int,
@@ -443,12 +443,12 @@ CREATE TABLE `landing_pages` (
 	`visits` int DEFAULT 0,
 	`conversions` int DEFAULT 0,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `landing_pages_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `social_publish_queue` (
+CREATE TABLE IF NOT EXISTS `social_publish_queue` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`scheduledPostId` int,
@@ -465,11 +465,11 @@ CREATE TABLE `social_publish_queue` (
 	`retryCount` int DEFAULT 0,
 	`scheduledFor` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `social_publish_queue_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `video_renders` (
+CREATE TABLE IF NOT EXISTS `video_renders` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`videoAdId` int,
@@ -484,11 +484,11 @@ CREATE TABLE `video_renders` (
 	`audioUrl` text,
 	`errorMessage` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `video_renders_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `webhook_endpoints` (
+CREATE TABLE IF NOT EXISTS `webhook_endpoints` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -498,11 +498,11 @@ CREATE TABLE `webhook_endpoints` (
 	`isActive` boolean DEFAULT true,
 	`lastTriggeredAt` timestamp,
 	`failureCount` int DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `webhook_endpoints_id` PRIMARY KEY(`id`)
 );
-CREATE TABLE `competitor_alerts` (
+CREATE TABLE IF NOT EXISTS `competitor_alerts` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`competitorId` int NOT NULL,
 	`userId` int NOT NULL,
@@ -512,11 +512,11 @@ CREATE TABLE `competitor_alerts` (
 	`alertSeverity` enum('info','warning','critical') DEFAULT 'info',
 	`isRead` boolean DEFAULT false,
 	`alertData` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `competitor_alerts_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `competitor_profiles` (
+CREATE TABLE IF NOT EXISTS `competitor_profiles` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -529,22 +529,22 @@ CREATE TABLE `competitor_profiles` (
 	`threatLevel` enum('low','medium','high','critical') DEFAULT 'medium',
 	`lastAnalyzedAt` timestamp,
 	`isMonitored` boolean DEFAULT true,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `competitor_profiles_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `competitor_snapshots` (
+CREATE TABLE IF NOT EXISTS `competitor_snapshots` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`competitorId` int NOT NULL,
 	`userId` int NOT NULL,
 	`snapshotType` enum('full_analysis','ad_scan','seo_check','social_check','content_check') DEFAULT 'full_analysis',
 	`snapshotData` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `competitor_snapshots_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `customer_interactions` (
+CREATE TABLE IF NOT EXISTS `customer_interactions` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`customerId` int NOT NULL,
 	`userId` int NOT NULL,
@@ -556,11 +556,11 @@ CREATE TABLE `customer_interactions` (
 	`campaignId` int,
 	`contentId` int,
 	`interactionMeta` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `customer_interactions_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `customer_profiles` (
+CREATE TABLE IF NOT EXISTS `customer_profiles` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`leadId` int,
@@ -583,12 +583,12 @@ CREATE TABLE `customer_profiles` (
 	`nextBestAction` text,
 	`customerTags` json,
 	`customerNotes` text,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `customer_profiles_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `customer_segments` (
+CREATE TABLE IF NOT EXISTS `customer_segments` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -598,12 +598,12 @@ CREATE TABLE `customer_segments` (
 	`customerCount` int DEFAULT 0,
 	`color` varchar(20) DEFAULT '#6366f1',
 	`isActive` boolean DEFAULT true,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `customer_segments_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `personal_videos` (
+CREATE TABLE IF NOT EXISTS `personal_videos` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`title` varchar(255) NOT NULL,
@@ -620,11 +620,11 @@ CREATE TABLE `personal_videos` (
 	`viewCount` int DEFAULT 0,
 	`aiSuggestions` json,
 	`personalVideoMetadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `personal_videos_id` PRIMARY KEY(`id`)
 );
-CREATE TABLE `publishing_credentials` (
+CREATE TABLE IF NOT EXISTS `publishing_credentials` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`platform` enum('medium','substack','wordpress') NOT NULL,
@@ -634,12 +634,12 @@ CREATE TABLE `publishing_credentials` (
 	`siteUrl` text,
 	`status` enum('connected','expired','disconnected') NOT NULL DEFAULT 'connected',
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `publishing_credentials_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `repurposed_contents` (
+CREATE TABLE IF NOT EXISTS `repurposed_contents` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`projectId` int NOT NULL,
 	`userId` int NOT NULL,
@@ -650,11 +650,11 @@ CREATE TABLE `repurposed_contents` (
 	`externalId` varchar(255),
 	`publishedAt` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `repurposed_contents_id` PRIMARY KEY(`id`)
 );
 ;
-CREATE TABLE `repurposing_projects` (
+CREATE TABLE IF NOT EXISTS `repurposing_projects` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`title` varchar(255) NOT NULL,
@@ -665,8 +665,8 @@ CREATE TABLE `repurposing_projects` (
 	`errorMessage` text,
 	`brandVoiceId` int,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `repurposing_projects_id` PRIMARY KEY(`id`)
 );
 
@@ -690,8 +690,8 @@ CREATE TABLE IF NOT EXISTS `brand_kits` (
 	`doList` json,
 	`dontList` json,
 	`isDefault` boolean DEFAULT false,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `brand_kits_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `ad_performance_reports` (
@@ -707,8 +707,8 @@ CREATE TABLE IF NOT EXISTS `ad_performance_reports` (
 	`winningPatterns` json,
 	`recommendations` json,
 	`adReportStatus` enum('pending','analyzing','complete','error') DEFAULT 'pending',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `ad_performance_reports_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `publisher_queue` (
@@ -733,8 +733,8 @@ CREATE TABLE IF NOT EXISTS `publisher_queue` (
 	`externalAdId` varchar(255),
 	`errorMessage` text,
 	`publishedAt` timestamp,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `publisher_queue_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `performance_alerts` (
@@ -752,7 +752,7 @@ CREATE TABLE IF NOT EXISTS `performance_alerts` (
 	`aiSuggestion` text,
 	`isRead` boolean DEFAULT false,
 	`isDismissed` boolean DEFAULT false,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `performance_alerts_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `creator_profiles` (
@@ -773,8 +773,8 @@ CREATE TABLE IF NOT EXISTS `creator_profiles` (
 	`profileSlug` varchar(128),
 	`totalCreations` int DEFAULT 0,
 	`totalViews` int DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `creator_profiles_id` PRIMARY KEY(`id`),
 	CONSTRAINT `creator_profiles_userId_unique` UNIQUE(`userId`),
 	CONSTRAINT `creator_profiles_profileSlug_unique` UNIQUE(`profileSlug`)
@@ -796,8 +796,8 @@ CREATE TABLE IF NOT EXISTS `portfolio_items` (
 	`likes` int DEFAULT 0,
 	`sourceType` varchar(64),
 	`sourceId` int,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `portfolio_items_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `projects2` (
@@ -807,8 +807,8 @@ CREATE TABLE IF NOT EXISTS `projects2` (
 	`description` text,
 	`projectStatus` enum('active','paused','completed','archived') DEFAULT 'active',
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `projects2_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `chat_conversations` (
@@ -818,8 +818,8 @@ CREATE TABLE IF NOT EXISTS `chat_conversations` (
 	`title` varchar(255),
 	`messages` json,
 	`agentMode` varchar(100),
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `chat_conversations_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `content_templates` (
@@ -834,7 +834,7 @@ CREATE TABLE IF NOT EXISTS `content_templates` (
 	`variables` json,
 	`metadata` json,
 	`usageCount` int DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `content_templates_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `performance_metrics` (
@@ -851,7 +851,7 @@ CREATE TABLE IF NOT EXISTS `performance_metrics` (
 	`clicks` int DEFAULT 0,
 	`engagementRate` text,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `performance_metrics_id` PRIMARY KEY(`id`)
 );
 
@@ -863,8 +863,8 @@ CREATE TABLE IF NOT EXISTS `funnels` (
 	`slug` varchar(255) NOT NULL,
 	`status` enum('draft','active','archived') NOT NULL DEFAULT 'draft',
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `funnels_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `funnel_steps` (
@@ -877,8 +877,8 @@ CREATE TABLE IF NOT EXISTS `funnel_steps` (
 	`formId` int,
 	`stripePriceId` varchar(128),
 	`config` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `funnel_steps_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `funnel_step_events` (
@@ -887,7 +887,7 @@ CREATE TABLE IF NOT EXISTS `funnel_step_events` (
 	`funnelStepId` int NOT NULL,
 	`eventType` enum('view','complete') NOT NULL,
 	`sessionId` varchar(64),
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `funnel_step_events_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `funnel_ab_tests` (
@@ -896,8 +896,8 @@ CREATE TABLE IF NOT EXISTS `funnel_ab_tests` (
 	`funnelStepId` int NOT NULL,
 	`name` varchar(255) NOT NULL,
 	`status` enum('draft','running','completed') NOT NULL DEFAULT 'draft',
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `funnel_ab_tests_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `funnel_ab_test_variations` (
@@ -908,7 +908,7 @@ CREATE TABLE IF NOT EXISTS `funnel_ab_test_variations` (
 	`trafficPercent` int NOT NULL DEFAULT 50,
 	`views` int NOT NULL DEFAULT 0,
 	`conversions` int NOT NULL DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `funnel_ab_test_variations_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `review_sources` (
@@ -921,8 +921,8 @@ CREATE TABLE IF NOT EXISTS `review_sources` (
 	`status` enum('connected','disconnected','error') NOT NULL DEFAULT 'connected',
 	`lastSyncAt` timestamp,
 	`metadata` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `review_sources_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `reviews` (
@@ -936,8 +936,8 @@ CREATE TABLE IF NOT EXISTS `reviews` (
 	`reply` text,
 	`reviewUrl` text,
 	`reviewedAt` timestamp NOT NULL,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `reviews_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `forms` (
@@ -951,8 +951,8 @@ CREATE TABLE IF NOT EXISTS `forms` (
 	`createLeadOnSubmit` boolean DEFAULT true,
 	`status` enum('draft','active','archived') NOT NULL DEFAULT 'draft',
 	`submissionCount` int DEFAULT 0,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `forms_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `form_fields` (
@@ -964,8 +964,8 @@ CREATE TABLE IF NOT EXISTS `form_fields` (
 	`placeholder` varchar(255),
 	`required` boolean DEFAULT true,
 	`options` json,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `form_fields_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `form_responses` (
@@ -976,7 +976,7 @@ CREATE TABLE IF NOT EXISTS `form_responses` (
 	`data` json,
 	`ipAddress` varchar(64),
 	`userAgent` text,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `form_responses_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `report_snapshots` (
@@ -987,7 +987,7 @@ CREATE TABLE IF NOT EXISTS `report_snapshots` (
 	`shareToken` varchar(64) NOT NULL,
 	`payload` json,
 	`expiresAt` timestamp,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `report_snapshots_id` PRIMARY KEY(`id`),
 	CONSTRAINT `report_snapshots_shareToken_unique` UNIQUE(`shareToken`)
 );
@@ -996,7 +996,7 @@ CREATE TABLE IF NOT EXISTS `assignment_settings` (
 	`mode` enum('manual','round_robin') NOT NULL DEFAULT 'manual',
 	`memberOrder` json,
 	`lastAssignedIndex` int DEFAULT 0,
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `assignment_settings_userId` PRIMARY KEY(`userId`)
 );
 CREATE TABLE IF NOT EXISTS `flywheel_patterns` (
@@ -1009,8 +1009,8 @@ CREATE TABLE IF NOT EXISTS `flywheel_patterns` (
 	`conversionBand` varchar(32),
 	`sampleSize` int NOT NULL DEFAULT 0,
 	`patternSummary` text,
-	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `flywheel_patterns_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `campaign_winning_patterns` (
@@ -1024,7 +1024,7 @@ CREATE TABLE IF NOT EXISTS `campaign_winning_patterns` (
 	`ctr` text,
 	`conversionRate` text,
 	`summary` text,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `campaign_winning_patterns_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `narratives` (
@@ -1035,8 +1035,8 @@ CREATE TABLE IF NOT EXISTS `narratives` (
 	`emotion` varchar(64),
 	`suggestedAngles` json,
 	`sourceUrl` text,
-	`detectedAt` timestamp NOT NULL DEFAULT (now()),
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`detectedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `narratives_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `influence_nodes` (
@@ -1046,14 +1046,14 @@ CREATE TABLE IF NOT EXISTS `influence_nodes` (
 	`type` enum('persona','channel') NOT NULL,
 	`segmentId` int,
 	`notes` text,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `influence_nodes_id` PRIMARY KEY(`id`)
 );
 CREATE TABLE IF NOT EXISTS `referral_codes` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
 	`code` varchar(32) NOT NULL,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `referral_codes_id` PRIMARY KEY(`id`),
 	CONSTRAINT `referral_codes_code_unique` UNIQUE(`code`)
 );
@@ -1061,6 +1061,6 @@ CREATE TABLE IF NOT EXISTS `referral_signups` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`referrerUserId` int NOT NULL,
 	`referredUserId` int NOT NULL,
-	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `referral_signups_id` PRIMARY KEY(`id`)
 );

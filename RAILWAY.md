@@ -71,9 +71,9 @@ The app reads **either** `DATABASE_URL` or `MYSQL_URL` (or `MYSQL_PUBLIC_URL`). 
 
 ## Tables (automatic)
 
-- Tables are **created automatically** on first start.
+- Tables are **created automatically** when OmniAI starts **and** has `DATABASE_URL` (or `MYSQL_URL`) set on the OmniAI service.
 - On startup the app runs **migrations** from `drizzle/apply-all-migrations.sql` (using `DATABASE_URL` / `MYSQL_URL`).
-- No manual SQL or “trigger” is required; ensure the app has the correct `DATABASE_URL`/`MYSQL_URL` and can reach MySQL.
+- No manual SQL or “trigger” is required; **No tables?** Set `DATABASE_URL` on **OmniAI** to the MySQL URL (from MySQL service Variables), redeploy, and check deploy logs for `[migrate]`. Or run `drizzle/apply-all-migrations.sql` in MySQL Data/Query. Otherwise ensure the app has the correct `DATABASE_URL`/`MYSQL_URL` and can reach MySQL.
 
 ---
 
