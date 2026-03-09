@@ -114,7 +114,7 @@ export const appRouter = router({
           messages: [
             {
               role: "system",
-              content: `You are a marketing strategist AI. Analyze the given product and extract structured marketing intelligence. When page content from the product URL is provided, use it to make your analysis accurate. Return JSON only.`
+              content: `You are a marketing strategist AI. Analyze the given product and extract structured marketing intelligence. When page content from the product URL is provided, use it to make your analysis accurate. Reply with ONLY a valid JSON object, no markdown or extra text. Required keys: features (array of strings), benefits (array of strings), targetAudience (array of strings), positioning (string), keywords (array of strings), tone (string), competitiveAdvantages (array of strings), painPoints (array of strings).`
             },
             {
               role: "user",
@@ -125,42 +125,24 @@ URL: ${product.url || "N/A"}
 Category: ${product.category || "N/A"}
 ${urlContext}
 
-Return a JSON object with these fields:
-- features: array of key product features (strings)
-- benefits: array of customer benefits (strings)
-- targetAudience: array of target audience segments (strings)
-- positioning: a positioning statement (string)
-- keywords: array of SEO keywords (strings)
-- tone: recommended brand tone (string)
-- competitiveAdvantages: array of competitive advantages (strings)
-- painPoints: array of customer pain points this solves (strings)`
+Return ONLY a JSON object with: features, benefits, targetAudience, positioning, keywords, tone, competitiveAdvantages, painPoints.`
             }
           ],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "product_analysis",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  features: { type: "array", items: { type: "string" } },
-                  benefits: { type: "array", items: { type: "string" } },
-                  targetAudience: { type: "array", items: { type: "string" } },
-                  positioning: { type: "string" },
-                  keywords: { type: "array", items: { type: "string" } },
-                  tone: { type: "string" },
-                  competitiveAdvantages: { type: "array", items: { type: "string" } },
-                  painPoints: { type: "array", items: { type: "string" } },
-                },
-                required: ["features", "benefits", "targetAudience", "positioning", "keywords", "tone", "competitiveAdvantages", "painPoints"],
-                additionalProperties: false,
-              },
-            },
-          },
+          max_tokens: 2048,
         });
 
-        const analysis = JSON.parse(response.choices[0].message.content as string);
+        const raw = response.choices[0]?.message?.content;
+        const str = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((c: { type?: string; text?: string }) => c.type === "text") as { text?: string } | undefined)?.text ?? "" : "";
+        const jsonStr = str.replace(/^[\s\S]*?(\{[\s\S]*\})[\s\S]*$/m, "$1").trim();
+        const analysis = JSON.parse(jsonStr || "{}");
+        if (!analysis.features || !Array.isArray(analysis.features)) analysis.features = [];
+        if (!analysis.benefits || !Array.isArray(analysis.benefits)) analysis.benefits = [];
+        if (!analysis.targetAudience || !Array.isArray(analysis.targetAudience)) analysis.targetAudience = [];
+        if (!analysis.keywords || !Array.isArray(analysis.keywords)) analysis.keywords = [];
+        if (!analysis.competitiveAdvantages || !Array.isArray(analysis.competitiveAdvantages)) analysis.competitiveAdvantages = [];
+        if (!analysis.painPoints || !Array.isArray(analysis.painPoints)) analysis.painPoints = [];
+        analysis.positioning = analysis.positioning ?? "";
+        analysis.tone = analysis.tone ?? "";
         await db.updateProduct(input.id, {
           features: analysis.features,
           benefits: analysis.benefits,
@@ -174,7 +156,8 @@ Return a JSON object with these fields:
         return { success: true, analysis };
       } catch (error) {
         await db.updateProduct(input.id, { analysisStatus: "failed" });
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Analysis failed" });
+        const msg = error instanceof Error ? error.message : "Analysis failed";
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: msg });
       }
     }),
     delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {

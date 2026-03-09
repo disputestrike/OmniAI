@@ -19,7 +19,10 @@ export default function Products() {
   const utils = trpc.useUtils();
   const { data: products, isLoading } = trpc.product.list.useQuery();
   const createMut = trpc.product.create.useMutation({ onSuccess: () => { utils.product.list.invalidate(); setOpen(false); resetForm(); toast.success("Product added"); } });
-  const analyzeMut = trpc.product.analyze.useMutation({ onSuccess: () => { utils.product.list.invalidate(); toast.success("Analysis complete"); } });
+  const analyzeMut = trpc.product.analyze.useMutation({
+    onSuccess: () => { utils.product.list.invalidate(); toast.success("Analysis complete"); },
+    onError: (e) => { utils.product.list.invalidate(); toast.error(e.message || "Analysis failed"); },
+  });
   const deleteMut = trpc.product.delete.useMutation({ onSuccess: () => { utils.product.list.invalidate(); toast.success("Product deleted"); } });
 
   // E-commerce sync mutations
@@ -147,6 +150,8 @@ export default function Products() {
                         <Badge className="bg-emerald-50 text-emerald-700 border-0">Analyzed</Badge>
                       ) : product.analysisStatus === "analyzing" ? (
                         <Badge className="bg-amber-50 text-amber-700 border-0"><Loader2 className="h-3 w-3 animate-spin mr-1" />Analyzing</Badge>
+                      ) : product.analysisStatus === "failed" ? (
+                        <Badge variant="destructive" className="border-0">Failed</Badge>
                       ) : (
                         <Badge variant="outline">Pending</Badge>
                       )}
@@ -160,7 +165,7 @@ export default function Products() {
                     {product.analysisStatus !== "completed" && product.analysisStatus !== "analyzing" && (
                       <Button size="sm" variant="default" className="rounded-lg" onClick={() => analyzeMut.mutate({ id: product.id })} disabled={analyzeMut.isPending}>
                         {analyzeMut.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                        Analyze with AI
+                        {product.analysisStatus === "failed" ? "Retry analysis" : "Analyze with AI"}
                       </Button>
                     )}
                     {product.analysisStatus === "completed" && (
