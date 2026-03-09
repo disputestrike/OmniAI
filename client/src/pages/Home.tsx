@@ -113,41 +113,45 @@ export default function Home() {
 
   return (
     <div className="space-y-8 max-w-6xl">
-      {/* AI first + Create campaign — primary actions */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/ai-agents")}>
-          <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Bot className="h-5 w-5 text-primary" />
-                Talk to AI
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Ask the AI to create a campaign, get ideas, or do anything. Type or describe what you need — the AI guides you.
-              </p>
-            </div>
-            <Button variant="secondary" className="rounded-xl shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/ai-agents"); }}>
-              Open AI Assistant
-            </Button>
-          </CardContent>
-        </Card>
-        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaign-wizard")}>
-          <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-semibold flex items-center gap-2">
-                <Megaphone className="h-5 w-5 text-primary" />
-                Create New Campaign
-              </h2>
-              <p className="text-muted-foreground text-sm mt-1">
-                Set your goals — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
-              </p>
-            </div>
-            <Button className="rounded-xl shadow-md shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/campaign-wizard"); }}>
-              <Rocket className="h-4 w-4 mr-2" />Create New Campaign
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Get started — primary actions (AI + Campaign Wizard) */}
+      <section className="space-y-3" aria-label="Get started">
+        <h2 className="text-xl font-bold tracking-tight">Get started</h2>
+        <p className="text-muted-foreground text-sm">Talk to the AI or launch a full campaign in one flow.</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/ai-agents")}>
+            <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-primary" />
+                  Talk to AI
+                </h3>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Ask the AI to create a campaign, get ideas, or do anything. Type or describe what you need — the AI guides you.
+                </p>
+              </div>
+              <Button variant="secondary" className="rounded-xl shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/ai-agents"); }}>
+                Open AI Assistant
+              </Button>
+            </CardContent>
+          </Card>
+          <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaign-wizard")}>
+            <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-primary" />
+                  Create New Campaign
+                </h3>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Set your goals — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
+                </p>
+              </div>
+              <Button className="rounded-xl shadow-md shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/campaign-wizard"); }}>
+                <Rocket className="h-4 w-4 mr-2" />Create New Campaign
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
       {/* Active campaigns */}
       {activeCampaigns.length > 0 && (

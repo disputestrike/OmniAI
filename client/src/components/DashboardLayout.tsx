@@ -102,6 +102,8 @@ const menuSections = [
   {
     label: "Create",
     items: [
+      { icon: Rocket, label: "Campaign Wizard", path: "/campaign-wizard" },
+      { icon: Bot, label: "AI Agents", path: "/ai-agents" },
       { icon: Package, label: "Product Analyzer", path: "/products" },
       { icon: PenTool, label: "Content Studio", path: "/content" },
       { icon: Shuffle, label: "Content Repurposer", path: "/content-repurposer" },
@@ -156,7 +158,6 @@ const menuSections = [
       { icon: BarChart3, label: "Analytics", path: "/analytics" },
       { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
       { icon: Zap, label: "Growth & Learning", path: "/growth-learning" },
-      { icon: Bot, label: "AI Agents", path: "/ai-agents" },
       { icon: Eye, label: "Competitor Intelligence", path: "/competitor-intelligence" },
       { icon: Users, label: "Customer Intel", path: "/customer-intel" },
     ],
