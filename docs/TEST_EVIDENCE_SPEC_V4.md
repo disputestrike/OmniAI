@@ -46,9 +46,10 @@ Implementation of **OTOBI AI Implementation Spec v4** (Phase A through E) is com
 ## How to Run
 
 ```bash
-pnpm run check    # TypeScript
-pnpm run test     # Full test suite
-pnpm run build    # Production build
+pnpm run check       # TypeScript
+pnpm run test        # Full test suite (includes battery)
+pnpm run test:battery # Click-through, edge, chaos, security, adversarial, hallucination, catastrophe
+pnpm run test:load   # Load test (skips if server not running; run after pnpm dev for real load)
 ```
 
 ## Notes

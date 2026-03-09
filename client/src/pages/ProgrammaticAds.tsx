@@ -12,7 +12,7 @@ import { useState } from "react";
 export default function ProgrammaticAds() {
   const { data: status, isLoading } = trpc.dsp.status.useQuery();
   const fundCheckout = trpc.dsp.fundCheckout.useMutation();
-  const [amount, setAmount] = useState(5000); // $50 default
+  const [amount, setAmount] = useState(50); // USD default
   const [funding, setFunding] = useState(false);
 
   const handleFund = async () => {
@@ -111,14 +111,14 @@ export default function ProgrammaticAds() {
               className="flex h-9 w-32 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
             />
           </div>
-          <Button onClick={handleFund} disabled={funding || !status?.enabled}>
+          <Button onClick={handleFund} disabled={funding}>
             <PlusCircle className="mr-2 h-4 w-4" />
             {funding ? "Redirecting…" : "Add funds"}
           </Button>
           {status && !status.enabled && (
-            <p className="flex items-center gap-1 text-sm text-amber-600 dark:text-amber-400">
-              <AlertCircle className="h-4 w-4" />
-              DSP is not configured. Contact support to enable programmatic ads.
+            <p className="flex items-center gap-1 text-sm text-muted-foreground">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              Programmatic campaign execution (DSP) can be enabled by support. You can still fund your ad wallet and use it when campaigns are enabled.
             </p>
           )}
         </CardContent>

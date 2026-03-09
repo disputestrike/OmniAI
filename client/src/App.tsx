@@ -88,6 +88,7 @@ function DashboardRouter() {
         <Route path="/creatives" component={Creatives} />
         <Route path="/video-ads" component={VideoAds} />
         <Route path="/campaigns" component={Campaigns} />
+        <Route path="/programmatic-ads" component={ProgrammaticAds} />
         <Route path="/ab-testing" component={AbTesting} />
         <Route path="/scheduler" component={Scheduler} />
         <Route path="/leads" component={Leads} />

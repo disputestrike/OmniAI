@@ -10,6 +10,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:battery": "vitest run server/battery.test.ts",
+    "test:load": "node scripts/load-test.mjs",
     "db:push": "drizzle-kit generate && drizzle-kit migrate"
   },
   "dependencies": {

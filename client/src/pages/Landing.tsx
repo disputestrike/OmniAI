@@ -464,17 +464,20 @@ export default function Landing() {
               </div>
             </FadeSection>
             <FadeSection delay={100}>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] mb-6">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] mb-4">
                 Your Marketing Team.
                 <br />
                 <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">
                   One Subscription.
                 </span>
               </h1>
+              <p className="text-base sm:text-lg font-bold text-[#1a1a1a] max-w-2xl mx-auto mb-6">
+                Content. Creatives. <span className="text-amber-600">Programmatic ad buying.</span> One dashboard. One bill.
+              </p>
             </FadeSection>
             <FadeSection delay={200}>
               <p className="text-lg sm:text-xl text-[#6b5e4f] max-w-2xl mx-auto mb-8 leading-relaxed">
-                One AI creates your ads, videos, blogs, SEO, emails, programmatic ads, and social posts — then publishes across 21+ platforms. Content, creatives, and DSP ad buying in one place. From product URL to live campaign in minutes.
+                One AI creates your ads, videos, blogs, SEO, emails, and social posts — publishes across 21+ platforms — and runs your programmatic ad campaigns from the same place. No second tool. From product URL to live campaign in minutes.
               </p>
             </FadeSection>
             <FadeSection delay={300}>
@@ -542,33 +545,38 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ═══════════════ STATS BAR (dark band) ═══════════════ */}
+      {/* ═══════════════ STATS BAR (dark band) — Punchy second spot: Programmatic DSP ═══════════════ */}
       <section className="py-10 bg-[#1a1a1a] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
             <div><div className="text-3xl sm:text-4xl font-black text-amber-400">347%</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Avg. ROI Increase</div></div>
             <div><div className="text-3xl sm:text-4xl font-black text-amber-400">12x</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Return on Ad Spend</div></div>
+            <div><div className="text-2xl sm:text-3xl font-black text-amber-400">DSP</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Programmatic Ad Buying Built In</div></div>
             <div><div className="text-3xl sm:text-4xl font-black text-amber-400">21+</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Platforms Published</div></div>
             <div><div className="text-3xl sm:text-4xl font-black text-amber-400">22</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Content Types</div></div>
-            <div><div className="text-3xl sm:text-4xl font-black text-amber-400">89K</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Leads Generated</div></div>
             <div><div className="text-3xl sm:text-4xl font-black text-amber-400">10x</div><div className="text-xs sm:text-sm text-white/80 mt-1 font-medium">Faster Than Manual</div></div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ PROGRAMMATIC ADS (DSP) — One-Stop Ad Buying ═══════════════ */}
+      {/* ═══════════════ PROGRAMMATIC ADS (DSP) — Punchy strip + section ═══════════════ */}
+      <section className="py-6 bg-amber-500/10 border-y border-amber-200/60">
+        <div className="max-w-4xl mx-auto px-4 text-center">
+          <p className="text-lg sm:text-xl font-bold text-[#1a1a1a]">
+            Create ads. Run programmatic campaigns. <span className="text-amber-600">One dashboard. One subscription.</span>
+          </p>
+        </div>
+      </section>
       <section id="programmatic-ads" className="py-20 lg:py-28 bg-gradient-to-b from-amber-50/50 to-[#FDFBF7]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeSection>
             <div className="text-center mb-12">
-              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">Programmatic Ads</p>
+              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-3">No Second Tool</p>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
-                Content, Creatives, and <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">DSP Ad Buying</span>
-                <br />
-                <span className="text-[#6b5e4f] font-bold">— All in One Place</span>
+                Programmatic ad buying. <span className="bg-gradient-to-r from-amber-500 to-orange-600 bg-clip-text text-transparent">Built in.</span>
               </h2>
               <p className="text-lg text-[#6b5e4f] max-w-2xl mx-auto">
-                No separate DSP tool. Fund your ad wallet, launch programmatic campaigns, and track performance from the same dashboard where you create content and creatives. True one-stop shop.
+                Fund your ad wallet, launch campaigns, and track performance in the same place you create content and creatives. No separate DSP. No second tab.
               </p>
             </div>
           </FadeSection>
@@ -766,6 +774,7 @@ export default function Landing() {
           </FadeSection>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
+              { icon: <Target className="w-6 h-6" />, title: "Programmatic Ads Built In", desc: "Create ads, fund your ad wallet, and run programmatic campaigns from the same dashboard. No second DSP tool. No second tab. One subscription.", gradient: "from-amber-500 to-orange-600", bg: "bg-amber-50" },
               { icon: <Brain className="w-6 h-6" />, title: "Thinks Like a CMO", desc: "Psychological targeting, persuasion frameworks (AIDA, Cialdini, PAS), audience psychographics, and emotional trigger mapping — all automated. Your AI marketing team never sleeps.", gradient: "from-purple-400 to-indigo-500", bg: "bg-purple-50" },
               { icon: <Rocket className="w-6 h-6" />, title: "Creates AND Publishes", desc: "Most tools stop at content creation. OTOBI AI deploys across 21+ platforms with optimal timing — smart scheduling built in, no third-party tools needed.", gradient: "from-amber-400 to-orange-500", bg: "bg-amber-50" },
               { icon: <TrendingUp className="w-6 h-6" />, title: "Predicts Before You Spend", desc: "Predictive scoring rates every ad before launch. A/B testing finds winners automatically. Campaign momentum analysis doubles down on what's already working.", gradient: "from-rose-400 to-pink-500", bg: "bg-rose-50" },

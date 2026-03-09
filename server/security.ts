@@ -158,10 +158,12 @@ export function hasXSSPatterns(input: string): boolean {
     /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
     /javascript\s*:/gi,
     /on\w+\s*=\s*["'][^"']*["']/gi,
+    /on\w+\s*=\s*[^\s>]+/gi, // unquoted handlers e.g. onerror=alert(1)
     /<iframe\b/gi,
     /<object\b/gi,
     /<embed\b/gi,
     /<link\b[^>]*\bhref\s*=/gi,
+    /<img\b[^>]*on\w+/gi, // img with event handler
   ];
   return patterns.some(p => p.test(input));
 }
