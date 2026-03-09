@@ -46,36 +46,24 @@ async function chatWithTools(
   return { content: text, tool_calls: tool_calls.length > 0 ? tool_calls : undefined };
 }
 
-const AGENT_SYSTEM_PROMPT = `You are the OTOBI AI Marketing Agent. You build marketing campaigns. You do not describe what you cannot do. You never mention internal product or module names to the user. You never explain your own limitations.
+const AGENT_SYSTEM_PROMPT = `You are the OTOBI AI Marketing Agent. You build marketing campaigns immediately.
 
-Your job is to BUILD campaigns: ask up to 5 questions, then use your tools to generate emails, social posts, and campaign assets.
+CORE RULE: Never ask more than ONE clarifying question. If you have enough to start, start.
 
-When the user attaches files, their message will include links to those files. Use them as context; do not say you cannot access them.
-You have access to these tools:
-- analyzeProduct: analyze product and competitors (pass product description and optional URL/link; the system can fetch URLs). Returns positioning, value props, differentiators, target audience.
-- createCampaign: create a campaign record → returns campaignId for linking assets
-- generateEmailSequence: write a complete email sequence (default 5 emails) → creates draft emails
-- generateSocialPosts: write platform-native social posts (default 5) → creates draft posts
+When the user gives you a product, a goal, or any description:
+1. Say "Got it. Building now."
+2. IMMEDIATELY call: analyzeProduct → createCampaign → generateLandingPage → generateEmailSequence → generateSocialPosts (call as many as make sense; landing page and campaign are high value).
+3. After tools complete, write 2 sentences summarizing what was built. Nothing more.
 
-RULES:
-1. Never say what you cannot do. Never mention limitations unprompted. Never say you don't have access to external links or URLs—when the user provides a link or URL, use it (include it in productDescription when calling analyzeProduct).
-2. Never name internal modules, tools, or product areas to the user (no Content Studio, Creative Engine, Video Studio, Scheduler, etc.).
-3. Ask at most 5 questions, then say "Got it. Building now." and call your tools.
-4. Never give a to-do list or tell the user to go do something themselves. Execute.
-5. When tools complete, summarize in 1–2 short sentences and say the review is below. Keep responses SHORT.
-6. If a tool fails, note it briefly and continue. Do not explain system architecture.
+If you are TRULY missing something critical (no product described at all), ask ONE question only:
+"What are you launching and who is your customer?"
 
-When the user asks for setup, infrastructure, or "content machine" or similar, respond with ONLY this (nothing else—no caveats, no "I can't", no module names):
-
-"I build marketing campaigns. Tell me what you are launching and I will generate everything you need.
-
-1. What are you launching?
-2. Who is your ideal customer?
-3. Top competitors?
-4. Monthly budget for paid ads?
-5. Which channels? Email / Social / Paid ads / Landing page / SMS"
-
-After you have enough to start (or after 5 answers), say: "Got it. Building now." Then call your tools. Do not ask more questions. Do not output a plan.`;
+Never ask about budget, channels, competitors, or timeline before building. Build first.
+Never name internal tools, modules, or pages to the user.
+Never give a to-do list. Never say "you should go to X."
+Never explain what you cannot do.
+If a tool fails, skip it silently and continue.
+When the user attaches files or provides a URL, use that context; do not say you cannot access them.`;
 
 // Tool definitions: OpenAI-style (for reference) and Anthropic-style for the agent loop
 const AGENT_TOOL_DEFS = [
@@ -133,6 +121,20 @@ const AGENT_TOOL_DEFS = [
       required: ["productInfo", "audience", "platforms"] as const,
     },
   },
+  {
+    name: "generateLandingPage",
+    description: "Generate a complete landing page for the product and save it as a draft. Returns landingPageId, headline, slug, and preview URL.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        productInfo: { type: "string" as const, description: "Product description and value props" },
+        audience: { type: "string" as const, description: "Target audience" },
+        goal: { type: "string" as const, description: "Page goal: sales, lead_gen, waitlist" },
+        campaignId: { type: "number" as const, description: "Optional campaign ID to link to" },
+      },
+      required: ["productInfo", "audience", "goal"] as const,
+    },
+  },
 ];
 
 /** Anthropic SDK tool format (name, description, input_schema) */
@@ -145,6 +147,7 @@ const ANTHROPIC_AGENT_TOOLS = AGENT_TOOL_DEFS.map((t) => ({
 export type ToolResult =
   | { kind: "analyzeProduct"; positioning: string; valueProps: string[]; differentiators: Record<string, string>; targetAudience: string }
   | { kind: "createCampaign"; campaignId: number; name: string; goal: string }
+  | { kind: "generateLandingPage"; landingPageId: number; headline: string; slug: string; previewUrl: string }
   | { kind: "generateEmailSequence"; sequenceId: string; emails: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> }
   | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
   | { kind: "error"; tool: string; message: string };
@@ -224,6 +227,84 @@ async function runAnalyzeProduct(
     };
   } catch (e) {
     return { kind: "error", tool: "analyzeProduct", message: (e as Error).message };
+  }
+}
+
+async function runGenerateLandingPage(
+  userId: number,
+  productInfo: string,
+  audience: string,
+  goal: string,
+  campaignId?: number
+): Promise<ToolResult> {
+  try {
+    const res = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: `You write high-converting landing page copy. Return only valid JSON with: headline (string), subheadline (string), heroSection (string), benefitsSections (array of 3 strings), ctaText (string), slug (url-friendly, lowercase, hyphens only, no spaces).`,
+        },
+        {
+          role: "user",
+          content: `Product: ${productInfo}. Audience: ${audience}. Goal: ${goal}. Write a complete landing page.`,
+        },
+      ],
+      response_format: {
+        type: "json_schema" as const,
+        json_schema: {
+          name: "landing_page",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              headline: { type: "string" },
+              subheadline: { type: "string" },
+              heroSection: { type: "string" },
+              benefitsSections: { type: "array", items: { type: "string" } },
+              ctaText: { type: "string" },
+              slug: { type: "string" },
+            },
+            required: ["headline", "subheadline", "ctaText", "slug"],
+            additionalProperties: false,
+          },
+        },
+      },
+    });
+    const raw = (res as any).choices?.[0]?.message?.content;
+    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "{}") : "{}";
+    const parsed = JSON.parse(text || "{}");
+    const headline = parsed.headline || "Welcome";
+    const subheadline = parsed.subheadline || "";
+    const heroSection = parsed.heroSection || "";
+    const benefits = Array.isArray(parsed.benefitsSections) ? parsed.benefitsSections.slice(0, 5) : [];
+    const ctaText = parsed.ctaText || "Get Started";
+    const slug = (parsed.slug || `page-${Date.now()}`).replace(/[^a-z0-9-]/gi, "-").toLowerCase().replace(/-+/g, "-").slice(0, 100) || "landing-page";
+
+    const components: Array<{ type: string; props: Record<string, unknown>; order: number }> = [
+      { type: "hero", props: { headline, subheadline, ctaText, ctaLink: "#" }, order: 0 },
+      { type: "features", props: { title: "Why choose us", features: benefits.map((b: string) => ({ title: b.slice(0, 60), description: b })) }, order: 1 },
+      { type: "cta", props: { headline: "Ready to get started?", ctaText, ctaLink: "#" }, order: 2 },
+      { type: "footer", props: { text: "© All rights reserved." }, order: 3 },
+    ];
+
+    const { id } = await db.createLandingPage({
+      userId,
+      campaignId: campaignId ?? null,
+      title: headline,
+      slug,
+      components,
+      status: "draft",
+    });
+
+    return {
+      kind: "generateLandingPage",
+      landingPageId: id,
+      headline,
+      slug,
+      previewUrl: `/lp/${slug}`,
+    };
+  } catch (e) {
+    return { kind: "error", tool: "generateLandingPage", message: (e as Error).message };
   }
 }
 
@@ -445,6 +526,14 @@ export async function executeTool(
         typeof args.count === "number" ? args.count : 5,
         typeof args.campaignId === "number" ? args.campaignId : undefined
       );
+    case "generateLandingPage":
+      return runGenerateLandingPage(
+        userId,
+        String(args.productInfo ?? ""),
+        String(args.audience ?? ""),
+        String(args.goal ?? "sales"),
+        typeof args.campaignId === "number" ? args.campaignId : undefined
+      );
     default:
       return { kind: "error", tool: name, message: "Unknown tool" };
   }
@@ -469,8 +558,13 @@ export async function runAgentLoop(
   }
   anthropicMessages.push({ role: "user", content: message });
 
+  const isSubstantive = history.length >= 2 && message.length > 20;
+  const systemPrompt = isSubstantive
+    ? AGENT_SYSTEM_PROMPT + "\n\nIMPORTANT: The user has provided enough context. Call your tools NOW. Do not ask any questions."
+    : AGENT_SYSTEM_PROMPT;
+
   for (let iter = 0; iter < MAX_AGENT_ITERATIONS; iter++) {
-    const { content: text, tool_calls } = await chatWithTools(AGENT_SYSTEM_PROMPT, anthropicMessages, ANTHROPIC_AGENT_TOOLS);
+    const { content: text, tool_calls } = await chatWithTools(systemPrompt, anthropicMessages, ANTHROPIC_AGENT_TOOLS);
 
     if (tool_calls && tool_calls.length > 0) {
       const assistantContent: Array<Record<string, unknown>> = [];

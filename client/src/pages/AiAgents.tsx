@@ -22,6 +22,7 @@ type Message = { role: "user" | "assistant"; content: string };
 type AgentToolResult =
   | { kind: "analyzeProduct"; positioning: string; valueProps: string[]; differentiators: Record<string, string>; targetAudience: string }
   | { kind: "createCampaign"; campaignId: number; name: string; goal: string }
+  | { kind: "generateLandingPage"; landingPageId: number; headline: string; slug: string; previewUrl: string }
   | { kind: "generateEmailSequence"; sequenceId: string; emails: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> }
   | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
   | { kind: "error"; tool: string; message: string };
@@ -495,11 +496,15 @@ export default function AiAgents() {
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Review UI when agent returned tool results */}
-            {!chatMut.isPending && lastToolResults.length > 0 && (
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-sm font-semibold">Review what I built</h3>
+          {/* Review UI: above input so users see what was built */}
+          {!chatMut.isPending && lastToolResults.length > 0 && (
+            <div className="border-t border-primary/20 bg-primary/5 p-3 max-h-64 overflow-y-auto">
+              <p className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">
+                <Sparkles className="h-3 w-3" /> I built these — review and approve
+              </p>
+              <div className="space-y-3">
                 {lastToolResults.map((r, idx) => {
                   if (r.kind === "error") return <div key={idx} className="text-xs text-destructive">{(r as AgentToolResult & { kind: "error" }).tool}: {(r as AgentToolResult & { kind: "error" }).message}</div>;
                   if (r.kind === "analyzeProduct") {
@@ -548,6 +553,20 @@ export default function AiAgents() {
                       </Card>
                     );
                   }
+                  if (r.kind === "generateLandingPage") {
+                    const lp = r as AgentToolResult & { kind: "generateLandingPage" };
+                    return (
+                      <Card key={idx} className="p-3 border-primary/30 bg-primary/5">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Landing page created</p>
+                        <p className="text-sm font-semibold">{lp.headline}</p>
+                        <p className="text-xs text-muted-foreground mt-1">/{lp.slug}</p>
+                        <div className="flex gap-2 mt-2">
+                          <Button variant="outline" size="sm" onClick={() => navigate("/landing-pages")}>Edit page</Button>
+                          <Button variant="outline" size="sm" onClick={() => window.open(lp.previewUrl, "_blank")}>Preview</Button>
+                        </div>
+                      </Card>
+                    );
+                  }
                   return null;
                 })}
                 <div className="flex gap-2 pt-2">
@@ -569,8 +588,8 @@ export default function AiAgents() {
                   </Button>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Input Bar with Voice */}
           <div className="border-t p-3">

@@ -101,8 +101,8 @@ export function securityHeaders(req: Request, res: Response, next: NextFunction)
   res.setHeader("X-XSS-Protection", "1; mode=block");
   // Referrer policy
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-  // Permissions policy
-  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  // Permissions policy: allow camera and microphone for this origin (Video Studio, voice input)
+  res.setHeader("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()");
   // Content Security Policy (relaxed for development)
   if (process.env.NODE_ENV === "production") {
     res.setHeader(
