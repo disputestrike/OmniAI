@@ -110,62 +110,44 @@ export default function Home() {
 
   const activePipeline = goalPipelines.find(p => p.id === selectedPipeline);
   const suggestedNextStep = useMemo(() => getSuggestedNextStep(stats ?? undefined), [stats]);
-  const hasProduct = (stats?.products ?? 0) > 0;
-  const hasContent = (stats?.contents ?? 0) > 0;
-  const hasCreative = (stats?.creatives ?? 0) > 0;
-  const onboardingComplete = hasProduct && hasContent;
-  const showOnboarding = !isLoading && !onboardingComplete;
 
   return (
     <div className="space-y-8 max-w-6xl">
-      {showOnboarding && (
-        <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
-          <CardHeader>
-            <CardTitle className="text-lg">Get started in 4 steps</CardTitle>
-            <CardDescription>Complete these to get the most out of OTOBI AI.</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              {hasProduct ? <Badge variant="secondary">Done</Badge> : <Badge>1</Badge>}
-              <span className="text-sm">Add your first product or service</span>
-              {!hasProduct && <Button size="sm" variant="outline" onClick={() => setLocation("/products")}>Go</Button>}
+      {/* AI first + Create campaign — primary actions */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/ai-agents")}>
+          <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Bot className="h-5 w-5 text-primary" />
+                Talk to AI
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Ask the AI to create a campaign, get ideas, or do anything. Type or describe what you need — the AI guides you.
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              {hasContent ? <Badge variant="secondary">Done</Badge> : <Badge>2</Badge>}
-              <span className="text-sm">Generate your first piece of content</span>
-              {!hasContent && <Button size="sm" variant="outline" onClick={() => setLocation("/content")}>Go</Button>}
-            </div>
-            <div className="flex items-center gap-2">
-              {hasCreative ? <Badge variant="secondary">Done</Badge> : <Badge>3</Badge>}
-              <span className="text-sm">Create a visual (image or video ad)</span>
-              {!hasCreative && <Button size="sm" variant="outline" onClick={() => setLocation("/creatives")}>Go</Button>}
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge>4</Badge>
-              <span className="text-sm">Schedule or publish your first post</span>
-              <Button size="sm" variant="outline" onClick={() => setLocation("/scheduler")}>Go</Button>
-            </div>
+            <Button variant="secondary" className="rounded-xl shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/ai-agents"); }}>
+              Open AI Assistant
+            </Button>
           </CardContent>
         </Card>
-      )}
-
-      {/* Campaign-first CTA */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-primary" />
-              Create New Campaign
-            </h2>
-            <p className="text-muted-foreground text-sm mt-1">
-              Set a goal — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
-            </p>
-          </div>
-          <Button onClick={() => setLocation("/campaign-wizard")} className="rounded-xl shadow-md shrink-0">
-            <Rocket className="h-4 w-4 mr-2" />Create New Campaign
-          </Button>
-        </CardContent>
-      </Card>
+        <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaign-wizard")}>
+          <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Megaphone className="h-5 w-5 text-primary" />
+                Create New Campaign
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1">
+                Set your goals — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
+              </p>
+            </div>
+            <Button className="rounded-xl shadow-md shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/campaign-wizard"); }}>
+              <Rocket className="h-4 w-4 mr-2" />Create New Campaign
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Active campaigns */}
       {activeCampaigns.length > 0 && (

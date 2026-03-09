@@ -1065,7 +1065,7 @@ Provide: recommended content types per platform, posting schedule, audience targ
       return { strategy: response.choices[0].message.content as string };
     }),
     wizardGenerate: protectedProcedure.input(z.object({
-      goal: z.string().min(1),
+      goals: z.array(z.string().min(1)).min(1),
       businessContext: z.object({
         businessName: z.string().optional(),
         whatYouSell: z.string().optional(),
@@ -1085,7 +1085,7 @@ Provide: recommended content types per platform, posting schedule, audience targ
       const { generateCampaignFromWizard } = await import("./campaignWizard");
       return generateCampaignFromWizard(
         ctx.user.id,
-        input.goal,
+        input.goals,
         input.businessContext || {},
         input.details
       );

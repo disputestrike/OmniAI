@@ -35,18 +35,20 @@ export type GeneratedAsset = {
 
 export async function generateCampaignFromWizard(
   userId: number,
-  goal: string,
+  goals: string[],
   businessContext: WizardBusinessContext,
   details: WizardCampaignDetails
 ): Promise<{ campaignId: number; assets: GeneratedAsset[] }> {
   const limit = await checkLimit(userId, "ai_generation");
   if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+  const goalLabel = goals.length > 0 ? goals.join(", ") : "campaign";
+  const primaryGoal = goals[0] ?? "lead_gen";
 
   const campaign = await db.createCampaign({
     userId,
     name: details.campaignName,
     description: details.offer,
-    goal,
+    goal: primaryGoal,
     platforms: details.channels as unknown as string[],
     status: "draft",
     budget: details.budget ?? null,
@@ -58,13 +60,13 @@ export async function generateCampaignFromWizard(
   const campaignId = campaign.id;
   const assets: GeneratedAsset[] = [];
 
-  const ctx = `Business: ${businessContext.businessName || "N/A"}. Sell: ${businessContext.whatYouSell || "N/A"}. Audience: ${businessContext.targetAudience || "N/A"}. Tone: ${businessContext.brandTone || "professional"}. Offer: ${details.offer}.`;
+  const ctx = `Goals: ${goalLabel}. Business: ${businessContext.businessName || "N/A"}. Sell: ${businessContext.whatYouSell || "N/A"}. Audience: ${businessContext.targetAudience || "N/A"}. Tone: ${businessContext.brandTone || "professional"}. Offer: ${details.offer}.`;
 
   if (details.channels.includes("landing_page")) {
     const res = await invokeLLM({
       messages: [
         { role: "system", content: "You are a landing page designer. Generate a JSON array of landing page components. Each component has: type (hero|features|testimonials|form|cta|footer), props (object with headline, subheadline, ctaText, etc.), order (number). Return ONLY valid JSON: { \"components\": [ ... ] }." },
-        { role: "user", content: `Goal: ${goal}. ${ctx}. Create a high-converting landing page.` },
+        { role: "user", content: `Goals: ${goalLabel}. ${ctx}. Create a high-converting landing page.` },
       ],
       response_format: { type: "json_schema", json_schema: { name: "lp", strict: true, schema: { type: "object", properties: { components: { type: "array", items: { type: "object", properties: { type: { type: "string" }, props: { type: "object" }, order: { type: "integer" } }, required: ["type", "props", "order"] } } }, required: ["components"] } } },
     });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ const CHANNELS = [
 export default function CampaignWizard() {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState(1);
-  const [goal, setGoal] = useState("");
+  const [goals, setGoals] = useState<string[]>([]);
   const [businessName, setBusinessName] = useState("");
   const [whatYouSell, setWhatYouSell] = useState("");
   const [targetAudience, setTargetAudience] = useState("");
@@ -41,6 +41,10 @@ export default function CampaignWizard() {
   const [budget, setBudget] = useState("");
   const [channels, setChannels] = useState<("landing_page" | "paid_ads" | "email" | "social" | "sms")[]>([]);
   const [generated, setGenerated] = useState<{ campaignId: number; assets: { assetType: string; assetId: number; status: string; preview?: string; title?: string }[] } | null>(null);
+
+  const { data: brandVoices } = trpc.brandVoice.list.useQuery();
+  const { data: products } = trpc.product.list.useQuery();
+  const { data: campaignsList } = trpc.campaign.list.useQuery();
 
   const wizardGenerate = trpc.campaign.wizardGenerate.useMutation({
     onSuccess: (data) => {
@@ -58,17 +62,34 @@ export default function CampaignWizard() {
     onError: (e) => toast.error(e.message),
   });
 
+  const toggleGoal = (id: string) => {
+    setGoals((prev) => (prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]));
+  };
+  const selectAllGoals = () => setGoals(GOALS.map((g) => g.id));
+  const clearAllGoals = () => setGoals([]);
+
   const toggleChannel = (ch: typeof CHANNELS[0]["id"]) => {
     setChannels((prev) => (prev.includes(ch) ? prev.filter((c) => c !== ch) : [...prev, ch]));
   };
+  const selectAllChannels = () => setChannels(CHANNELS.map((c) => c.id));
+  const clearAllChannels = () => setChannels([]);
+
+  useEffect(() => {
+    if (step === 3 && goals.length > 0 && !campaignName) {
+      const labels = goals.map((id) => GOALS.find((g) => g.id === id)?.label ?? id).join(" + ");
+      const now = new Date();
+      const monthYear = now.toLocaleString("default", { month: "short", year: "numeric" });
+      setCampaignName(`${labels} – ${monthYear}`);
+    }
+  }, [step, goals, campaignName]);
 
   const handleGenerate = () => {
-    if (!goal || !campaignName || !offer || channels.length === 0) {
-      toast.error("Please fill goal, campaign name, offer, and select at least one channel.");
+    if (goals.length === 0 || !campaignName || !offer || channels.length === 0) {
+      toast.error("Please select at least one goal, campaign name, offer, and at least one channel.");
       return;
     }
     wizardGenerate.mutate({
-      goal,
+      goals,
       businessContext: { businessName: businessName || undefined, whatYouSell: whatYouSell || undefined, targetAudience: targetAudience || undefined, brandTone: brandTone || undefined },
       details: { campaignName, offer, targetAudience: targetAudience || undefined, budget: budget || undefined, channels },
     });
@@ -86,24 +107,40 @@ export default function CampaignWizard() {
 
       {step === 1 && (
         <Card>
-          <CardHeader><CardTitle>Step 1: Choose your goal</CardTitle><CardDescription>What do you want this campaign to achieve?</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Step 1: Choose your goals</CardTitle><CardDescription>Select one or more — you can do it all.</CardDescription></CardHeader>
           <CardContent className="space-y-3">
+            <div className="flex gap-2 mb-2">
+              <Button type="button" variant="outline" size="sm" onClick={selectAllGoals}>Select all</Button>
+              <Button type="button" variant="outline" size="sm" onClick={clearAllGoals}>Clear all</Button>
+            </div>
             {GOALS.map((g) => (
               <label key={g.id} className="flex items-center gap-2 cursor-pointer rounded-lg border p-3 hover:bg-muted/50">
-                <input type="radio" name="goal" value={g.id} checked={goal === g.id} onChange={() => setGoal(g.id)} className="sr-only" />
-                <div className={`w-4 h-4 rounded-full border-2 ${goal === g.id ? "border-primary bg-primary" : "border-muted-foreground"}`} />
+                <Checkbox checked={goals.includes(g.id)} onCheckedChange={() => toggleGoal(g.id)} />
                 <span>{g.label}</span>
               </label>
             ))}
-            <Button onClick={() => goal && setStep(2)} disabled={!goal} className="w-full mt-4"><ArrowRight className="w-4 h-4 mr-2" />Next</Button>
+            <Button onClick={() => goals.length > 0 && setStep(2)} disabled={goals.length === 0} className="w-full mt-4"><ArrowRight className="w-4 h-4 mr-2" />Next</Button>
           </CardContent>
         </Card>
       )}
 
       {step === 2 && (
         <Card>
-          <CardHeader><CardTitle>Step 2: Business context</CardTitle><CardDescription>Help the AI match your brand (optional but recommended).</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Step 2: Business context</CardTitle><CardDescription>Optional — help the AI match your brand, or skip and use your account data.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Button type="button" variant="outline" size="sm" onClick={() => setStep(3)}>Skip — use my account</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => {
+                const bv = brandVoices?.[0] as { name?: string; description?: string; sampleText?: string } | undefined;
+                const prod = products?.[0] as { name?: string; description?: string } | undefined;
+                const last = campaignsList?.[0] as { description?: string } | undefined;
+                if (bv?.name) setBusinessName(bv.name);
+                if (prod) { setWhatYouSell(prod.description || prod.name || ""); if (!offer && prod.name) setOffer(prod.name); }
+                if (bv?.description) setTargetAudience(bv.description);
+                if (last?.description) setOffer(last.description);
+                toast.success("Filled from your account");
+              }}>Auto-fill from my account</Button>
+            </div>
             <div><Label>Business name</Label><Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Acme Inc." /></div>
             <div><Label>What do you sell? (one sentence)</Label><Input value={whatYouSell} onChange={(e) => setWhatYouSell(e.target.value)} placeholder="B2B SaaS for project management" /></div>
             <div><Label>Target audience</Label><Input value={targetAudience} onChange={(e) => setTargetAudience(e.target.value)} placeholder="Small business owners, 25-45" /></div>
@@ -125,13 +162,17 @@ export default function CampaignWizard() {
 
       {step === 3 && (
         <Card>
-          <CardHeader><CardTitle>Step 3: Campaign details</CardTitle><CardDescription>Name, offer, and which channels to generate.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Step 3: Campaign details</CardTitle><CardDescription>Name, offer, and which channels to generate. Select all to do everything.</CardDescription></CardHeader>
           <CardContent className="space-y-4">
             <div><Label>Campaign name *</Label><Input value={campaignName} onChange={(e) => setCampaignName(e.target.value)} placeholder="e.g. Spring 2026 Launch" /></div>
             <div><Label>Offer or hook *</Label><Textarea value={offer} onChange={(e) => setOffer(e.target.value)} placeholder="What are you promoting? One sentence." rows={2} /></div>
             <div><Label>Budget (optional)</Label><Input value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. $500" /></div>
             <div>
               <Label>Channels to generate *</Label>
+              <div className="flex gap-2 mb-2">
+                <Button type="button" variant="outline" size="sm" onClick={selectAllChannels}>Select all</Button>
+                <Button type="button" variant="outline" size="sm" onClick={clearAllChannels}>Clear all</Button>
+              </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {CHANNELS.map((ch) => (
                   <label key={ch.id} className="flex items-center gap-2 cursor-pointer">
