@@ -1,456 +1,158 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Package, Megaphone, PenTool, Users, BarChart3, Image, TrendingUp, Zap, ArrowRight,
-  Sparkles, Rocket, Target, Brain, Globe, Video, Bot, Calendar, FlaskConical,
-  ShoppingCart, UserPlus, Lightbulb, Crown, Flame, Eye, Heart, MessageCircle, Compass,
-} from "lucide-react";
+import { Bot, Megaphone, BarChart3, Library, ArrowRight, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
-import { useState, useMemo } from "react";
-import { ReportExport } from "@/components/ReportExport";
-import { getSuggestedNextStep, getPathProgress } from "@/config/pathBlueprint";
+import { useState, FormEvent } from "react";
 
-const goalPipelines = [
-  {
-    id: "product",
-    icon: ShoppingCart,
-    color: "text-emerald-600",
-    bg: "bg-emerald-50",
-    title: "Make a Product #1",
-    desc: "Take any product and make it the highest-purchased in its category. AI analyzes, creates campaigns, targets buyers, and drives conversions.",
-    steps: [
-      { label: "Add Your Product", path: "/products", detail: "Upload product info, URL, or images. AI extracts features, benefits, audience, and positioning." },
-      { label: "Generate All Content", path: "/content", detail: "AI creates ad copy, blog posts, SEO, social captions, video scripts, email campaigns, and more — 22 content types." },
-      { label: "Create Visuals & Video", path: "/creatives", detail: "Generate ad images, thumbnails, banners, and video ad scripts with storyboards for every platform." },
-      { label: "Launch Campaigns", path: "/campaigns", detail: "Deploy across 21+ platforms: Google, YouTube, TikTok, Instagram, Facebook, Amazon, LinkedIn, and more." },
-      { label: "A/B Test & Optimize", path: "/ab-testing", detail: "Test multiple variations, identify winners, and let AI optimize for maximum conversions." },
-      { label: "Capture & Convert Leads", path: "/leads", detail: "Collect leads, score them, nurture with automated sequences, and close sales." },
-    ],
-  },
-  {
-    id: "person",
-    icon: Crown,
-    color: "text-violet-600",
-    bg: "bg-violet-50",
-    title: "Make Someone Viral",
-    desc: "Take any person on any social media and push them to viral fame. Build their brand, grow their audience, and dominate every platform.",
-    steps: [
-      { label: "Build the Brand Profile", path: "/products", detail: "Create a personal brand profile — story, values, unique angle, target audience, and voice." },
-      { label: "Create Viral Content", path: "/content", detail: "Generate Twitter threads, TikTok scripts, YouTube SEO, LinkedIn articles, UGC scripts, and story content." },
-      { label: "Design Visual Identity", path: "/creatives", detail: "Create social graphics, thumbnails, story templates, and branded visuals across all platforms." },
-      { label: "Launch Multi-Platform Push", path: "/campaigns", detail: "Coordinate campaigns across TikTok, YouTube, Instagram, Twitter, LinkedIn, podcasts, and more." },
-      { label: "Schedule & Auto-Post", path: "/scheduler", detail: "Schedule content at optimal times across all platforms with AI-recommended timing." },
-      { label: "Track & Amplify", path: "/analytics", detail: "Monitor growth, engagement, and virality metrics. AI suggests amplification strategies." },
-    ],
-  },
-  {
-    id: "concept",
-    icon: Brain,
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-    title: "Spread a Concept",
-    desc: "Take any idea, cause, or movement and plant it in people's consciousness. Make it inescapable across every channel and demographic.",
-    steps: [
-      { label: "Define the Concept", path: "/products", detail: "Articulate the core idea, messaging framework, emotional triggers, and target demographics." },
-      { label: "Create Persuasion Content", path: "/content", detail: "Generate PR releases, blog posts, social campaigns, video scripts, podcast scripts, and thought leadership." },
-      { label: "Build Visual Campaign", path: "/creatives", detail: "Create compelling visuals, infographics, memes, and shareable graphics that spread organically." },
-      { label: "Multi-Channel Saturation", path: "/campaigns", detail: "Deploy across all channels — social, search, email, SMS, WhatsApp, TV, radio, print, and podcasts." },
-      { label: "Micro-Target Segments", path: "/ai-agents", detail: "Use AI to identify and target specific demographic and psychographic segments with tailored messaging." },
-      { label: "Measure Consciousness", path: "/analytics", detail: "Track reach, sentiment, share-of-voice, and mind-share metrics across all platforms." },
-    ],
-  },
-];
-
-const statCards = [
-  { label: "Products", key: "products" as const, icon: Package, color: "text-indigo-600", bg: "bg-indigo-50", path: "/products" },
-  { label: "Campaigns", key: "campaigns" as const, icon: Megaphone, color: "text-violet-600", bg: "bg-violet-50", path: "/campaigns" },
-  { label: "Content", key: "contents" as const, icon: PenTool, color: "text-emerald-600", bg: "bg-emerald-50", path: "/content" },
-  { label: "Creatives", key: "creatives" as const, icon: Image, color: "text-amber-600", bg: "bg-amber-50", path: "/creatives" },
-  { label: "Leads", key: "leads" as const, icon: Users, color: "text-rose-600", bg: "bg-rose-50", path: "/leads" },
-];
-
-const quickActions = [
-  { label: "Analyze a Product", desc: "Upload any product and get full AI marketing intelligence", icon: Package, path: "/products" },
-  { label: "Generate Content", desc: "22 content types: ads, blogs, SEO, social, video, PR, podcasts", icon: PenTool, path: "/content" },
-  { label: "Create Visuals", desc: "AI-generated ad images, social graphics, banners, thumbnails", icon: Image, path: "/creatives" },
-  { label: "Create Video Ads", desc: "Scripts + storyboards for TikTok, YouTube, Reels, Shorts", icon: Video, path: "/video-ads" },
-  { label: "Build Campaign", desc: "Multi-platform campaigns across 21+ channels worldwide", icon: Megaphone, path: "/campaigns" },
-  { label: "A/B Test", desc: "Generate variations, compare performance, find winners", icon: FlaskConical, path: "/ab-testing" },
-  { label: "Schedule Posts", desc: "Auto-post across all platforms at optimal times", icon: Calendar, path: "/scheduler" },
-  { label: "Manage Leads", desc: "Capture, score, nurture, and convert leads from campaigns", icon: UserPlus, path: "/leads" },
-  { label: "AI Marketing Agent", desc: "Chat with AI for strategy, ideas, targeting, and optimization", icon: Bot, path: "/ai-agents" },
-  { label: "View Analytics", desc: "Cross-platform performance, AI insights, and recommendations", icon: BarChart3, path: "/analytics" },
-  { label: "Export Data", desc: "Export campaigns, content, leads as JSON or CSV", icon: Globe, path: "/export-import" },
-  { label: "Idea Generator", desc: "AI brainstorms campaign ideas, angles, and viral hooks", icon: Lightbulb, path: "/ai-agents" },
-];
-
-const capabilities = [
-  { icon: Target, label: "Micro-Targeting", desc: "Demographic, psychographic, behavioral targeting" },
-  { icon: Brain, label: "Persuasion AI", desc: "Cialdini, AIDA, PAS, emotional triggers" },
-  { icon: Globe, label: "Global Reach", desc: "Every platform, every country, every language" },
-  { icon: Flame, label: "Viral Engine", desc: "Algorithms to maximize shareability and virality" },
-  { icon: Eye, label: "Consciousness Planting", desc: "Multi-channel saturation for mind-share" },
-  { icon: Heart, label: "Emotional Mapping", desc: "Map and trigger audience emotions precisely" },
-  { icon: MessageCircle, label: "Omni-Channel", desc: "Social, search, email, SMS, WhatsApp, TV, radio" },
-  { icon: Rocket, label: "Instant Results", desc: "Generate campaigns in seconds, not weeks" },
+const examplePrompts = [
+  "Launch my product for gym enthusiasts on TikTok and email",
+  "Run a webinar — registration page, emails, and social posts",
+  "Get more leads for my agency with a landing page and ads",
+  "Create a full campaign for my new app launch",
 ];
 
 export default function Home() {
-  const { data: stats, isLoading } = trpc.dashboard.stats.useQuery();
   const { data: campaigns } = trpc.campaign.list.useQuery();
+  const { data: stats } = trpc.dashboard.stats.useQuery();
   const [, setLocation] = useLocation();
-  const [wizardOpen, setWizardOpen] = useState(false);
-  const [selectedPipeline, setSelectedPipeline] = useState<string | null>(null);
+  const [input, setInput] = useState("");
 
-  const activeCampaigns = (campaigns ?? []).filter((c: { status: string }) => c.status === "active" || c.status === "draft");
+  const activeCampaigns = (campaigns ?? []).filter(
+    (c: { status: string }) => c.status === "active" || c.status === "draft"
+  );
 
-  const activePipeline = goalPipelines.find(p => p.id === selectedPipeline);
-  const suggestedNextStep = useMemo(() => getSuggestedNextStep(stats ?? undefined), [stats]);
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const q = input.trim();
+    if (q) {
+      setLocation(`/ai-agents?prompt=${encodeURIComponent(q)}`);
+      return;
+    }
+    setLocation("/ai-agents");
+  };
+
+  const openWithPrompt = (prompt: string) => {
+    setLocation(`/ai-agents?prompt=${encodeURIComponent(prompt)}`);
+  };
 
   return (
-    <div className="space-y-8 max-w-6xl">
-      {/* Get started — primary actions (AI + Campaign Wizard) */}
-      <section className="space-y-3" aria-label="Get started">
-        <h2 className="text-xl font-bold tracking-tight">Get started</h2>
-        <p className="text-muted-foreground text-sm">Talk to the AI or launch a full campaign in one flow.</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/ai-agents")}>
-            <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  Talk to AI
-                </h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Ask the AI to create a campaign, get ideas, or do anything. Type or describe what you need — the AI guides you.
-                </p>
-              </div>
-              <Button variant="secondary" className="rounded-xl shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/ai-agents"); }}>
-                Open AI Assistant
-              </Button>
-            </CardContent>
-          </Card>
-          <Card className="border-primary/20 bg-primary/5 cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaign-wizard")}>
-            <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-primary" />
-                  Create New Campaign
-                </h3>
-                <p className="text-muted-foreground text-sm mt-1">
-                  Set your goals — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
-                </p>
-              </div>
-              <Button className="rounded-xl shadow-md shrink-0" onClick={(e) => { e.stopPropagation(); setLocation("/campaign-wizard"); }}>
-                <Rocket className="h-4 w-4 mr-2" />Create New Campaign
-              </Button>
-            </CardContent>
-          </Card>
+    <div className="space-y-10 max-w-3xl mx-auto pt-6 pb-12">
+      {/* Single primary input — audit: "What do you want to launch?" */}
+      <section className="text-center space-y-6">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          What do you want to launch?
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Tell the AI. It will build your campaign, landing page, emails, and posts.
+        </p>
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+          <Input
+            type="text"
+            placeholder="e.g. Launch my protein powder for gym people on TikTok"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            className="flex-1 h-12 text-base rounded-xl border-2 focus-visible:ring-2"
+            autoFocus
+          />
+          <Button type="submit" size="lg" className="rounded-xl h-12 px-6 shrink-0">
+            <Sparkles className="h-4 w-4 mr-2" />
+            Build it
+          </Button>
+        </form>
+        <div className="flex flex-wrap justify-center gap-2 pt-2">
+          {examplePrompts.map((prompt) => (
+            <button
+              key={prompt}
+              type="button"
+              onClick={() => openWithPrompt(prompt)}
+              className="text-xs px-3 py-2 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors text-left max-w-[280px] truncate"
+            >
+              {prompt}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Active campaigns */}
+      {/* Active campaigns — compact */}
       {activeCampaigns.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Your campaigns</h3>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {activeCampaigns.slice(0, 6).map((c) => (
-              <Card key={c.id} className="cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaigns")}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium truncate">{c.name}</p>
-                    <Badge variant={c.status === "active" ? "default" : "secondary"}>{c.status}</Badge>
+        <section>
+          <h2 className="text-lg font-semibold mb-3">Active campaigns</h2>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {activeCampaigns.slice(0, 6).map((c: { id: number; name: string; status: string; goal?: string | null }) => (
+              <Card
+                key={c.id}
+                className="cursor-pointer hover:border-primary/40 transition-colors"
+                onClick={() => setLocation("/campaigns")}
+              >
+                <CardContent className="py-3 flex items-center justify-between">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate text-sm">{c.name}</p>
+                    {c.goal != null && c.goal !== "" && (
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {String(c.goal).replace(/_/g, " ")}
+                      </p>
+                    )}
                   </div>
-                  {c.goal != null && c.goal !== "" && <p className="text-xs text-muted-foreground mt-1 capitalize">{String(c.goal).replace(/_/g, " ")}</p>}
+                  <Badge variant={c.status === "active" ? "default" : "secondary"} className="shrink-0 text-[10px]">
+                    {c.status}
+                  </Badge>
                 </CardContent>
               </Card>
             ))}
           </div>
-          <Button variant="outline" className="mt-3" onClick={() => setLocation("/campaigns")}>View all campaigns</Button>
-        </div>
+          <Button variant="outline" size="sm" className="mt-2" onClick={() => setLocation("/campaigns")}>
+            View all campaigns
+          </Button>
+        </section>
       )}
 
-      {/* Hero */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome to OTOBI AI</h1>
-          <p className="text-muted-foreground text-sm mt-1 max-w-xl">
-            The ultimate AI marketing engine. Market anything to anybody, anywhere. Make products #1, people viral, and ideas unstoppable.
-          </p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <ReportExport reportType="dashboard" defaultTitle="Dashboard overview" />
-          <Button onClick={() => setWizardOpen(true)} variant="outline" className="rounded-xl">
-            <Sparkles className="h-4 w-4 mr-2" />Not sure where to start?
-          </Button>
-        </div>
-      </div>
-
-      {/* Goal Pipeline Wizard Dialog */}
-      <Dialog open={wizardOpen} onOpenChange={setWizardOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">What do you want to achieve?</DialogTitle>
-          </DialogHeader>
-          {!selectedPipeline ? (
-            <div className="space-y-3 mt-2">
-              <p className="text-sm text-muted-foreground">Choose your goal and we'll guide you through every step with AI-powered automation.</p>
-              {goalPipelines.map(p => (
-                <button key={p.id} onClick={() => setSelectedPipeline(p.id)}
-                  className="w-full p-4 rounded-xl border border-border hover:border-primary/40 hover:bg-primary/3 transition-all text-left flex items-start gap-4 group">
-                  <div className={`h-12 w-12 rounded-xl ${p.bg} flex items-center justify-center shrink-0`}>
-                    <p.icon className={`h-6 w-6 ${p.color}`} />
-                  </div>
-                  <div>
-                    <p className="font-semibold group-hover:text-primary transition-colors">{p.title}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{p.desc}</p>
-                  </div>
-                </button>
+      {/* Results — one clean view */}
+      <section>
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <BarChart3 className="h-4 w-4 text-primary" />
+          Results
+        </h2>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: "Impressions", value: Number(stats?.analytics?.totalImpressions ?? 0).toLocaleString() },
+                { label: "Clicks", value: Number(stats?.analytics?.totalClicks ?? 0).toLocaleString() },
+                { label: "Conversions", value: Number(stats?.analytics?.totalConversions ?? 0).toLocaleString() },
+                { label: "Revenue", value: `$${Number(stats?.analytics?.totalRevenue ?? 0).toLocaleString()}` },
+              ].map((m) => (
+                <div key={m.label}>
+                  <p className="text-xs text-muted-foreground">{m.label}</p>
+                  <p className="text-lg font-semibold">{m.value}</p>
+                </div>
               ))}
-              <div className="pt-2 border-t">
-                <p className="text-xs text-muted-foreground text-center">Or just explore — every tool is available from the sidebar. AI Agents can help you strategize anything.</p>
-              </div>
             </div>
-          ) : activePipeline ? (
-            <div className="space-y-4 mt-2">
-              <button onClick={() => setSelectedPipeline(null)} className="text-sm text-primary hover:underline">&larr; Back to goals</button>
-              <div className="flex items-center gap-3">
-                <div className={`h-10 w-10 rounded-xl ${activePipeline.bg} flex items-center justify-center`}>
-                  <activePipeline.icon className={`h-5 w-5 ${activePipeline.color}`} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg">{activePipeline.title}</h3>
-                  <p className="text-sm text-muted-foreground">{activePipeline.desc}</p>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">Jump to any step — do the full path or just one. You're in control.</p>
-              <div className="space-y-2">
-                {activePipeline.steps.map((step, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border hover:border-primary/30 transition-all">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-xs font-bold text-primary">{i + 1}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{step.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{step.detail}</p>
-                    </div>
-                    <Button size="sm" variant="outline" className="shrink-0 rounded-lg" onClick={() => { setWizardOpen(false); setLocation(step.path); }}>
-                      Go <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      {/* Hero Visual Showcase */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/content')}>
-          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-marketing-dashboard-Gj5mJgrtS26XPcJCaRrABK.webp" alt="AI Marketing Dashboard" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3">
-            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">All-in-One Dashboard</Badge>
-            <p className="text-white text-xs font-medium">22 content types, 21 platforms, one command center</p>
-          </div>
-        </div>
-        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/creatives')}>
-          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-ai-content-creation-72bpDX2cFotaCeHHbSCMBe.webp" alt="AI Content Creation" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3">
-            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">AI Creative Engine</Badge>
-            <p className="text-white text-xs font-medium">Generate ads, visuals, videos, and copy with AI</p>
-          </div>
-        </div>
-        <div className="relative rounded-2xl overflow-hidden shadow-md group cursor-pointer" onClick={() => setLocation('/campaigns')}>
-          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663280407830/QkdAGQf5b7goEiSECHMXdZ/hero-viral-growth-fWB9JVZPqVMXssFX3Pmr8z.webp" alt="Viral Growth Engine" className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-500" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3">
-            <Badge className="bg-white/90 text-foreground text-[10px] mb-1">Viral Growth Engine</Badge>
-            <p className="text-white text-xs font-medium">Make anything go viral across every platform globally</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Your next step — path-aware suggestion */}
-      {suggestedNextStep && (
-        <Card className="border-primary/20 bg-primary/5 shadow-sm">
-          <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Compass className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Your next step</p>
-                <p className="font-semibold text-foreground mt-0.5">{suggestedNextStep.label}</p>
-                {suggestedNextStep.description && (
-                  <p className="text-xs text-muted-foreground mt-1">{suggestedNextStep.description}</p>
-                )}
-              </div>
-            </div>
-            <Button className="rounded-xl shrink-0" onClick={() => setLocation(suggestedNextStep.path)}>
-              Go <ArrowRight className="h-4 w-4 ml-2" />
+            <Button variant="outline" size="sm" className="mt-3" onClick={() => setLocation("/analytics")}>
+              View analytics
+              <ArrowRight className="h-3 w-3 ml-1" />
             </Button>
           </CardContent>
         </Card>
-      )}
-      {suggestedNextStep && (
-        <p className="text-xs text-muted-foreground -mt-2">Or choose a path below or use any tool from Quick Actions — your choice.</p>
-      )}
+      </section>
 
-      {/* Goal Pipelines — full path visible, continue or jump to any step */}
-      <div>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Rocket className="h-4 w-4 text-primary" />Choose your path — we show every step
-        </h2>
-        <p className="text-sm text-muted-foreground mb-3 max-w-2xl">
-          Follow the full flow (e.g. make someone viral in 6 steps) or work on just one thing — every step is one click away.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {goalPipelines.map(p => {
-            const progress = getPathProgress(stats ?? undefined, p.id as "product" | "person" | "concept");
-            const nextStep = progress ? `${progress.nextStepIndex + 1} of ${progress.totalSteps}` : null;
-            return (
-              <Card key={p.id} className="border-0 shadow-sm hover:shadow-md transition-all group">
-                <CardContent className="p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-xl ${p.bg} flex items-center justify-center shrink-0`}>
-                      <p.icon className={`h-5 w-5 ${p.color}`} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm group-hover:text-primary transition-colors">{p.title}</p>
-                      {nextStep && (
-                        <p className="text-xs text-muted-foreground">Step {nextStep} next</p>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">{p.desc}</p>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {progress && (
-                      <Button size="sm" className="rounded-lg" onClick={(e) => { e.stopPropagation(); setLocation(progress.nextStepPath); }}>
-                        Continue — {progress.nextStepLabel}
-                        <ArrowRight className="h-3.5 w-3.5 ml-1" />
-                      </Button>
-                    )}
-                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => { setSelectedPipeline(p.id); setWizardOpen(true); }}>
-                      See all 6 steps
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {statCards.map((stat) => (
-          <Card key={stat.label} className="cursor-pointer hover:shadow-md transition-all group border-0 shadow-sm" onClick={() => setLocation(stat.path)}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className={`h-9 w-9 rounded-xl ${stat.bg} flex items-center justify-center`}>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                </div>
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{stats?.[stat.key] ?? 0}</p>}
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Performance + AI Insights */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <Card className="lg:col-span-2 border-0 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-primary" />Performance Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-3/4" /></div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { label: "Impressions", value: Number(stats?.analytics?.totalImpressions ?? 0).toLocaleString() },
-                  { label: "Clicks", value: Number(stats?.analytics?.totalClicks ?? 0).toLocaleString() },
-                  { label: "Conversions", value: Number(stats?.analytics?.totalConversions ?? 0).toLocaleString() },
-                  { label: "Revenue", value: `$${Number(stats?.analytics?.totalRevenue ?? 0).toLocaleString()}` },
-                ].map(m => (
-                  <div key={m.label} className="space-y-1">
-                    <p className="text-xs text-muted-foreground">{m.label}</p>
-                    <p className="text-xl font-semibold">{m.value}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-emerald-500" />AI Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Add a product and launch your first campaign. AI will analyze performance, suggest optimizations, and identify growth opportunities.
-            </p>
-            <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setLocation("/analytics")}>View Analytics</Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Capabilities */}
-      <div>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-primary" />Platform Capabilities
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {capabilities.map(cap => (
-            <div key={cap.label} className="flex items-start gap-2.5 p-3 rounded-xl bg-muted/30">
-              <cap.icon className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-medium">{cap.label}</p>
-                <p className="text-[11px] text-muted-foreground">{cap.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Quick Actions — single-tool access, no path required */}
-      <div>
-        <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-          <Zap className="h-4 w-4 text-primary" />Quick Actions
-        </h2>
-        <p className="text-sm text-muted-foreground mb-3">Work on just one thing? Jump straight to any tool.</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {quickActions.map((action) => (
-            <Card key={action.label} className="cursor-pointer hover:shadow-md transition-all group border-0 shadow-sm" onClick={() => setLocation(action.path)}>
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0 mt-0.5">
-                    <action.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm group-hover:text-primary transition-colors">{action.label}</p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{action.desc}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      {/* Library + quick links */}
+      <section className="flex flex-wrap gap-3">
+        <Button variant="outline" className="rounded-xl" onClick={() => setLocation("/content")}>
+          <Library className="h-4 w-4 mr-2" />
+          Content & creatives
+        </Button>
+        <Button variant="outline" className="rounded-xl" onClick={() => setLocation("/ai-agents")}>
+          <Bot className="h-4 w-4 mr-2" />
+          Talk to AI
+        </Button>
+        <Button variant="outline" className="rounded-xl" onClick={() => setLocation("/campaign-wizard")}>
+          <Megaphone className="h-4 w-4 mr-2" />
+          Campaign wizard
+        </Button>
+      </section>
     </div>
   );
 }

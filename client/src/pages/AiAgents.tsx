@@ -14,7 +14,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
 import { checkMediaSupport, getMediaErrorMessage } from "@/lib/mediaPermissions";
 import { Streamdown } from "streamdown";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -171,6 +171,19 @@ export default function AiAgents() {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  // Pre-fill from dashboard "What do you want to launch?" → /ai-agents?prompt=...
+  useEffect(() => {
+    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    const q = params.get("prompt");
+    if (q) {
+      const decoded = decodeURIComponent(q);
+      setInput(decoded);
+      if (typeof window !== "undefined" && window.history.replaceState) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    }
+  }, [search]);
 
   const sendMessage = async (text: string, attachList?: Array<{ url: string; name: string }>) => {
     const toSend = (text || "").trim();

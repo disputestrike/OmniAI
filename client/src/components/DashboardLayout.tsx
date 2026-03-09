@@ -84,6 +84,9 @@ import {
   HelpCircle,
   Target,
   Lock,
+  ChevronDown,
+  ChevronRight,
+  Wrench,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useSearch } from "wouter";
@@ -91,106 +94,88 @@ import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 import { TrialCountdownBanner } from "./TrialCountdownBanner";
 import { setCrispUser } from "@/lib/crisp";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
-const menuSections = [
-  {
-    label: "Overview",
-    items: [
-      { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    ],
-  },
-  {
-    label: "Create",
-    items: [
-      { icon: Rocket, label: "Campaign Wizard", path: "/campaign-wizard" },
-      { icon: Bot, label: "AI Agents", path: "/ai-agents" },
-      { icon: Package, label: "Product Analyzer", path: "/products" },
-      { icon: PenTool, label: "Content Studio", path: "/content" },
-      { icon: Shuffle, label: "Content Repurposer", path: "/content-repurposer" },
-      { icon: Image, label: "Creative Engine", path: "/creatives" },
-      { icon: Video, label: "Video Ads", path: "/video-ads" },
-      { icon: Film, label: "Video Render", path: "/video-render" },
-      { icon: Video, label: "Video Studio", path: "/video-studio" },
-      { icon: Scissors, label: "Image Editor", path: "/image-editor" },
-      { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
-      { icon: Languages, label: "Translate", path: "/translate" },
-      { icon: UserCircle, label: "AI Avatars", path: "/ai-avatars" },
-      { icon: Smile, label: "Meme Generator", path: "/meme-generator" },
-      { icon: BookDown, label: "Content Ingest", path: "/content-ingest" },
-      { icon: Library, label: "Content Library", path: "/content-library" },
-      { icon: LayoutTemplate, label: "Templates", path: "/content-templates" },
-      { icon: Gauge, label: "Content Scorer", path: "/content-scorer" },
-      { icon: Upload, label: "Bulk Import", path: "/bulk-import" },
-      { icon: Palette, label: "Brand Kit", path: "/brand-kit" },
-      { icon: Music, label: "Music Studio", path: "/music-studio" },
-      { icon: Mic2, label: "Voiceover Studio", path: "/voiceover-studio" },
-      { icon: FileQuestion, label: "Forms", path: "/forms" },
-    ],
-  },
-  {
-    label: "Manage",
-    items: [
-      { icon: Megaphone, label: "Campaigns", path: "/campaigns" },
-      { icon: Target, label: "Programmatic Ads", path: "/programmatic-ads" },
-      { icon: GitBranch, label: "Funnels", path: "/funnels" },
-      { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
-      { icon: Calendar, label: "Scheduler", path: "/scheduler" },
-      { icon: Users, label: "Lead Manager", path: "/leads" },
-      { icon: Handshake, label: "CRM Deals", path: "/deals" },
-      { icon: Share2, label: "Ad Platforms", path: "/ad-platforms" },
-      { icon: BarChart2, label: "Ad Performance", path: "/ad-performance" },
-      { icon: Rocket, label: "One-Push Publisher", path: "/one-push-publisher" },
-      { icon: Flame, label: "Momentum", path: "/momentum" },
-      { icon: Send, label: "Social Publish", path: "/social-publish" },
-      { icon: Mail, label: "Email Marketing", path: "/email-marketing" },
-      { icon: CalendarDays, label: "Content Calendar", path: "/content-calendar" },
-      { icon: Activity, label: "Performance", path: "/performance" },
-      { icon: CalendarCheck, label: "Social Planner", path: "/social-planner" },
-    ],
-  },
-  {
-    label: "Intelligence",
-    items: [
-      { icon: Globe, label: "Website Intel", path: "/intelligence" },
-      { icon: Star, label: "Reviews", path: "/reviews" },
-      { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
-      { icon: Search, label: "SEO Audits", path: "/seo-audits" },
-      { icon: BarChart3, label: "Analytics", path: "/analytics" },
-      { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
-      { icon: Zap, label: "Growth & Learning", path: "/growth-learning" },
-      { icon: Eye, label: "Competitor Intelligence", path: "/competitor-intelligence" },
-      { icon: Users, label: "Customer Intel", path: "/customer-intel" },
-    ],
-  },
-  {
-    label: "Workspace",
-    items: [
-      { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
-      { icon: CheckCircle, label: "Approvals", path: "/approvals" },
-      { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
-      { icon: Webhook, label: "Webhooks", path: "/webhooks" },
-      { icon: FileCode, label: "Landing Pages", path: "/landing-pages" },
-      { icon: Workflow, label: "Automations", path: "/automations" },
-      { icon: FolderKanban, label: "Projects", path: "/projects" },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { icon: CreditCard, label: "Pricing & Plans", path: "/pricing" },
-      { icon: User, label: "Creator Profile", path: "/creator-profile" },
-      { icon: HelpCircle, label: "Help & Docs", path: "/help" },
-    ],
-  },
-  {
-    label: "Admin",
-    items: [
-      { icon: Shield, label: "Admin Panel", path: "/admin" },
-    ],
-  },
+// Audit: 6–8 items max on first view. Rest in collapsible "Tools".
+const mainNavItems = [
+  { icon: LayoutDashboard, label: "Home", path: "/dashboard" },
+  { icon: Megaphone, label: "Active Campaigns", path: "/campaigns" },
+  { icon: BarChart3, label: "Results", path: "/analytics" },
+  { icon: Library, label: "Library", path: "/content" },
+  { icon: CheckCircle, label: "Approvals", path: "/approvals" },
+  { icon: Share2, label: "Integrations", path: "/ad-platforms" },
+  { icon: CreditCard, label: "Account", path: "/pricing" },
 ];
 
-const allMenuItems = menuSections.flatMap(s => s.items);
+const toolsNavSections = [
+  { label: "Create", items: [
+    { icon: Rocket, label: "Campaign Wizard", path: "/campaign-wizard" },
+    { icon: Bot, label: "AI Agents", path: "/ai-agents" },
+    { icon: Package, label: "Product Analyzer", path: "/products" },
+    { icon: PenTool, label: "Content Studio", path: "/content" },
+    { icon: Shuffle, label: "Content Repurposer", path: "/content-repurposer" },
+    { icon: Image, label: "Creative Engine", path: "/creatives" },
+    { icon: Video, label: "Video Ads", path: "/video-ads" },
+    { icon: Film, label: "Video Render", path: "/video-render" },
+    { icon: Video, label: "Video Studio", path: "/video-studio" },
+    { icon: Scissors, label: "Image Editor", path: "/image-editor" },
+    { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
+    { icon: Languages, label: "Translate", path: "/translate" },
+    { icon: UserCircle, label: "AI Avatars", path: "/ai-avatars" },
+    { icon: Smile, label: "Meme Generator", path: "/meme-generator" },
+    { icon: BookDown, label: "Content Ingest", path: "/content-ingest" },
+    { icon: Library, label: "Content Library", path: "/content-library" },
+    { icon: LayoutTemplate, label: "Templates", path: "/content-templates" },
+    { icon: Gauge, label: "Content Scorer", path: "/content-scorer" },
+    { icon: Upload, label: "Bulk Import", path: "/bulk-import" },
+    { icon: Palette, label: "Brand Kit", path: "/brand-kit" },
+    { icon: Music, label: "Music Studio", path: "/music-studio" },
+    { icon: Mic2, label: "Voiceover Studio", path: "/voiceover-studio" },
+    { icon: FileQuestion, label: "Forms", path: "/forms" },
+  ]},
+  { label: "Manage", items: [
+    { icon: Target, label: "Programmatic Ads", path: "/programmatic-ads" },
+    { icon: GitBranch, label: "Funnels", path: "/funnels" },
+    { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
+    { icon: Calendar, label: "Scheduler", path: "/scheduler" },
+    { icon: Users, label: "Lead Manager", path: "/leads" },
+    { icon: Handshake, label: "CRM Deals", path: "/deals" },
+    { icon: BarChart2, label: "Ad Performance", path: "/ad-performance" },
+    { icon: Rocket, label: "One-Push Publisher", path: "/one-push-publisher" },
+    { icon: Flame, label: "Momentum", path: "/momentum" },
+    { icon: Send, label: "Social Publish", path: "/social-publish" },
+    { icon: Mail, label: "Email Marketing", path: "/email-marketing" },
+    { icon: CalendarDays, label: "Content Calendar", path: "/content-calendar" },
+    { icon: Activity, label: "Performance", path: "/performance" },
+    { icon: CalendarCheck, label: "Social Planner", path: "/social-planner" },
+  ]},
+  { label: "Intelligence", items: [
+    { icon: Globe, label: "Website Intel", path: "/intelligence" },
+    { icon: Star, label: "Reviews", path: "/reviews" },
+    { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
+    { icon: Search, label: "SEO Audits", path: "/seo-audits" },
+    { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
+    { icon: Zap, label: "Growth & Learning", path: "/growth-learning" },
+    { icon: Eye, label: "Competitor Intelligence", path: "/competitor-intelligence" },
+    { icon: Users, label: "Customer Intel", path: "/customer-intel" },
+  ]},
+  { label: "Workspace", items: [
+    { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
+    { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
+    { icon: Webhook, label: "Webhooks", path: "/webhooks" },
+    { icon: FileCode, label: "Landing Pages", path: "/landing-pages" },
+    { icon: Workflow, label: "Automations", path: "/automations" },
+    { icon: FolderKanban, label: "Projects", path: "/projects" },
+    { icon: User, label: "Creator Profile", path: "/creator-profile" },
+    { icon: HelpCircle, label: "Help & Docs", path: "/help" },
+  ]},
+];
+
+const allMenuItems = [
+  ...mainNavItems,
+  ...toolsNavSections.flatMap(s => s.items),
+  { icon: Shield, label: "Admin Panel", path: "/admin" },
+];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
 const DEFAULT_WIDTH = 250;
@@ -350,36 +335,95 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
           </SidebarHeader>
 
           <SidebarContent className="gap-0 px-2">
-            {menuSections.filter(section => section.label !== "Admin" || user?.role === "admin").map((section, sIdx) => (
-              <div key={section.label} className={sIdx > 0 ? "mt-4" : ""}>
+            <SidebarMenu className="gap-0.5">
+              {mainNavItems.map(item => {
+                const isActive = location === item.path;
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      isActive={isActive}
+                      onClick={() => setLocation(item.path)}
+                      tooltip={item.label}
+                      className="h-9 transition-all font-normal text-[13px]"
+                    >
+                      <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                      <span className="truncate">{item.label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+
+            <Collapsible defaultOpen={false} className="mt-4 group/tools">
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 h-9 w-full rounded-md px-3 text-[13px] font-normal text-muted-foreground hover:text-foreground hover:bg-accent transition-colors group-data-[state=open]/tools:bg-accent/50"
+                >
+                  <Wrench className="h-4 w-4 shrink-0" />
+                  <span className="truncate">Tools</span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0 ml-auto group-data-[state=open]/tools:hidden" />
+                  <ChevronDown className="h-3.5 w-3.5 shrink-0 ml-auto hidden group-data-[state=open]/tools:block" />
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="pl-1 mt-1 space-y-3">
+                  {toolsNavSections.map(section => (
+                    <div key={section.label}>
+                      {!isCollapsed && (
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1">
+                          {section.label}
+                        </p>
+                      )}
+                      <SidebarMenu className="gap-0.5">
+                        {section.items.map(item => {
+                          const isActive = location === item.path;
+                          const isProgrammaticAds = item.path === "/programmatic-ads";
+                          const isLocked = isProgrammaticAds && !(featureAccess?.programmatic_ads ?? true);
+                          return (
+                            <SidebarMenuItem key={item.path}>
+                              <SidebarMenuButton
+                                isActive={isActive}
+                                onClick={() => setLocation(item.path)}
+                                tooltip={isLocked ? `${item.label} (Starter+ required)` : item.label}
+                                className="h-8 transition-all font-normal text-[12px]"
+                              >
+                                <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                                <span className="truncate">{item.label}</span>
+                                {isLocked && <Lock className="h-3 w-3 shrink-0 text-amber-600 ml-auto" />}
+                              </SidebarMenuButton>
+                            </SidebarMenuItem>
+                          );
+                        })}
+                      </SidebarMenu>
+                    </div>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {user?.role === "admin" && (
+              <div className="mt-4">
                 {!isCollapsed && (
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1">
-                    {section.label}
+                    Admin
                   </p>
                 )}
                 <SidebarMenu className="gap-0.5">
-                  {section.items.map(item => {
-                    const isActive = location === item.path;
-                    const isProgrammaticAds = item.path === "/programmatic-ads";
-                    const isLocked = isProgrammaticAds && !(featureAccess?.programmatic_ads ?? true);
-                    return (
-                      <SidebarMenuItem key={item.path}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          onClick={() => setLocation(item.path)}
-                          tooltip={isLocked ? `${item.label} (Starter+ required)` : item.label}
-                          className="h-9 transition-all font-normal text-[13px]"
-                        >
-                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
-                          <span className="truncate">{item.label}</span>
-                          {isLocked && <Lock className="h-3.5 w-3.5 shrink-0 text-amber-600 ml-auto" />}
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={location === "/admin"}
+                      onClick={() => setLocation("/admin")}
+                      tooltip="Admin Panel"
+                      className="h-9 transition-all font-normal text-[13px]"
+                    >
+                      <Shield className="h-4 w-4 shrink-0" />
+                      <span className="truncate">Admin Panel</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </div>
-            ))}
+            )}
           </SidebarContent>
 
           <SidebarFooter className="p-3">
