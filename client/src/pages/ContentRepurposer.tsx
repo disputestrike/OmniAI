@@ -20,6 +20,7 @@ import { WhatsNextCard } from "@/components/WhatsNextCard";
 import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
 const ZIP_VIDEO_AUDIO_EXT = /\.(mp4|webm|mp3|wav|m4a|ogg|aac|flac)$/i;
+const MAX_UPLOAD_BYTES = 16 * 1024 * 1024; // 16MB
 
 type InputMode = "transcript" | "upload" | "zip";
 
@@ -74,10 +75,25 @@ export default function ContentRepurposer() {
     }
     if (inputMode === "upload") {
       if (!uploadFile) { toast.error("Choose a video or audio file"); return; }
+      if (uploadFile.size > MAX_UPLOAD_BYTES) {
+        toast.error(`File is too large (max ${MAX_UPLOAD_BYTES / 1024 / 1024}MB). Try a shorter clip or compress the file.`);
+        return;
+      }
       const reader = new FileReader();
+      reader.onerror = () => {
+        toast.error("Could not read file. Try a smaller file or use “Paste transcript” for long content.");
+      };
       reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        if (!base64) { toast.error("Could not read file"); return; }
+        const result = reader.result;
+        if (result == null || typeof result !== "string") {
+          toast.error("Could not read file. Try a smaller file (under 16MB) or paste a transcript instead.");
+          return;
+        }
+        const base64 = result.split(",")[1];
+        if (!base64 || base64.length === 0) {
+          toast.error("File read failed. Use a file under 16MB or paste a transcript.");
+          return;
+        }
         createFromUpload.mutate(
           { title: title.trim(), audioBase64: base64, mimeType: uploadFile.type },
           {
@@ -199,7 +215,10 @@ export default function ContentRepurposer() {
                 <FileAudio className="h-4 w-4" />
                 {uploadFile ? uploadFile.name : "Choose file (MP4, WebM, MP3, WAV…)"}
               </Button>
-              <p className="text-xs text-muted-foreground">We’ll transcribe it with AI, then generate all 22 formats. Max ~16MB.</p>
+              {uploadFile && uploadFile.size > MAX_UPLOAD_BYTES && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">File is {(uploadFile.size / 1024 / 1024).toFixed(1)}MB. Max 16MB — use a shorter clip or paste a transcript.</p>
+              )}
+              <p className="text-xs text-muted-foreground">We’ll transcribe it with AI, then generate all 22 formats. Max 16MB.</p>
             </div>
           )}
 
