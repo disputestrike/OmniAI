@@ -86,12 +86,35 @@ export const appRouter = router({
 
       await db.updateProduct(input.id, { analysisStatus: "analyzing" });
 
+      let urlContext = "";
+      const productUrl = product.url?.trim();
+      if (productUrl) {
+        try {
+          const targetUrl = productUrl.startsWith("http") ? productUrl : `https://${productUrl}`;
+          const fetchResponse = await fetch(targetUrl, {
+            headers: { "User-Agent": "Mozilla/5.0 (compatible; OtobiAIBot/1.0)" },
+            signal: AbortSignal.timeout(15000),
+          });
+          const html = await fetchResponse.text();
+          const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+          const metaDescMatch = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+          const ogTitleMatch = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+          const ogDescMatch = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+          const h1Matches = html.match(/<h1[^>]*>([^<]+)<\/h1>/gi)?.map(h => h.replace(/<[^>]+>/g, "").trim()).slice(0, 5) || [];
+          const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          const bodyText = bodyMatch ? bodyMatch[1].replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2500) : "";
+          urlContext = `\n\n--- PAGE CONTENT FROM ${targetUrl} ---\nTitle: ${titleMatch?.[1] || "N/A"}\nMeta description: ${metaDescMatch?.[1] || "N/A"}\nOG title: ${ogTitleMatch?.[1] || "N/A"}\nOG description: ${ogDescMatch?.[1] || "N/A"}\nH1: ${h1Matches.join(" | ") || "None"}\nBody preview: ${bodyText}\n--- END PAGE CONTENT ---`;
+        } catch {
+          urlContext = "\n\n[Could not fetch URL; use name/description/category only.]";
+        }
+      }
+
       try {
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: `You are a marketing strategist AI. Analyze the given product and extract structured marketing intelligence. Return JSON only.`
+              content: `You are a marketing strategist AI. Analyze the given product and extract structured marketing intelligence. When page content from the product URL is provided, use it to make your analysis accurate. Return JSON only.`
             },
             {
               role: "user",
@@ -100,6 +123,7 @@ Name: ${product.name}
 Description: ${product.description || "N/A"}
 URL: ${product.url || "N/A"}
 Category: ${product.category || "N/A"}
+${urlContext}
 
 Return a JSON object with these fields:
 - features: array of key product features (strings)
@@ -346,12 +370,21 @@ Return a JSON object with these fields:
   // ─── AI Chat Agent (executor with tools) ───────────────────────────
   aiChat: router({
     send: protectedProcedure.input(z.object({
-      message: z.string().min(1),
+      message: z.string(),
       history: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })).optional(),
+      attachments: z.array(z.object({ url: z.string(), name: z.string().optional() })).optional(),
     })).mutation(async ({ ctx, input }) => {
+      const hasMessage = (input.message ?? "").trim().length > 0;
+      const hasAttach = (input.attachments?.length ?? 0) > 0;
+      if (!hasMessage && !hasAttach) throw new TRPCError({ code: "BAD_REQUEST", message: "Message or attachment required" });
       const { runAgentLoop } = await import("./aiAgent");
       const history = input.history ?? [];
-      const { reply, toolResults } = await runAgentLoop(ctx.user.id, input.message, history);
+      let message = (input.message ?? "").trim() || "I’ve attached the file(s) above. Please use them for context.";
+      if (input.attachments?.length) {
+        const attachLine = input.attachments.map(a => `[Attached: ${a.name || "file"} (${a.url})]`).join(" ");
+        message = `${attachLine}\n\n${message}`;
+      }
+      const { reply, toolResults } = await runAgentLoop(ctx.user.id, message, history);
       return { reply, toolResults };
     }),
   }),

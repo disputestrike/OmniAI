@@ -74,6 +74,7 @@ import Reviews from "./pages/Reviews";
 import Forms from "./pages/Forms";
 import ReportView from "./pages/ReportView";
 import FormView from "./pages/FormView";
+import LandingPagePublicView from "./pages/LandingPagePublicView";
 import Help from "./pages/Help";
 import AboutUs from "./pages/AboutUs";
 import Terms from "./pages/Terms";
@@ -229,6 +230,7 @@ function Router() {
       <Route path="/about" component={AboutUs} />
       <Route path="/report/:shareToken" component={ReportView} />
       <Route path="/form/:slug" component={FormView} />
+      <Route path="/lp/:slug" component={LandingPagePublicView} />
       <Route path="/login" component={Login} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />

@@ -4,9 +4,9 @@ import { notifyOwner } from "./notification";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./trpc";
 
 export const systemRouter = router({
-  /** Whether Forge LLM/image API is configured (so UI can show a friendly message if not). */
+  /** Whether AI is configured (Claude). We do not use Forge/OpenAI. */
   forgeConfigured: protectedProcedure.query(() => ({
-    configured: !!(ENV.forgeApiUrl?.trim() && ENV.forgeApiKey?.trim()),
+    configured: !!ENV.anthropicApiKey?.trim(),
   })),
 
   health: publicProcedure

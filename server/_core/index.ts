@@ -11,6 +11,8 @@ import { serveStatic } from "./static";
 import { registerStripeRoutes } from "../stripe-routes";
 import { registerCreditsRoutes } from "../credits-routes";
 import { registerLandingRoutes } from "../landing-routes";
+import path from "path";
+import fs from "fs/promises";
 import { securityHeaders, rateLimit } from "../security";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -71,6 +73,10 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerCreditsRoutes(app);
   registerLandingRoutes(app);
+  // Uploaded files (when not using Forge storage). Create dir if missing.
+  const uploadDir = path.resolve(process.cwd(), ENV.uploadDir || "uploads");
+  await fs.mkdir(uploadDir, { recursive: true }).catch(() => {});
+  app.use("/api/uploads", express.static(uploadDir, { index: false }));
   // Google OAuth only (GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET required)
   registerGoogleOAuthRoutes(app);
   registerEmailAuthRoutes(app);
@@ -79,7 +85,7 @@ async function startServer() {
   app.use("/api/trpc/product.analyze", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-analyze" }));
   app.use("/api/trpc/creative.generate", rateLimit({ windowMs: 60000, max: 20, keyPrefix: "ai-creative" }));
   app.use("/api/trpc/videoAd.generate", rateLimit({ windowMs: 60000, max: 15, keyPrefix: "ai-video" }));
-  app.use("/api/trpc/aiAgent.chat", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-chat" }));
+  app.use("/api/trpc/aiChat.send", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-chat" }));
   // General API rate limit (200 requests per minute per IP)
   app.use("/api/", rateLimit({ windowMs: 60000, max: 200, keyPrefix: "api" }));
   // tRPC API

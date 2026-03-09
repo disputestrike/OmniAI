@@ -21,12 +21,19 @@ Add these in **Railway → OmniAI service → Variables**.
 | `DATABASE_URL` or `MYSQL_URL` | MySQL connection URL for the app | From your **MySQL** service (see below) |
 | `JWT_SECRET` | Secret for signing session cookies (any long random string) | Generate one, e.g. `openssl rand -base64 32` |
 
+### Required for AI (Content Studio, AI Agent, product analysis, campaign wizard)
+
+| Variable | Purpose |
+|----------|--------|
+| `ANTHROPIC_API_KEY` | Claude Haiku — **required** for all text AI. We do not use OpenAI/Forge. |
+
 ### Optional (features work without these; add as needed)
 
 | Variable | Purpose |
 |----------|--------|
-| `BUILT_IN_FORGE_API_KEY` | LLM + image generation (Content Studio, AI Agent, etc.) |
-| `BUILT_IN_FORGE_API_URL` | Forge API base URL if different from default |
+| `UPLOAD_DIR` | Dir for file uploads (default `./uploads`). On Railway, ephemeral unless you add a volume. |
+| `PUBLIC_BASE_URL` | Full app URL (e.g. `https://yourapp.railway.app`) so attachment links work. |
+| `BUILT_IN_FORGE_API_KEY`, `BUILT_IN_FORGE_API_URL` | Only for **image generation** if you have an image service. |
 | `VITE_APP_ID`, `OAUTH_SERVER_URL` | Manus OAuth (primary login) |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Sign-In (see **Google OAuth redirect URIs** below) |
 

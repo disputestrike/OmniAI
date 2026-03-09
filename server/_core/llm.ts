@@ -212,20 +212,14 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
-    : "https://api.openai.com/v1/chat/completions";
-
 const assertApiKey = () => {
   if (ENV.anthropicApiKey?.trim()) return;
-  if (ENV.forgeApiKey?.trim()) return;
   throw new Error(
-    "Configure at least one: ANTHROPIC_API_KEY (Claude Haiku, preferred) or BUILT_IN_FORGE_API_KEY (OpenAI fallback). Set in Railway or .env."
+    "ANTHROPIC_API_KEY is required (Claude). Set it in Railway or .env. We do not use OpenAI/Forge."
   );
 };
 
-/** Try Claude Haiku first when key is set. Uses Haiku only (no Sonnet). */
+/** Claude Haiku only. Supports response_format (json_schema) for structured output. */
 async function tryClaudeHaiku(params: InvokeParams): Promise<InvokeResult | null> {
   if (!ENV.anthropicApiKey?.trim()) return null;
   const { messages, maxTokens, max_tokens } = params;
@@ -252,13 +246,30 @@ async function tryClaudeHaiku(params: InvokeParams): Promise<InvokeResult | null
     anthropicMessages.push({ role: m.role as "user" | "assistant", content: text });
   }
   if (anthropicMessages.length === 0) return null;
+  const responseFormat = normalizeResponseFormat({
+    responseFormat: params.responseFormat,
+    response_format: params.response_format,
+    outputSchema: params.outputSchema,
+    output_schema: params.output_schema,
+  });
   const client = new Anthropic({ apiKey: ENV.anthropicApiKey });
-  const response = await client.messages.create({
+  const createParams: Parameters<typeof client.messages.create>[0] = {
     model: CLAUDE_HAIKU_MODEL,
     max_tokens: Math.min(max, 8192),
     system: system || undefined,
     messages: anthropicMessages,
-  });
+  };
+  if (responseFormat?.type === "json_schema" && responseFormat.json_schema?.schema) {
+    (createParams as Record<string, unknown>).response_format = {
+      type: "json_schema",
+      json_schema: {
+        name: responseFormat.json_schema.name ?? "response",
+        schema: responseFormat.json_schema.schema,
+        strict: responseFormat.json_schema.strict ?? true,
+      },
+    };
+  }
+  const response = await client.messages.create(createParams);
   const block = response.content[0];
   const text = block?.type === "text" ? (block as { type: "text"; text: string }).text : "";
   return {
@@ -330,84 +341,17 @@ const normalizeResponseFormat = ({
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
-  const {
-    messages,
-    tools,
-    toolChoice,
-    tool_choice,
-    outputSchema,
-    output_schema,
-    responseFormat,
-    response_format,
-  } = params;
-
+  const { tools, toolChoice, tool_choice } = params;
   const useTools = (tools && tools.length > 0) || toolChoice || tool_choice;
-  const canUseClaude = !useTools && !normalizeResponseFormat({ responseFormat, response_format, outputSchema, output_schema });
-
-  if (canUseClaude && ENV.anthropicApiKey?.trim()) {
-    try {
-      const out = await tryClaudeHaiku(params);
-      if (out) return out;
-    } catch (err) {
-      console.warn("[LLM] Claude Haiku failed, falling back to OpenAI/Forge:", err);
-    }
-  }
-
-  if (!ENV.forgeApiKey?.trim()) {
+  if (useTools) {
     throw new Error(
-      "BUILT_IN_FORGE_API_KEY is not configured. Set it in Railway (or .env) as fallback when Claude is unavailable or for tool-calling."
+      "Tool calling is handled by the AI agent (Anthropic SDK). Use the agent for tool flows."
     );
   }
 
-  const payload: Record<string, unknown> = {
-    model: ENV.forgeModel || "gpt-4o-mini",
-    messages: messages.map(normalizeMessage),
-  };
-
-  if (tools && tools.length > 0) {
-    payload.tools = tools;
-  }
-
-  const normalizedToolChoice = normalizeToolChoice(
-    toolChoice || tool_choice,
-    tools
+  const out = await tryClaudeHaiku(params);
+  if (out) return out;
+  throw new Error(
+    "ANTHROPIC_API_KEY is required. Set it in Railway or .env. We do not use OpenAI/Forge."
   );
-  if (normalizedToolChoice) {
-    payload.tool_choice = normalizedToolChoice;
-  }
-
-  payload.max_tokens = 32768
-  // Optional: some providers (e.g. Gemini) support thinking; OpenAI ignores unknown fields
-  if (ENV.forgeModel && /o1|reasoning|gemini/i.test(ENV.forgeModel)) {
-    payload.thinking = { budget_tokens: 128 };
-  }
-
-  const normalizedResponseFormat = normalizeResponseFormat({
-    responseFormat,
-    response_format,
-    outputSchema,
-    output_schema,
-  });
-
-  if (normalizedResponseFormat) {
-    payload.response_format = normalizedResponseFormat;
-  }
-
-  const response = await fetch(resolveApiUrl(), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
-    );
-  }
-
-  return (await response.json()) as InvokeResult;
 }

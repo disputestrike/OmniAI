@@ -14,6 +14,26 @@ interface LeadDestinationConfig {
 }
 
 export function registerLandingRoutes(app: express.Application) {
+  /** Public: get landing page by slug for viewing at /lp/:slug (published only). */
+  app.get("/api/landing/page/:slug", async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      if (!slug) return res.status(400).json({ error: "Slug required" });
+      const page = await db.getLandingPageBySlug(slug);
+      if (!page) return res.status(404).json({ error: "Page not found" });
+      if (page.status !== "published") return res.status(404).json({ error: "Page not found" });
+      return res.status(200).json({
+        id: page.id,
+        title: page.title,
+        components: page.components ?? [],
+        status: page.status,
+      });
+    } catch (e) {
+      console.error("[landing/page]", e);
+      return res.status(500).json({ error: "Failed to load page" });
+    }
+  });
+
   app.post("/api/landing/submit", async (req, res) => {
     try {
       const { landingPageId, data } = req.body as { landingPageId?: number; data?: Record<string, string> };

@@ -8,7 +8,7 @@ import {
   Megaphone, Brain, Globe, Crown, Flame, Eye, Heart, Users, Zap, ShoppingCart,
   Mic, MicOff, Volume2, VolumeX, ArrowRight, ExternalLink, Play,
   Rocket, BarChart3, Mail, Video, Image as ImageIcon, FileText, Search,
-  Layout, Workflow, Calendar, Share2, Shield, Palette, Copy, Pencil,
+  Layout, Workflow, Calendar, Share2, Shield, Palette, Copy, Pencil, Paperclip, X,
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -144,6 +144,7 @@ const workflows = [
 export default function AiAgents() {
   const [, navigate] = useLocation();
   const chatMut = trpc.aiChat.send.useMutation({ onError: (e) => toast.error(e.message) });
+  const uploadAttachMut = trpc.enhanced.uploadAttachment.useMutation({ onError: (e) => toast.error("Upload failed: " + e.message) });
   const wizardLaunch = trpc.campaign.wizardLaunch.useMutation({
     onSuccess: () => toast.success("Campaign launched."),
     onError: (e) => toast.error(e.message),
@@ -154,6 +155,8 @@ export default function AiAgents() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [lastToolResults, setLastToolResults] = useState<AgentToolResult[]>([]);
   const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<Array<{ url: string; name: string }>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -168,18 +171,21 @@ export default function AiAgents() {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  const sendMessage = async (text: string) => {
-    if (!text.trim() || chatMut.isPending) return;
+  const sendMessage = async (text: string, attachList?: Array<{ url: string; name: string }>) => {
+    const toSend = (text || "").trim();
+    if (!toSend || chatMut.isPending) return;
+    const attach = attachList ?? attachments;
     setLastToolResults([]);
-    const userMsg: Message = { role: "user", content: text };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
+    const userMsg: Message = { role: "user", content: toSend };
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
+    setAttachments([]);
 
     try {
       const result = await chatMut.mutateAsync({
-        message: text,
+        message: toSend,
         history: messages.slice(-20),
+        attachments: attach.length ? attach : undefined,
       });
       setMessages(prev => [...prev, { role: "assistant", content: result.reply }]);
       setLastToolResults((result as { toolResults?: AgentToolResult[] }).toolResults ?? []);
@@ -188,6 +194,33 @@ export default function AiAgents() {
       setLastToolResults([]);
     }
     inputRef.current?.focus();
+  };
+
+  const handleFileAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length || uploadAttachMut.isPending) return;
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > maxSize) { toast.error(`${file.name} is too large (max 10MB)`); continue; }
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const r = new FileReader();
+          r.onload = () => resolve((r.result as string).split(",")[1] || "");
+          r.onerror = reject;
+          r.readAsDataURL(file);
+        });
+        const res = await uploadAttachMut.mutateAsync({
+          base64,
+          filename: file.name,
+          mimeType: file.type || "application/octet-stream",
+        });
+        setAttachments(prev => [...prev, { url: res.url, name: res.filename }]);
+      } catch (err) {
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
+    e.target.value = "";
   };
 
   // Text-to-speech readback
@@ -556,8 +589,24 @@ export default function AiAgents() {
                 <span className="text-xs text-muted-foreground">Transcribing your voice...</span>
               </div>
             )}
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {attachments.map((a, i) => (
+                  <Badge key={i} variant="secondary" className="pr-1 gap-1">
+                    <Paperclip className="h-3 w-3" />
+                    <span className="max-w-[120px] truncate">{a.name}</span>
+                    <button type="button" className="rounded-full hover:bg-muted p-0.5" onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} aria-label="Remove">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
             <form onSubmit={e => { e.preventDefault(); sendMessage(input); }} className="flex items-center gap-2">
-              {/* Voice Button */}
+              <input ref={fileInputRef} type="file" multiple className="hidden" accept=".pdf,.txt,.doc,.docx,.csv,.json,image/*" onChange={handleFileAttach} />
+              <Button type="button" size="sm" variant="outline" className="rounded-xl h-10 w-10 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={chatMut.isPending || uploadAttachMut.isPending} title="Attach file">
+                {uploadAttachMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
+              </Button>
               <Button
                 type="button"
                 size="sm"
@@ -569,9 +618,9 @@ export default function AiAgents() {
                 {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
               </Button>
               <Input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
-                placeholder="Type or use your voice — ask about strategy, targeting, viral growth, persuasion..."
+                placeholder="Type, attach a file, or use voice..."
                 className="flex-1 border-0 bg-muted/50 focus-visible:ring-0 rounded-xl" disabled={chatMut.isPending} />
-              <Button type="submit" size="sm" className="rounded-xl h-10 px-4" disabled={!input.trim() || chatMut.isPending}>
+              <Button type="submit" size="sm" className="rounded-xl h-10 px-4" disabled={(!input.trim() && !attachments.length) || chatMut.isPending}>
                 <Send className="h-4 w-4" />
               </Button>
             </form>

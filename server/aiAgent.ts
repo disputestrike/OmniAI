@@ -50,14 +50,15 @@ const AGENT_SYSTEM_PROMPT = `You are the OTOBI AI Marketing Agent. You build mar
 
 Your job is to BUILD campaigns: ask up to 5 questions, then use your tools to generate emails, social posts, and campaign assets.
 
+When the user attaches files, their message will include links to those files. Use them as context; do not say you cannot access them.
 You have access to these tools:
-- analyzeProduct: analyze product and competitors → returns positioning, value props, differentiators, target audience
+- analyzeProduct: analyze product and competitors (pass product description and optional URL/link; the system can fetch URLs). Returns positioning, value props, differentiators, target audience.
 - createCampaign: create a campaign record → returns campaignId for linking assets
 - generateEmailSequence: write a complete email sequence (default 5 emails) → creates draft emails
 - generateSocialPosts: write platform-native social posts (default 5) → creates draft posts
 
 RULES:
-1. Never say what you cannot do. Never mention limitations unprompted.
+1. Never say what you cannot do. Never mention limitations unprompted. Never say you don't have access to external links or URLs—when the user provides a link or URL, use it (include it in productDescription when calling analyzeProduct).
 2. Never name internal modules, tools, or product areas to the user (no Content Studio, Creative Engine, Video Studio, Scheduler, etc.).
 3. Ask at most 5 questions, then say "Got it. Building now." and call your tools.
 4. Never give a to-do list or tell the user to go do something themselves. Execute.
@@ -148,21 +149,48 @@ export type ToolResult =
   | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
   | { kind: "error"; tool: string; message: string };
 
+/** Fetch page content from a URL for product/link analysis. */
+async function fetchUrlContent(url: string): Promise<string> {
+  try {
+    const target = url.startsWith("http") ? url : `https://${url}`;
+    const res = await fetch(target, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; OtobiAIBot/1.0)" },
+      signal: AbortSignal.timeout(12000),
+    });
+    const html = await res.text();
+    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+    const metaDesc = html.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']+)["']/i);
+    const ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+    const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+    const bodyText = bodyMatch ? bodyMatch[1].replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 2000) : "";
+    return `\nPage at ${target}:\nTitle: ${titleMatch?.[1] || "N/A"}\nDescription: ${metaDesc?.[1] || ogDesc?.[1] || "N/A"}\nContent: ${bodyText}`;
+  } catch {
+    return "";
+  }
+}
+
 async function runAnalyzeProduct(
   userId: number,
   productDescription: string,
   competitors?: string
 ): Promise<ToolResult> {
   try {
+    let context = `Product: ${productDescription}. Competitors: ${competitors || "none specified"}.`;
+    const urlMatch = productDescription.match(/(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9][-a-zA-Z0-9]*\.(com|io|co|org|net)[^\s]*)/i);
+    const url = urlMatch ? (urlMatch[1] || urlMatch[2] || urlMatch[3] || "").trim() : "";
+    if (url) {
+      const pageContent = await fetchUrlContent(url);
+      if (pageContent) context += pageContent;
+    }
     const res = await invokeLLM({
       messages: [
         {
           role: "system",
-          content: "You are a positioning expert. Return only valid JSON with: positioning (one sentence), valueProps (array of 3 strings), differentiators (object with competitor names as keys, one sentence each), targetAudience (one paragraph).",
+          content: "You are a positioning expert. Return only valid JSON with: positioning (one sentence), valueProps (array of 3 strings), differentiators (object with competitor names as keys, one sentence each), targetAudience (one paragraph). When page content from a URL is provided, use it to inform your analysis.",
         },
         {
           role: "user",
-          content: `Product: ${productDescription}. Competitors: ${competitors || "none specified"}.`,
+          content: context,
         },
       ],
       response_format: {

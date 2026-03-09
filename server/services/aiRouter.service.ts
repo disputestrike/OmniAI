@@ -1,10 +1,8 @@
 /**
- * AI Router (Spec v4).
- * Single entry for all AI tasks: Forge (free), Claude Haiku (strategy/analysis), OpenAI fallback.
+ * AI Router (Spec v4). Claude only — no OpenAI/Forge.
  */
 import { invokeLLM } from "../_core/llm";
 import { callClaudeHaiku, isClaudeHaikuConfigured } from "./claudeHaiku.service";
-import { ENV } from "../_core/env";
 
 export type AITask =
   | "content_generation"
@@ -49,7 +47,8 @@ function normalizeContent(raw: string | Array<{ type: string; text?: string }> |
   return "";
 }
 
-async function callForge(params: RouteAITaskParams): Promise<RouteAITaskResult> {
+/** Claude Haiku via invokeLLM (no OpenAI/Forge). */
+async function callClaude(params: RouteAITaskParams): Promise<RouteAITaskResult> {
   const messages: Array<{ role: "system" | "user"; content: string }> = [];
   if (params.systemPrompt) messages.push({ role: "system", content: params.systemPrompt });
   messages.push({ role: "user", content: params.prompt });
@@ -61,33 +60,7 @@ async function callForge(params: RouteAITaskParams): Promise<RouteAITaskResult> 
   const result = normalizeContent(
     typeof content === "string" ? content : Array.isArray(content) ? content : ""
   );
-  return { result, modelUsed: "forge", cost: "free" };
-}
-
-async function callOpenAI(params: RouteAITaskParams): Promise<RouteAITaskResult> {
-  if (!ENV.openaiApiKey) throw new Error("OpenAI API key not configured (fallback)");
-  const messages: Array<{ role: "system" | "user"; content: string }> = [];
-  if (params.systemPrompt) messages.push({ role: "system", content: params.systemPrompt });
-  messages.push({ role: "user", content: params.prompt });
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${ENV.openaiApiKey}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages,
-      max_tokens: params.maxTokens ?? 1024,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`OpenAI ${res.status}: ${t}`);
-  }
-  const data = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
-  const result = data.choices?.[0]?.message?.content ?? "";
-  return { result, modelUsed: "gpt-4o-mini", cost: "paid" };
+  return { result, modelUsed: "claude-haiku", cost: "paid" };
 }
 
 function isLowQuality(text: string): boolean {
@@ -102,52 +75,47 @@ export async function routeAITask(
   task: AITask,
   params: RouteAITaskParams
 ): Promise<RouteAITaskResult> {
-  if (["content_generation", "image_generation", "video_script"].includes(task)) {
-    return callForge(params);
+  if (task === "image_generation") {
+    throw new Error("Image generation is not configured. Use Creative Engine with a supported provider.");
+  }
+
+  if (["content_generation", "video_script"].includes(task)) {
+    return callClaude(params);
   }
 
   if (CLAUDE_TASKS.includes(task)) {
     if (isClaudeHaikuConfigured()) {
-      try {
-        const out = await callClaudeHaiku({
-          prompt: params.prompt,
-          systemPrompt: params.systemPrompt,
-          maxTokens: params.maxTokens,
-          requiresJSON: params.requiresJSON,
-        });
-        return { result: out.result, modelUsed: out.modelUsed, cost: "paid" };
-      } catch (err) {
-        console.warn("Claude Haiku failed, falling back to OpenAI:", err);
-        return callOpenAI(params);
-      }
+      const out = await callClaudeHaiku({
+        prompt: params.prompt,
+        systemPrompt: params.systemPrompt,
+        maxTokens: params.maxTokens,
+        requiresJSON: params.requiresJSON,
+      });
+      return { result: out.result, modelUsed: out.modelUsed, cost: "paid" };
     }
-    return callOpenAI(params);
+    return callClaude(params);
   }
 
   if (task === "marketing_agent_chat") {
-    if (params.userTier === "free") return callForge(params);
+    if (params.userTier === "free") return callClaude(params);
     if (isClaudeHaikuConfigured()) {
-      try {
-        const out = await callClaudeHaiku({
-          prompt: params.prompt,
-          systemPrompt: params.systemPrompt,
-          maxTokens: params.maxTokens,
-        });
-        return { result: out.result, modelUsed: out.modelUsed, cost: "paid" };
-      } catch {
-        return callOpenAI(params);
-      }
+      const out = await callClaudeHaiku({
+        prompt: params.prompt,
+        systemPrompt: params.systemPrompt,
+        maxTokens: params.maxTokens,
+      });
+      return { result: out.result, modelUsed: out.modelUsed, cost: "paid" };
     }
-    return callOpenAI(params);
+    return callClaude(params);
   }
 
   if (task === "content_repurpose") {
-    const forgeResult = await callForge(params);
+    const claudeResult = await callClaude(params);
     if (
-      forgeResult.result.length >= 100 &&
-      !isLowQuality(forgeResult.result)
+      claudeResult.result.length >= 100 &&
+      !isLowQuality(claudeResult.result)
     ) {
-      return forgeResult;
+      return claudeResult;
     }
     if (isClaudeHaikuConfigured()) {
       try {
@@ -159,10 +127,10 @@ export async function routeAITask(
         });
         return { result: out.result, modelUsed: out.modelUsed, cost: "paid" };
       } catch {
-        return forgeResult;
+        return claudeResult;
       }
     }
-    return forgeResult;
+    return claudeResult;
   }
 
   throw new Error(`Unknown task type: ${task}`);

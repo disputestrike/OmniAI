@@ -8,6 +8,10 @@ export const ENV = {
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   forgeModel: process.env.BUILT_IN_FORGE_MODEL ?? "",
+  /** Local uploads when not using Forge storage (Railway: set UPLOAD_DIR or use default ./uploads). */
+  uploadDir: process.env.UPLOAD_DIR ?? "./uploads",
+  /** Public base URL for uploaded files (e.g. https://yourapp.railway.app). Railway often sets PUBLIC_URL. */
+  publicBaseUrl: process.env.PUBLIC_BASE_URL ?? process.env.PUBLIC_URL ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
