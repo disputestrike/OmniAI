@@ -8,7 +8,7 @@ import {
   Megaphone, Brain, Globe, Crown, Flame, Eye, Heart, Users, Zap, ShoppingCart,
   Mic, MicOff, Volume2, VolumeX, ArrowRight, ExternalLink, Play,
   Rocket, BarChart3, Mail, Video, Image as ImageIcon, FileText, Search,
-  Layout, Workflow, Calendar, Share2, Shield, Palette,
+  Layout, Workflow, Calendar, Share2, Shield, Palette, Copy, Pencil,
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { toast } from "sonner";
@@ -17,6 +17,14 @@ import { Streamdown } from "streamdown";
 import { useLocation } from "wouter";
 
 type Message = { role: "user" | "assistant"; content: string };
+
+// Tool results from agent (matches server aiAgent.ToolResult)
+type AgentToolResult =
+  | { kind: "analyzeProduct"; positioning: string; valueProps: string[]; differentiators: Record<string, string>; targetAudience: string }
+  | { kind: "createCampaign"; campaignId: number; name: string; goal: string }
+  | { kind: "generateEmailSequence"; sequenceId: string; emails: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> }
+  | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
+  | { kind: "error"; tool: string; message: string };
 
 // Map tool paths to icons and labels for the action cards
 const toolMap: Record<string, { icon: any; label: string; color: string }> = {
@@ -136,10 +144,15 @@ const workflows = [
 export default function AiAgents() {
   const [, navigate] = useLocation();
   const chatMut = trpc.aiChat.send.useMutation({ onError: (e) => toast.error(e.message) });
+  const wizardLaunch = trpc.campaign.wizardLaunch.useMutation({
+    onSuccess: () => toast.success("Campaign launched."),
+    onError: (e) => toast.error(e.message),
+  });
   const voiceMut = trpc.voice.uploadAndTranscribe.useMutation({
     onError: (e) => toast.error("Voice transcription failed: " + e.message),
   });
   const [messages, setMessages] = useState<Message[]>([]);
+  const [lastToolResults, setLastToolResults] = useState<AgentToolResult[]>([]);
   const [input, setInput] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -157,6 +170,7 @@ export default function AiAgents() {
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || chatMut.isPending) return;
+    setLastToolResults([]);
     const userMsg: Message = { role: "user", content: text };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -168,8 +182,10 @@ export default function AiAgents() {
         history: messages.slice(-20),
       });
       setMessages(prev => [...prev, { role: "assistant", content: result.reply }]);
+      setLastToolResults((result as { toolResults?: AgentToolResult[] }).toolResults ?? []);
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "I encountered an error. Please try again." }]);
+      setLastToolResults([]);
     }
     inputRef.current?.focus();
   };
@@ -398,23 +414,41 @@ export default function AiAgents() {
                     {msg.role === "assistant" ? (
                       <>
                         <div className="prose prose-sm max-w-none text-foreground"><Streamdown>{msg.content}</Streamdown></div>
-                        {/* Text-to-speech button */}
-                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary"
-                            onClick={() => speakText(msg.content)}
-                          >
+                        {/* Copy, Edit, Share, Read aloud */}
+                        <div className="flex flex-wrap items-center gap-1 mt-2 pt-2 border-t border-border/30">
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary" onClick={() => { navigator.clipboard.writeText(msg.content); toast.success("Copied to clipboard"); }}>
+                            <Copy className="h-3 w-3 mr-1" />Copy
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary" onClick={() => setInput(msg.content)}>
+                            <Pencil className="h-3 w-3 mr-1" />Edit
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary" onClick={async () => {
+                            const shareText = `From OTOBI AI:\n\n${msg.content}`;
+                            if (typeof navigator !== "undefined" && navigator.share) {
+                              try { await navigator.share({ title: "OTOBI AI", text: shareText }); toast.success("Shared"); } catch (e) { if ((e as Error).name !== "AbortError") { navigator.clipboard.writeText(shareText); toast.success("Copied to clipboard"); } }
+                            } else { navigator.clipboard.writeText(shareText); toast.success("Copied to clipboard"); }
+                          }}>
+                            <Share2 className="h-3 w-3 mr-1" />Share
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-muted-foreground hover:text-primary" onClick={() => speakText(msg.content)}>
                             {isSpeaking ? <VolumeX className="h-3 w-3 mr-1" /> : <Volume2 className="h-3 w-3 mr-1" />}
                             {isSpeaking ? "Stop" : "Read aloud"}
                           </Button>
                         </div>
-                        {/* Clickable next step action cards */}
                         {renderNextStepCards(msg.content)}
                       </>
                     ) : (
-                      <p className="text-sm">{msg.content}</p>
+                      <>
+                        <p className="text-sm">{msg.content}</p>
+                        <div className="flex flex-wrap items-center gap-1 mt-2 pt-2 border-t border-primary-foreground/20">
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-primary-foreground/80 hover:text-primary-foreground" onClick={() => { navigator.clipboard.writeText(msg.content); toast.success("Copied to clipboard"); }}>
+                            <Copy className="h-3 w-3 mr-1" />Copy
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px] text-primary-foreground/80 hover:text-primary-foreground" onClick={() => { setInput(msg.content); setMessages(prev => prev.slice(0, i)); }}>
+                            <Pencil className="h-3 w-3 mr-1" />Edit
+                          </Button>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -424,7 +458,82 @@ export default function AiAgents() {
               <div className="flex justify-start">
                 <div className="bg-muted rounded-2xl px-4 py-3 flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Strategizing...</span>
+                  <span className="text-sm text-muted-foreground">Building your launch assets...</span>
+                </div>
+              </div>
+            )}
+
+            {/* Review UI when agent returned tool results */}
+            {!chatMut.isPending && lastToolResults.length > 0 && (
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-semibold">Review what I built</h3>
+                {lastToolResults.map((r, idx) => {
+                  if (r.kind === "error") return <div key={idx} className="text-xs text-destructive">{(r as AgentToolResult & { kind: "error" }).tool}: {(r as AgentToolResult & { kind: "error" }).message}</div>;
+                  if (r.kind === "analyzeProduct") {
+                    const a = r as AgentToolResult & { kind: "analyzeProduct" };
+                    return (
+                      <Card key={idx} className="p-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">Product positioning</p>
+                        <p className="text-sm font-medium">{a.positioning}</p>
+                        {a.valueProps?.length > 0 && <ul className="text-xs mt-1 list-disc pl-4">{a.valueProps.map((v, i) => <li key={i}>{v}</li>)}</ul>}
+                        <p className="text-xs mt-2 text-muted-foreground">{a.targetAudience}</p>
+                      </Card>
+                    );
+                  }
+                  if (r.kind === "createCampaign") {
+                    const c = r as AgentToolResult & { kind: "createCampaign" };
+                    return (
+                      <Card key={idx} className="p-3">
+                        <p className="text-xs font-medium text-muted-foreground">Campaign</p>
+                        <p className="text-sm font-medium">{c.name}</p>
+                        <p className="text-xs text-muted-foreground">Goal: {c.goal} · ID: {c.campaignId}</p>
+                        <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate("/campaigns")}>View in Campaigns</Button>
+                      </Card>
+                    );
+                  }
+                  if (r.kind === "generateEmailSequence") {
+                    const e = r as AgentToolResult & { kind: "generateEmailSequence" };
+                    return (
+                      <Card key={idx} className="p-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Email sequence ({e.emails?.length ?? 0} emails)</p>
+                        <ul className="space-y-1 text-xs">
+                          {e.emails?.map((em, i) => <li key={i} className="flex justify-between"><span>Email {em.index}</span><span className="font-medium truncate max-w-[200px]">{em.subject}</span></li>)}
+                        </ul>
+                        <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate("/email-marketing")}>Edit in Email Marketing</Button>
+                      </Card>
+                    );
+                  }
+                  if (r.kind === "generateSocialPosts") {
+                    const s = r as AgentToolResult & { kind: "generateSocialPosts" };
+                    return (
+                      <Card key={idx} className="p-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Social posts ({s.posts?.length ?? 0})</p>
+                        <ul className="space-y-1 text-xs">
+                          {s.posts?.map((p, i) => <li key={i}><span className="font-medium">{p.platform}</span>: {p.title || p.content?.slice(0, 50)}…</li>)}
+                        </ul>
+                        <Button variant="outline" size="sm" className="mt-2" onClick={() => navigate("/content")}>Edit in Content Studio</Button>
+                      </Card>
+                    );
+                  }
+                  return null;
+                })}
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" onClick={() => { toast.success("Saved as draft. You can launch from Campaigns or Email Marketing."); setLastToolResults([]); navigate("/campaigns"); }}>Save as draft</Button>
+                  <Button
+                    disabled={wizardLaunch.isPending}
+                    onClick={() => {
+                      const campaignResult = lastToolResults.find((r): r is AgentToolResult & { kind: "createCampaign" } => r.kind === "createCampaign");
+                      if (campaignResult?.campaignId) {
+                        wizardLaunch.mutate({ campaignId: campaignResult.campaignId }, { onSettled: () => { setLastToolResults([]); navigate("/campaigns"); } });
+                      } else {
+                        toast.success("Review and launch from Campaigns when ready.");
+                        setLastToolResults([]);
+                        navigate("/campaigns");
+                      }
+                    }}
+                  >
+                    {wizardLaunch.isPending ? "Launching…" : "Launch everything"}
+                  </Button>
                 </div>
               </div>
             )}

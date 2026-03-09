@@ -142,6 +142,13 @@ vi.mock("./_core/imageGeneration", () => ({
   generateImage: vi.fn().mockResolvedValue({ url: "https://example.com/generated-image.png" }),
 }));
 
+vi.mock("./aiAgent", () => ({
+  runAgentLoop: vi.fn().mockResolvedValue({
+    reply: "Here are strategies for your campaign. Review the assets below when ready.",
+    toolResults: [],
+  }),
+}));
+
 vi.mock("./creditsAndUsage", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./creditsAndUsage")>();
   return {

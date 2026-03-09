@@ -130,6 +130,11 @@ vi.mock("./_core/imageGeneration.ts", () => ({
   generateImage: vi.fn().mockResolvedValue({ url: "https://example.com/image.png" }),
 }));
 
+// Mock AI agent (runAgentLoop) so chat tests don't call real API
+vi.mock("./aiAgent", () => ({
+  runAgentLoop: vi.fn().mockResolvedValue({ reply: "Here are some strategies to make your product go viral.", toolResults: [] }),
+}));
+
 describe("Product Router", () => {
   it("lists products for authenticated user", async () => {
     const ctx = createAuthContext();
@@ -465,6 +470,8 @@ describe("AI Chat Router", () => {
     });
     expect(result).toHaveProperty("reply");
     expect(typeof result.reply).toBe("string");
+    expect(result).toHaveProperty("toolResults");
+    expect(Array.isArray(result.toolResults)).toBe(true);
   });
 
   it("sends a message with history", async () => {
