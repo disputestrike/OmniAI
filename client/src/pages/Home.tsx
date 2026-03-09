@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -101,15 +101,93 @@ const capabilities = [
 
 export default function Home() {
   const { data: stats, isLoading } = trpc.dashboard.stats.useQuery();
+  const { data: campaigns } = trpc.campaign.list.useQuery();
   const [, setLocation] = useLocation();
   const [wizardOpen, setWizardOpen] = useState(false);
   const [selectedPipeline, setSelectedPipeline] = useState<string | null>(null);
 
+  const activeCampaigns = (campaigns ?? []).filter((c: { status: string }) => c.status === "active" || c.status === "draft");
+
   const activePipeline = goalPipelines.find(p => p.id === selectedPipeline);
   const suggestedNextStep = useMemo(() => getSuggestedNextStep(stats ?? undefined), [stats]);
+  const hasProduct = (stats?.products ?? 0) > 0;
+  const hasContent = (stats?.contents ?? 0) > 0;
+  const hasCreative = (stats?.creatives ?? 0) > 0;
+  const onboardingComplete = hasProduct && hasContent;
+  const showOnboarding = !isLoading && !onboardingComplete;
 
   return (
     <div className="space-y-8 max-w-6xl">
+      {showOnboarding && (
+        <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle className="text-lg">Get started in 4 steps</CardTitle>
+            <CardDescription>Complete these to get the most out of OTOBI AI.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-4">
+            <div className="flex items-center gap-2">
+              {hasProduct ? <Badge variant="secondary">Done</Badge> : <Badge>1</Badge>}
+              <span className="text-sm">Add your first product or service</span>
+              {!hasProduct && <Button size="sm" variant="outline" onClick={() => setLocation("/products")}>Go</Button>}
+            </div>
+            <div className="flex items-center gap-2">
+              {hasContent ? <Badge variant="secondary">Done</Badge> : <Badge>2</Badge>}
+              <span className="text-sm">Generate your first piece of content</span>
+              {!hasContent && <Button size="sm" variant="outline" onClick={() => setLocation("/content")}>Go</Button>}
+            </div>
+            <div className="flex items-center gap-2">
+              {hasCreative ? <Badge variant="secondary">Done</Badge> : <Badge>3</Badge>}
+              <span className="text-sm">Create a visual (image or video ad)</span>
+              {!hasCreative && <Button size="sm" variant="outline" onClick={() => setLocation("/creatives")}>Go</Button>}
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge>4</Badge>
+              <span className="text-sm">Schedule or publish your first post</span>
+              <Button size="sm" variant="outline" onClick={() => setLocation("/scheduler")}>Go</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Campaign-first CTA */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardContent className="pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-primary" />
+              Create New Campaign
+            </h2>
+            <p className="text-muted-foreground text-sm mt-1">
+              Set a goal — OTOBI generates landing page, ads, emails, and social posts in one flow. Under 10 minutes to launch.
+            </p>
+          </div>
+          <Button onClick={() => setLocation("/campaign-wizard")} className="rounded-xl shadow-md shrink-0">
+            <Rocket className="h-4 w-4 mr-2" />Create New Campaign
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Active campaigns */}
+      {activeCampaigns.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-3">Your campaigns</h3>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {activeCampaigns.slice(0, 6).map((c) => (
+              <Card key={c.id} className="cursor-pointer hover:border-primary/40 transition-colors" onClick={() => setLocation("/campaigns")}>
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium truncate">{c.name}</p>
+                    <Badge variant={c.status === "active" ? "default" : "secondary"}>{c.status}</Badge>
+                  </div>
+                  {c.goal != null && c.goal !== "" && <p className="text-xs text-muted-foreground mt-1 capitalize">{String(c.goal).replace(/_/g, " ")}</p>}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button variant="outline" className="mt-3" onClick={() => setLocation("/campaigns")}>View all campaigns</Button>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -120,8 +198,8 @@ export default function Home() {
         </div>
         <div className="flex gap-2 shrink-0">
           <ReportExport reportType="dashboard" defaultTitle="Dashboard overview" />
-          <Button onClick={() => setWizardOpen(true)} className="rounded-xl shadow-md">
-            <Rocket className="h-4 w-4 mr-2" />Not sure where to start?
+          <Button onClick={() => setWizardOpen(true)} variant="outline" className="rounded-xl">
+            <Sparkles className="h-4 w-4 mr-2" />Not sure where to start?
           </Button>
         </div>
       </div>

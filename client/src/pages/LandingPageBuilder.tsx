@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,15 +12,19 @@ import { Loader2, Plus, Trash2, Globe, Eye, Sparkles, Layout, FileText, External
 
 export default function LandingPageBuilder() {
   const [showCreate, setShowCreate] = useState(false);
+  const [createMode, setCreateMode] = useState<"choice" | "ai" | "template">("choice");
   const [showAiGen, setShowAiGen] = useState(false);
   const [selectedPage, setSelectedPage] = useState<number | null>(null);
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [templateId, setTemplateId] = useState("");
+  const [aiOneSentence, setAiOneSentence] = useState("");
   const [aiPurpose, setAiPurpose] = useState("");
   const [aiIndustry, setAiIndustry] = useState("");
   const [aiStyle, setAiStyle] = useState("");
   const [editingComponent, setEditingComponent] = useState<number | null>(null);
+  const [leadDest, setLeadDest] = useState<{ leadManager?: boolean; crm?: boolean; emailListId?: string }>({});
+  const [redirectAfterSubmit, setRedirectAfterSubmit] = useState<string>("");
 
   const { data: pages, refetch } = trpc.landingPageBuilder.list.useQuery();
   const { data: templates } = trpc.landingPageBuilder.templates.useQuery();
@@ -52,7 +56,43 @@ export default function LandingPageBuilder() {
     onError: (e) => toast.error(e.message),
   });
 
+  const buildWithAi = () => {
+    if (!aiOneSentence.trim()) { toast.error("Describe your page in one sentence"); return; }
+    aiGenerate.mutate(
+      { purpose: aiOneSentence.trim(), industry: aiIndustry || undefined, style: aiStyle || undefined },
+      {
+        onSuccess: (data) => {
+          if (!data.components?.length) { toast.error("No components generated"); return; }
+          const t = aiOneSentence.slice(0, 50).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "page";
+          const slugGen = t + "-" + Date.now().toString(36);
+          createPage.mutate(
+            { title: aiOneSentence.slice(0, 80) || "New Page", slug: slugGen, templateId: "default" },
+            {
+              onSuccess: (created) => {
+                if (created?.id)
+                  updatePage.mutate(
+                    { id: created.id, components: data.components },
+                    { onSuccess: () => { refetch(); setSelectedPage(created.id); setShowCreate(false); setCreateMode("choice"); setAiOneSentence(""); toast.success("Page created with AI"); } }
+                  );
+                else { setShowCreate(false); setCreateMode("choice"); refetch(); toast.success("Page created"); }
+              },
+            }
+          );
+        },
+      }
+    );
+  };
+
   const components = (pageDetail?.components as any[]) || [];
+  const hasForm = components.some((c: any) => c.type === "form");
+  const { data: emailLists } = trpc.emailMarketing.listLists.useQuery(undefined, { enabled: hasForm && !!selectedPage });
+
+  useEffect(() => {
+    if (!pageDetail?.metadata) return;
+    const meta = pageDetail.metadata as { leadDestination?: { leadManager?: boolean; crm?: boolean; emailListId?: number }; redirectAfterSubmit?: string };
+    if (meta.leadDestination) setLeadDest({ leadManager: meta.leadDestination.leadManager, crm: meta.leadDestination.crm, emailListId: meta.leadDestination.emailListId != null ? String(meta.leadDestination.emailListId) : "" });
+    if (meta.redirectAfterSubmit != null) setRedirectAfterSubmit(String(meta.redirectAfterSubmit));
+  }, [pageDetail?.metadata]);
 
   const blockLibrary = [
     { type: "video_embed", label: "Video embed", icon: Video, defaultProps: { url: "https://www.youtube.com/embed/dQw4w9WgXcQ", title: "Video" } },
@@ -74,32 +114,62 @@ export default function LandingPageBuilder() {
           <h1 className="text-2xl font-bold">Landing Page Builder</h1>
           <p className="text-muted-foreground">Create high-converting landing pages with AI</p>
         </div>
-        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) setCreateMode("choice"); }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" /> New Page</Button></DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader><DialogTitle>Create Landing Page</DialogTitle></DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div>
-                <label className="text-sm font-medium">Page Title *</label>
-                <Input value={title} onChange={e => { setTitle(e.target.value); setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")); }} placeholder="e.g. Spring Sale 2026" />
+            {createMode === "choice" && (
+              <div className="space-y-3 mt-4">
+                <p className="text-sm text-muted-foreground">Choose how to start:</p>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setCreateMode("ai")}>
+                  <Sparkles className="w-4 h-4 mr-2" /> Build with AI — describe your page in one sentence
+                </Button>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setCreateMode("template")}>
+                  <Layout className="w-4 h-4 mr-2" /> Start from template
+                </Button>
               </div>
-              <div>
-                <label className="text-sm font-medium">URL Slug *</label>
-                <Input value={slug} onChange={e => setSlug(e.target.value)} placeholder="e.g. spring-sale" />
+            )}
+            {createMode === "ai" && (
+              <div className="space-y-4 mt-4">
+                <div>
+                  <label className="text-sm font-medium">Describe your page *</label>
+                  <Input value={aiOneSentence} onChange={e => setAiOneSentence(e.target.value)} placeholder="e.g. Webinar registration page for my coaching business" />
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setCreateMode("choice")}>Back</Button>
+                  <Button onClick={buildWithAi} disabled={!aiOneSentence.trim() || aiGenerate.isPending} className="flex-1">
+                    {aiGenerate.isPending || createPage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generate & create page"}
+                  </Button>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium">Template</label>
-                <Select value={templateId} onValueChange={setTemplateId}>
-                  <SelectTrigger><SelectValue placeholder="Choose a template" /></SelectTrigger>
-                  <SelectContent>
-                    {templates?.map(t => <SelectItem key={t.id} value={t.id}>{t.name} — {t.description}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+            )}
+            {createMode === "template" && (
+              <div className="space-y-4 mt-4">
+                <div>
+                  <label className="text-sm font-medium">Page Title *</label>
+                  <Input value={title} onChange={e => { setTitle(e.target.value); setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")); }} placeholder="e.g. Spring Sale 2026" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">URL Slug *</label>
+                  <Input value={slug} onChange={e => setSlug(e.target.value)} placeholder="e.g. spring-sale" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Template</label>
+                  <Select value={templateId} onValueChange={setTemplateId}>
+                    <SelectTrigger><SelectValue placeholder="Choose a template" /></SelectTrigger>
+                    <SelectContent>
+                      {templates?.map(t => <SelectItem key={t.id} value={t.id}>{t.name} — {t.description}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setCreateMode("choice")}>Back</Button>
+                  <Button onClick={() => createPage.mutate({ title, slug, templateId: templateId || undefined })} disabled={!title || !slug || createPage.isPending} className="flex-1">
+                    {createPage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Page"}
+                  </Button>
+                </div>
               </div>
-              <Button onClick={() => createPage.mutate({ title, slug, templateId: templateId || undefined })} disabled={!title || !slug || createPage.isPending} className="w-full">
-                {createPage.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create Page"}
-              </Button>
-            </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
@@ -174,6 +244,52 @@ export default function LandingPageBuilder() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Lead destination — when page has form */}
+              {hasForm && (
+                <Card>
+                  <CardContent className="p-4">
+                    <p className="text-sm font-medium mb-2">Where should leads go when they submit this form?</p>
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={!!leadDest.leadManager} onChange={e => {
+                          const next = { ...leadDest, leadManager: e.target.checked };
+                          setLeadDest(next);
+                          updatePage.mutate({ id: selectedPage!, metadata: { ...(pageDetail?.metadata as object || {}), leadDestination: next } });
+                        }} />
+                        <span className="text-sm">Lead Manager</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={!!leadDest.crm} onChange={e => {
+                          const next = { ...leadDest, crm: e.target.checked };
+                          setLeadDest(next);
+                          updatePage.mutate({ id: selectedPage!, metadata: { ...(pageDetail?.metadata as object || {}), leadDestination: next } });
+                        }} />
+                        <span className="text-sm">CRM Deals</span>
+                      </label>
+                      {emailLists?.length ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">Email list:</span>
+                          <Select value={leadDest.emailListId || ""} onValueChange={v => {
+                            const next = { ...leadDest, emailListId: v };
+                            setLeadDest(next);
+                            updatePage.mutate({ id: selectedPage!, metadata: { ...(pageDetail?.metadata as object || {}), leadDestination: { ...next, emailListId: v ? Number(v) : undefined } } });
+                          }}>
+                            <SelectTrigger className="w-40"><SelectValue placeholder="Select list" /></SelectTrigger>
+                            <SelectContent>
+                              {emailLists.map((l: { id: number; name: string }) => <SelectItem key={l.id} value={String(l.id)}>{l.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="mt-3">
+                      <label className="text-xs font-medium text-muted-foreground">Redirect after submit (URL or page slug)</label>
+                      <Input value={redirectAfterSubmit} onChange={e => setRedirectAfterSubmit(e.target.value)} placeholder="/thank-you or https://..." className="mt-1" onBlur={() => updatePage.mutate({ id: selectedPage!, metadata: { ...(pageDetail?.metadata as object || {}), redirectAfterSubmit: redirectAfterSubmit || undefined } })} />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Component List */}
               <div className="space-y-3">

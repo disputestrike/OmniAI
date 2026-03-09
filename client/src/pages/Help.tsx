@@ -81,6 +81,7 @@ export default function Help() {
           <HelpCircle className="h-6 w-6 text-primary" /> Help &amp; docs
         </h1>
         <p className="text-muted-foreground text-sm mt-1">Quick guides for key features. Everything is wired and works end-to-end.</p>
+        <p className="text-sm mt-2">Need help? Email us at <a href="mailto:support@otobi.ai" className="text-primary font-medium hover:underline">support@otobi.ai</a> — we usually reply within a few hours.</p>
       </div>
 
       {/* Admin & AI setup — how to access admin and get Forge working */}

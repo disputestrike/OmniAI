@@ -77,6 +77,7 @@ vi.mock("./db", () => ({
   // Campaigns
   createCampaign: vi.fn().mockResolvedValue({ id: 1 }),
   getCampaignsByUser: vi.fn().mockResolvedValue([]),
+  getCampaignAssetsByCampaignId: vi.fn().mockResolvedValue([]),
   getCampaignById: vi.fn().mockResolvedValue({
     id: 1, userId: 1, name: "Test Campaign", objective: "awareness",
     platforms: ["Instagram", "TikTok"], budget: "$5000", productId: 1, status: "draft",
@@ -266,6 +267,13 @@ describe("Campaign Router", () => {
     const ctx = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.campaign.list();
+    expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("returns campaign assets for a campaign", async () => {
+    const ctx = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.campaign.assets({ campaignId: 1 });
     expect(Array.isArray(result)).toBe(true);
   });
 

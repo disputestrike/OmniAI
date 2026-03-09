@@ -61,4 +61,8 @@ export const ENV = {
   sunoApiKey: process.env.SUNO_API_KEY ?? "",
   mubertApiKey: process.env.MUBERT_API_KEY ?? "",
   soundrawApiKey: process.env.SOUNDRAW_API_KEY ?? "",
+  // Resend (email sequences)
+  resendApiKey: process.env.RESEND_API_KEY ?? "",
+  // Sentry
+  sentryDsn: process.env.SENTRY_DSN ?? "",
 };

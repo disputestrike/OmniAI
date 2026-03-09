@@ -12,6 +12,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
 import { registerStripeRoutes } from "../stripe-routes";
+import { registerCreditsRoutes } from "../credits-routes";
+import { registerLandingRoutes } from "../landing-routes";
 import { securityHeaders, rateLimit } from "../security";
 import { runMigrations } from "./migrate";
 
@@ -30,6 +32,8 @@ async function startServer() {
   registerStripeRoutes(app);
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  registerCreditsRoutes(app);
+  registerLandingRoutes(app);
   registerGoogleOAuthRoutes(app);
   registerEmailAuthRoutes(app);
   app.use("/api/trpc/content.generate", rateLimit({ windowMs: 60000, max: 30, keyPrefix: "ai-gen" }));

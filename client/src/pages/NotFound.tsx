@@ -32,7 +32,10 @@ export default function NotFound() {
             <br />
             It may have been moved or deleted.
           </p>
-
+          <p className="text-sm text-slate-500 mb-6">
+            Need help? Email us at{" "}
+            <a href="mailto:support@otobi.ai" className="text-primary hover:underline">support@otobi.ai</a>
+          </p>
           <div
             id="not-found-button-group"
             className="flex flex-col sm:flex-row gap-3 justify-center"

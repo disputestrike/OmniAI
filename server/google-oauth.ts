@@ -175,6 +175,7 @@ export function registerGoogleOAuthRoutes(app: Express) {
       }
 
       const googleOpenId = `google_${googleUser.id}`;
+      const existingUser = await db.getUserByOpenId(googleOpenId);
 
       // Optional: write user to DB now if available (same as Manus: DB optional at login, sync on first request)
       try {
@@ -186,6 +187,20 @@ export function registerGoogleOAuthRoutes(app: Express) {
           lastSignedIn: new Date(),
         });
         const referredUser = await db.getUserByOpenId(googleOpenId);
+        // EMAIL 1 — Welcome Free (new free account)
+        if (!existingUser && referredUser?.email) {
+          try {
+            const { sendEmail, getWelcomeFreeHtml, getBaseUrl } = await import("./email.service");
+            const base = getBaseUrl();
+            await sendEmail(
+              referredUser.email,
+              "Welcome to OTOBI AI — here's how to get started",
+              getWelcomeFreeHtml(referredUser.name || googleUser.name || "there", `${base}/dashboard`),
+            );
+          } catch (e) {
+            console.warn("[Email] Welcome send failed:", e);
+          }
+        }
         if (refCode && referredUser) {
           const refRow = await db.getReferralCodeByCode(refCode);
           if (refRow && refRow.userId !== referredUser.id) {

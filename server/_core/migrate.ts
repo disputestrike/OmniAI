@@ -122,6 +122,63 @@ export async function runMigrations(): Promise<void> {
       const err = e as { errno?: number };
       if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.trialEndsAt:", (e as Error).message);
     }
+    try {
+      await connection!.query("ALTER TABLE `subscriptions` ADD COLUMN `pastDueAt` timestamp NULL");
+      console.log("[migrate] Added subscriptions.pastDueAt");
+    } catch (e: unknown) {
+      const err = e as { errno?: number };
+      if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.pastDueAt:", (e as Error).message);
+    }
+    try {
+      await connection!.query("ALTER TABLE `subscriptions` ADD COLUMN `canceledAt` timestamp NULL");
+      console.log("[migrate] Added subscriptions.canceledAt");
+    } catch (e: unknown) {
+      const err = e as { errno?: number };
+      if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] subscriptions.canceledAt:", (e as Error).message);
+    }
+    try {
+      await connection!.query("ALTER TABLE `user_monthly_usage` ADD COLUMN `usage80EmailSent` boolean DEFAULT false");
+      console.log("[migrate] Added user_monthly_usage.usage80EmailSent");
+    } catch (e: unknown) {
+      const err = e as { errno?: number };
+      if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] user_monthly_usage.usage80EmailSent:", (e as Error).message);
+    }
+
+    // Campaigns: goal + totals (Phase 1)
+    const campaignAlters = [
+      "ALTER TABLE `campaigns` ADD COLUMN `goal` varchar(64) NULL",
+      "ALTER TABLE `campaigns` ADD COLUMN `totalBudget` decimal(12,2) NULL",
+      "ALTER TABLE `campaigns` ADD COLUMN `totalSpend` decimal(12,2) NULL",
+      "ALTER TABLE `campaigns` ADD COLUMN `totalLeads` int DEFAULT 0",
+      "ALTER TABLE `campaigns` ADD COLUMN `totalRevenue` decimal(12,2) NULL",
+    ];
+    for (const sql of campaignAlters) {
+      try {
+        await connection!.query(sql);
+        console.log("[migrate] Campaign column added");
+      } catch (e: unknown) {
+        const err = e as { errno?: number };
+        if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] campaigns alter:", (e as Error).message);
+      }
+    }
+
+    // campaign_assets table (Phase 1)
+    try {
+      await connection!.query(`
+        CREATE TABLE IF NOT EXISTS \`campaign_assets\` (
+          \`id\` int NOT NULL AUTO_INCREMENT,
+          \`campaignId\` int NOT NULL,
+          \`assetType\` varchar(32) NOT NULL,
+          \`assetId\` int NOT NULL,
+          \`status\` enum('draft','approved','live','paused','completed') NOT NULL DEFAULT 'draft',
+          \`createdAt\` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          PRIMARY KEY (\`id\`)
+        )
+      `);
+      console.log("[migrate] campaign_assets table ready");
+    } catch (e: unknown) {
+      console.warn("[migrate] campaign_assets:", (e as Error).message);
+    }
 
     // Seed tier_limits_config (Spec v4) — ON DUPLICATE KEY UPDATE so safe to re-run
     const seedTierLimits = `

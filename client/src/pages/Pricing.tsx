@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useSearch } from "wouter";
 import { getLoginPageUrl } from "@/const";
+import { TESTIMONIALS } from "@/config/testimonials";
 
 const TIER_ICONS: Record<string, { icon: typeof Zap; color: string; bgColor: string; seats: string }> = {
   free: { icon: Zap, color: "text-gray-600", bgColor: "bg-gray-50", seats: "1 user" },
@@ -43,6 +44,7 @@ const TIER_FEATURES: Record<string, { features: string[]; limitations: string[] 
 export default function Pricing() {
   const { user, isAuthenticated } = useAuth();
   const { data: tiers } = trpc.pricing.list.useQuery();
+  const { data: userCount } = trpc.pricing.userCount.useQuery();
   const { data: subStatus } = trpc.subscription.status.useQuery(undefined, { enabled: isAuthenticated });
   const { data: creditPackages } = trpc.credits.packages.useQuery(undefined, { enabled: isAuthenticated });
   const [loading, setLoading] = useState<string | null>(null);
@@ -142,6 +144,23 @@ export default function Pricing() {
           <span className={`text-sm font-medium ${isAnnual ? "text-foreground" : "text-muted-foreground"}`}>
             Annual <Badge variant="secondary" className="ml-1 text-xs">Save $ when billed yearly</Badge>
           </span>
+        </div>
+        {/* User count — Item 7 */}
+        <p className="text-sm text-muted-foreground pt-2">
+          {typeof userCount === "number" && userCount >= 100
+            ? `Join ${userCount}+ marketers already using OTOBI AI`
+            : "Join our growing community of marketers"}
+        </p>
+        {/* Logo bar — 5 placeholder slots */}
+        <div className="flex flex-wrap items-center justify-center gap-6 py-4 border-y border-border/50 mt-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="h-10 w-28 rounded-lg bg-muted/60 flex items-center justify-center text-xs text-muted-foreground"
+            >
+              Your Company
+            </div>
+          ))}
         </div>
       </div>
 
@@ -299,6 +318,23 @@ export default function Pricing() {
         </Card>
       )}
 
+      {/* Testimonials — Item 7 */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-center">What marketers say about OTOBI AI</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {TESTIMONIALS.map((t, i) => (
+            <Card key={i} className="border-0 shadow-sm bg-card">
+              <CardContent className="p-5">
+                <p className="text-sm text-muted-foreground italic">&ldquo;{t.quote}&rdquo;</p>
+                <p className="text-sm font-medium mt-3">
+                  — {t.author}, {t.title} at {t.company}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
       {/* Replace bar */}
       <Card className="border-0 shadow-sm bg-primary/5">
         <CardContent className="p-6 text-center">
@@ -385,6 +421,13 @@ export default function Pricing() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Refund & Terms links */}
+      <div className="text-center py-6 text-sm text-muted-foreground">
+        <a href="/refund-policy" className="hover:text-primary underline">Refund Policy</a>
+        <span className="mx-2">·</span>
+        <a href="/terms" className="hover:text-primary underline">Terms of Service</a>
       </div>
     </div>
   );

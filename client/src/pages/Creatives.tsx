@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Image, Loader2, Sparkles, Trash2, Download, Camera, Palette, Megaphone, ShoppingBag } from "lucide-react";
+import { Image, Loader2, Sparkles, Trash2, Download, Camera, Palette, Megaphone, ShoppingBag, Send } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { WhatsNextCard } from "@/components/WhatsNextCard";
@@ -52,6 +52,8 @@ export default function Creatives() {
     onError: (e) => toast.error(e.message),
   });
   const deleteMut = trpc.creative.delete.useMutation({ onSuccess: () => { utils.creative.list.invalidate(); toast.success("Deleted"); } });
+  const { data: adConnections } = trpc.adPlatform.connections.useQuery();
+  const launchAdMut = trpc.adPlatform.launchAd.useMutation({ onSuccess: (d) => { setPushToAdsOpen(false); utils.adPlatform.allCampaigns?.invalidate(); toast.success(d?.message || "Ad queued for launch"); }, onError: (e) => toast.error(e.message) });
 
   // Real API creative engine
   const generateAdMut = trpc.creativeEngine.generateAd.useMutation({
@@ -93,6 +95,10 @@ export default function Creatives() {
   const [shootProductImage, setShootProductImage] = useState("");
   const [shootCount, setShootCount] = useState(4);
   const [photoshootResults, setPhotoshootResults] = useState<Array<{ scene: string; imageUrl?: string | null }>>([]);
+  const [pushToAdsOpen, setPushToAdsOpen] = useState(false);
+  const [pushCreativeId, setPushCreativeId] = useState<number | null>(null);
+  const [pushConnectionId, setPushConnectionId] = useState("");
+  const [pushAdName, setPushAdName] = useState("");
 
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
 
@@ -312,6 +318,11 @@ export default function Creatives() {
                     {creative.imageUrl ? (
                       <div className="relative aspect-square bg-muted">
                         <img src={creative.imageUrl} alt={creative.type} className="w-full h-full object-cover" />
+                        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                          <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => { setPushCreativeId(creative.id); setPushAdName(`Ad ${(creative as { title?: string }).title || creative.id}`); setPushToAdsOpen(true); }}>
+                            <Send className="h-3.5 w-3.5 mr-1" />Push to Ads
+                          </Button>
+                        </div>
                         {isFreePlan && (
                           <div className="absolute bottom-1 right-1">
                             <FreeTierWatermark className="text-white/80 drop-shadow" />
@@ -347,6 +358,31 @@ export default function Creatives() {
           )}
         </TabsContent>
       </Tabs>
+
+      <Dialog open={pushToAdsOpen} onOpenChange={setPushToAdsOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Push to Ad Platforms</DialogTitle></DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div><Label>Ad platform</Label>
+              <Select value={pushConnectionId} onValueChange={setPushConnectionId}>
+                <SelectTrigger><SelectValue placeholder="Select connection" /></SelectTrigger>
+                <SelectContent>
+                  {(adConnections ?? []).filter((c: { status: string }) => c.status === "connected").map((c: { id: number; platform: string }) => (
+                    <SelectItem key={c.id} value={String(c.id)}>{c.platform}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Ad name</Label><Input value={pushAdName} onChange={e => setPushAdName(e.target.value)} placeholder="e.g. Summer Sale Creative" /></div>
+            <Button className="w-full" disabled={!pushConnectionId || !pushAdName || !pushCreativeId || launchAdMut.isPending} onClick={() => {
+              if (!pushCreativeId) return;
+              launchAdMut.mutate({ connectionId: Number(pushConnectionId), name: pushAdName, creativeId: pushCreativeId });
+            }}>
+              {launchAdMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Push to Ads"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/creatives"] ?? []} maxSteps={2} />
     </div>

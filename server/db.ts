@@ -7,6 +7,7 @@ import {
   creatives, InsertCreative, Creative,
   videoAds, InsertVideoAd, VideoAd,
   campaigns, InsertCampaign, Campaign,
+  campaignAssets, InsertCampaignAsset, CampaignAsset,
   abTests, InsertAbTest, AbTest,
   abTestVariants, InsertAbTestVariant, AbTestVariant,
   scheduledPosts, InsertScheduledPost, ScheduledPost,
@@ -312,6 +313,23 @@ export async function updateCampaign(id: number, data: Partial<InsertCampaign>) 
 export async function deleteCampaign(id: number) {
   const db = await getDb(); if (!db) throw new Error("DB unavailable");
   await db.delete(campaigns).where(eq(campaigns.id, id));
+}
+
+// ─── Campaign Assets ─────────────────────────────────────────────────
+export async function createCampaignAsset(data: InsertCampaignAsset) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(campaignAssets).values(data);
+  return { id: result[0].insertId };
+}
+
+export async function getCampaignAssetsByCampaignId(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(campaignAssets).where(eq(campaignAssets.campaignId, campaignId));
+}
+
+export async function updateCampaignAsset(id: number, data: Partial<InsertCampaignAsset>) {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(campaignAssets).set(data).where(eq(campaignAssets.id, id));
 }
 
 // ─── A/B Tests ───────────────────────────────────────────────────────
@@ -779,6 +797,12 @@ export async function getLandingPageById(id: number) {
   const r = await db.select().from(landingPages).where(eq(landingPages.id, id)).limit(1);
   return r[0];
 }
+
+export async function getLandingPageBySlug(slug: string) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(landingPages).where(eq(landingPages.slug, slug)).limit(1);
+  return r[0];
+}
 export async function updateLandingPage(id: number, data: Partial<InsertLandingPage>) {
   const db = await getDb(); if (!db) return;
   await db.update(landingPages).set(data).where(eq(landingPages.id, id));
@@ -813,6 +837,18 @@ export async function getAutomationWorkflowById(id: number) {
   const db = await getDb(); if (!db) return undefined;
   const r = await db.select().from(automationWorkflows).where(eq(automationWorkflows.id, id)).limit(1);
   return r[0];
+}
+
+/** Get active automations for form_submission trigger, optionally filtered by landingPageId */
+export async function getAutomationsForFormSubmit(userId: number, landingPageId: number) {
+  const db = await getDb(); if (!db) return [];
+  const list = await db.select().from(automationWorkflows).where(
+    and(eq(automationWorkflows.userId, userId), eq(automationWorkflows.triggerType, "form_submission"), eq(automationWorkflows.isActive, true))
+  );
+  return list.filter((w) => {
+    const config = (w.triggerConfig as { landingPageId?: number }) || {};
+    return !config.landingPageId || config.landingPageId === landingPageId;
+  });
 }
 export async function updateAutomationWorkflow(id: number, data: Partial<InsertAutomationWorkflow>) {
   const db = await getDb(); if (!db) return;

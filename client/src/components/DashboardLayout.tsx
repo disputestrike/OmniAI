@@ -83,11 +83,14 @@ import {
   Star,
   HelpCircle,
   Target,
+  Lock,
 } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useSearch } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
+import { TrialCountdownBanner } from "./TrialCountdownBanner";
+import { setCrispUser } from "@/lib/crisp";
 
 const menuSections = [
   {
@@ -277,6 +280,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 function DashboardLayoutContent({ children, setSidebarWidth }: { children: React.ReactNode; setSidebarWidth: (w: number) => void }) {
   const { user, logout } = useAuth();
   const { data: subStatus } = trpc.subscription.status.useQuery(undefined, { enabled: !!user });
+  const { data: featureAccess } = trpc.subscription.featureAccess.useQuery(undefined, { enabled: !!user });
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -284,6 +288,16 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = allMenuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (user?.email) {
+      setCrispUser({
+        name: user.name || undefined,
+        email: user.email || undefined,
+        tier: subStatus?.plan || "free",
+      });
+    }
+  }, [user?.id, user?.email, user?.name, subStatus?.plan]);
 
   useEffect(() => {
     if (isCollapsed) setIsResizing(false);
@@ -313,6 +327,7 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
 
   return (
     <>
+      <TrialCountdownBanner />
       <div className="relative" ref={sidebarRef}>
         <Sidebar collapsible="icon" className="border-r-0" disableTransition={isResizing}>
           <SidebarHeader className="h-14 justify-center">
@@ -344,16 +359,19 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 <SidebarMenu className="gap-0.5">
                   {section.items.map(item => {
                     const isActive = location === item.path;
+                    const isProgrammaticAds = item.path === "/programmatic-ads";
+                    const isLocked = isProgrammaticAds && !(featureAccess?.programmatic_ads ?? true);
                     return (
                       <SidebarMenuItem key={item.path}>
                         <SidebarMenuButton
                           isActive={isActive}
                           onClick={() => setLocation(item.path)}
-                          tooltip={item.label}
+                          tooltip={isLocked ? `${item.label} (Starter+ required)` : item.label}
                           className="h-9 transition-all font-normal text-[13px]"
                         >
-                          <item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} />
-                          <span>{item.label}</span>
+                          <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                          <span className="truncate">{item.label}</span>
+                          {isLocked && <Lock className="h-3.5 w-3.5 shrink-0 text-amber-600 ml-auto" />}
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
@@ -379,6 +397,33 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
+                {subStatus?.stripeCustomerId && (
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/stripe/create-portal", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ customerId: subStatus.stripeCustomerId }),
+                        });
+                        const data = await res.json();
+                        if (data?.url) window.open(data.url, "_blank");
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Manage billing</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem className="cursor-pointer" asChild>
+                  <a href="mailto:support@otobi.ai">
+                    <Mail className="mr-2 h-4 w-4" />
+                    <span>Contact support (support@otobi.ai)</span>
+                  </a>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>
@@ -403,15 +448,6 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
                 {activeMenuItem?.label ?? "Menu"}
               </span>
             </div>
-          </div>
-        )}
-        {subStatus?.trialEndsAt && new Date(subStatus.trialEndsAt) > new Date() && (
-          <div className="bg-amber-100 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-900">
-            {(() => {
-              const end = new Date(subStatus.trialEndsAt);
-              const days = Math.max(0, Math.ceil((end.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
-              return `${days} day${days !== 1 ? "s" : ""} remaining in your free trial — your card will be charged on ${end.toLocaleDateString()}.`;
-            })()}
           </div>
         )}
         {subStatus?.usage && subStatus.usage.aiGenerationsUsed != null && (

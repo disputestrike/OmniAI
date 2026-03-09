@@ -72,6 +72,18 @@ export function registerEmailAuthRoutes(app: Express): void {
         res.redirect(`${loginUrl}?error=register_failed&mode=register`);
         return;
       }
+      // EMAIL 1 — Welcome Free (free account created)
+      try {
+        const { sendEmail, getWelcomeFreeHtml, getBaseUrl } = await import("./email.service");
+        const base = getBaseUrl();
+        await sendEmail(
+          email,
+          "Welcome to OTOBI AI — here's how to get started",
+          getWelcomeFreeHtml(name || user.name || "there", `${base}/dashboard`),
+        );
+      } catch (e) {
+        console.warn("[Email] Welcome send failed:", e);
+      }
       const sessionToken = await createSessionToken(openId, {
         name: user.name || user.email || "",
         email: user.email ?? undefined,

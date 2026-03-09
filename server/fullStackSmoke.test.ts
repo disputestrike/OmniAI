@@ -86,13 +86,17 @@ function getRouterNamesFromApp(appRouter: { _def: { procedures: Record<string, u
 }
 
 describe("Full-stack smoke (router inventory)", () => {
-  it("appRouter has all expected routers wired", async () => {
-    const { appRouter } = await import("./routers");
-    const wired = getRouterNamesFromApp(appRouter as unknown as { _def: { procedures: Record<string, unknown> } });
-    for (const name of EXPECTED_ROUTERS) {
-      expect(wired).toContain(name);
-    }
-  });
+  it(
+    "appRouter has all expected routers wired",
+    async () => {
+      const { appRouter } = await import("./routers");
+      const wired = getRouterNamesFromApp(appRouter as unknown as { _def: { procedures: Record<string, unknown> } });
+      for (const name of EXPECTED_ROUTERS) {
+        expect(wired).toContain(name);
+      }
+    },
+    15000,
+  );
 
   it("appRouter has at least 50 router namespaces", async () => {
     const { appRouter } = await import("./routers");

@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, json, boolean, decimal } from "drizzle-orm/mysql-core";
 
 // ─── Users ───────────────────────────────────────────────────────────
 export const users = mysqlTable("users", {
@@ -111,10 +111,15 @@ export const campaigns = mysqlTable("campaigns", {
   productId: int("productId"),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
+  goal: varchar("goal", { length: 64 }), // webinar, lead_gen, product_launch, grow_social, drive_traffic, promote_service, run_sale
   platforms: json("platforms").$type<string[]>(),
   objective: mysqlEnum("objective", ["awareness", "traffic", "engagement", "leads", "sales", "app_installs"]).default("awareness").notNull(),
   status: mysqlEnum("status", ["draft", "active", "paused", "completed", "archived"]).default("draft").notNull(),
   budget: text("budget"),
+  totalBudget: decimal("totalBudget", { precision: 12, scale: 2 }),
+  totalSpend: decimal("totalSpend", { precision: 12, scale: 2 }),
+  totalLeads: int("totalLeads").default(0),
+  totalRevenue: decimal("totalRevenue", { precision: 12, scale: 2 }),
   targetAudience: json("targetAudience"),
   startDate: timestamp("startDate"),
   endDate: timestamp("endDate"),
@@ -125,6 +130,19 @@ export const campaigns = mysqlTable("campaigns", {
 
 export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = typeof campaigns.$inferInsert;
+
+// ─── Campaign Assets (links campaign to landing pages, creatives, emails, social, sms) ───
+export const campaignAssets = mysqlTable("campaign_assets", {
+  id: int("id").autoincrement().primaryKey(),
+  campaignId: int("campaignId").notNull(),
+  assetType: varchar("assetType", { length: 32 }).notNull(), // landing_page, ad_creative, email, social_post, sms
+  assetId: int("assetId").notNull(),
+  status: mysqlEnum("status", ["draft", "approved", "live", "paused", "completed"]).default("draft").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CampaignAsset = typeof campaignAssets.$inferSelect;
+export type InsertCampaignAsset = typeof campaignAssets.$inferInsert;
 
 // ─── A/B Tests ───────────────────────────────────────────────────────
 export const abTests = mysqlTable("ab_tests", {
@@ -232,6 +250,8 @@ export const subscriptions = mysqlTable("subscriptions", {
   currentPeriodStart: timestamp("currentPeriodStart"),
   cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
   trialEndsAt: timestamp("trialEndsAt"),
+  pastDueAt: timestamp("pastDueAt"),
+  canceledAt: timestamp("canceledAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -249,6 +269,7 @@ export const userMonthlyUsage = mysqlTable("user_monthly_usage", {
   websiteAnalysesUsed: int("websiteAnalysesUsed").default(0).notNull(),
   abTestsUsed: int("abTestsUsed").default(0).notNull(),
   scheduledPostsUsed: int("scheduledPostsUsed").default(0).notNull(),
+  usage80EmailSent: boolean("usage80EmailSent").default(false),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 

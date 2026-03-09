@@ -127,6 +127,35 @@ export function registerStripeRoutes(app: express.Application) {
                 currentPeriodStart: periodStart,
                 trialEndsAt: trialEnd,
               });
+              // EMAIL 2 — Trial Started
+              if (trialEnd && trialEnd > new Date()) {
+                try {
+                  const [u] = await db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, parseInt(userId))).limit(1);
+                  if (u?.email) {
+                    const { sendEmail, getTrialStartedHtml, getBaseUrl } = await import("./email.service");
+                    const base = getBaseUrl();
+                    const tierNames: Record<string, string> = { starter: "Starter", professional: "Professional", pro: "Professional", business: "Business", biz: "Business", agency: "Agency", enterprise: "Enterprise" };
+                    const chargeDate = trialEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                    const fiveThings = ["Try Product Analyzer with a product URL", "Generate a week of social posts in Content Studio", "Create an ad image in Creative Engine", "Run the AI Campaign Wizard", "Check out Programmatic Ads (Starter+)"];
+                    const limitsSummary = plan === "starter" ? "50 generations, 15 images, 5 video scripts/month" : plan === "professional" || plan === "pro" ? "200 generations, 50 images, 20 video scripts/month" : "See your plan for full limits.";
+                    await sendEmail(
+                      u.email,
+                      "Your 7-day free trial has started — here's what to do first",
+                      getTrialStartedHtml(
+                        u.name || "there",
+                        tierNames[plan] || plan,
+                        chargeDate,
+                        fiveThings,
+                        limitsSummary,
+                        `${base}/dashboard`,
+                        `${base}/pricing`,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  console.warn("[Stripe] Trial started email failed:", e);
+                }
+              }
             }
           }
 
@@ -208,9 +237,14 @@ export function registerStripeRoutes(app: express.Application) {
           const db = await getDb();
           if (db) {
             const subId = sub.id;
+            const existingRows = await db.select({ userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, subId)).limit(1);
+            const userRows = existingRows[0] ? await db.select({ subscriptionPlan: users.subscriptionPlan, email: users.email, name: users.name }).from(users).where(eq(users.id, existingRows[0].userId)).limit(1) : [];
+            const oldPlan = userRows[0]?.subscriptionPlan ?? "free";
+
             const periodStart = new Date((sub as any).current_period_start * 1000);
             const periodEnd = new Date((sub as any).current_period_end * 1000);
             const trialEnd = (sub as any).trial_end ? new Date((sub as any).trial_end * 1000) : null;
+            const newPlan = (sub.metadata?.plan as string) || (sub.items?.data?.[0] ? "starter" : oldPlan);
             await db.update(subscriptions).set({
               status: sub.status as any,
               currentPeriodStart: periodStart,
@@ -218,8 +252,28 @@ export function registerStripeRoutes(app: express.Application) {
               trialEndsAt: trialEnd,
               cancelAtPeriodEnd: sub.cancel_at_period_end,
             }).where(eq(subscriptions.stripeSubscriptionId, subId));
+            if (existingRows[0]) await db.update(users).set({ subscriptionPlan: newPlan as any }).where(eq(users.id, existingRows[0].userId));
 
-            // User plan already set at checkout; keep subscription row in sync for period/trial
+            // EMAIL 11 — Upgrade Confirmed (tier changed to higher)
+            const order: Record<string, number> = { free: 0, starter: 1, professional: 2, pro: 2, business: 3, biz: 3, agency: 4, enterprise: 4 };
+            if (existingRows[0] && userRows[0]?.email && (order[newPlan] ?? 0) > (order[String(oldPlan)] ?? 0)) {
+              try {
+                const { sendEmail, getUpgradeConfirmedHtml, getBaseUrl } = await import("./email.service");
+                const base = getBaseUrl();
+                const tierNames: Record<string, string> = { starter: "Starter", professional: "Professional", pro: "Professional", business: "Business", agency: "Agency", enterprise: "Enterprise" };
+                const tierName = tierNames[newPlan] || newPlan;
+                const amount = sub.items?.data?.[0]?.price?.unit_amount ? `$${((sub.items.data[0].price.unit_amount / 100) * (sub.items.data[0].price.recurring?.interval === "year" ? 1 / 12 : 1)).toFixed(0)}/mo` : "";
+                const features: string[] = newPlan === "starter" ? ["50 AI generations/month", "15 images", "5 video scripts", "Programmatic Ads"] : newPlan === "professional" || newPlan === "pro" ? ["200 generations", "50 images", "20 video scripts", "AI video", "Team seats"] : ["Higher limits", "More team seats", "Priority support"];
+                const limits = newPlan === "starter" ? "50 generations, 15 images, 5 video scripts" : "See your plan";
+                await sendEmail(
+                  userRows[0].email,
+                  "You are now on OTOBI " + tierName,
+                  getUpgradeConfirmedHtml(tierName, amount, features, limits, `${base}/dashboard`),
+                );
+              } catch (e) {
+                console.warn("[Stripe] Upgrade confirmed email failed:", e);
+              }
+            }
           }
           break;
         }
@@ -228,16 +282,35 @@ export function registerStripeRoutes(app: express.Application) {
           const sub = event.data.object as Stripe.Subscription;
           const db = await getDb();
           if (db) {
-            await db.update(subscriptions).set({ status: "canceled" })
-              .where(eq(subscriptions.stripeSubscriptionId, sub.id));
-
             const existingSub = await db.select().from(subscriptions)
               .where(eq(subscriptions.stripeSubscriptionId, sub.id)).limit(1);
+            const hadTrial = (sub as any).trial_end && (sub as any).trial_end > Math.floor(Date.now() / 1000);
+            const wasTrialing = sub.status === "trialing" || (existingSub[0]?.trialEndsAt && new Date(existingSub[0].trialEndsAt) > new Date());
+            await db.update(subscriptions).set({ status: "canceled", canceledAt: new Date() })
+              .where(eq(subscriptions.stripeSubscriptionId, sub.id));
+
             if (existingSub.length > 0) {
               await db.update(users).set({
                 subscriptionPlan: "free",
                 stripeSubscriptionId: null,
               }).where(eq(users.id, existingSub[0].userId));
+              // EMAIL 6 — Trial Cancelled (no charge was made)
+              if (wasTrialing || hadTrial) {
+                try {
+                  const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, existingSub[0].userId)).limit(1);
+                  if (u?.email) {
+                    const { sendEmail, getTrialCancelledHtml, getBaseUrl } = await import("./email.service");
+                    const base = getBaseUrl();
+                    await sendEmail(
+                      u.email,
+                      "Your trial has been cancelled — no charge was made",
+                      getTrialCancelledHtml(`${base}/pricing`, "support@otobi.ai"),
+                    );
+                  }
+                } catch (e) {
+                  console.warn("[Stripe] Trial cancelled email failed:", e);
+                }
+              }
             }
           }
           break;
@@ -260,6 +333,34 @@ export function registerStripeRoutes(app: express.Application) {
                   currentPeriodEnd: periodEnd,
                 }).where(eq(subscriptions.stripeSubscriptionId, sub.id));
                 await resetUserUsage(uid, periodStart, periodEnd);
+                // EMAIL 5 — Charge Confirmed
+                try {
+                  const [u] = await db.select({ name: users.name, email: users.email, subscriptionPlan: users.subscriptionPlan }).from(users).where(eq(users.id, uid)).limit(1);
+                  if (u?.email) {
+                    const { sendEmail, getChargeConfirmedHtml, getBaseUrl } = await import("./email.service");
+                    const base = getBaseUrl();
+                    const tierNames: Record<string, string> = { starter: "Starter", professional: "Professional", pro: "Professional", business: "Business", agency: "Agency", enterprise: "Enterprise" };
+                    const amount = invoice.amount_paid != null ? `$${(invoice.amount_paid / 100).toFixed(2)}` : "your plan amount";
+                    const date = new Date().toLocaleDateString("en-US");
+                    const nextBilling = periodEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+                    const portalUrl = `${base}/pricing`;
+                    await sendEmail(
+                      u.email,
+                      "Payment confirmed — welcome to OTOBI " + (tierNames[String(u.subscriptionPlan)] || u.subscriptionPlan),
+                      getChargeConfirmedHtml(
+                        tierNames[String(u.subscriptionPlan)] || String(u.subscriptionPlan),
+                        amount,
+                        date,
+                        nextBilling,
+                        invoice.number || invoice.id || "—",
+                        portalUrl,
+                        `${base}/dashboard`,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  console.warn("[Stripe] Charge confirmed email failed:", e);
+                }
               }
             }
           }
@@ -270,9 +371,39 @@ export function registerStripeRoutes(app: express.Application) {
           const invoice = event.data.object as any;
           const db = await getDb();
           if (db && invoice.subscription) {
-            await db.update(subscriptions).set({ status: "past_due" })
+            await db.update(subscriptions).set({ status: "past_due", pastDueAt: new Date() })
               .where(eq(subscriptions.stripeSubscriptionId, String(invoice.subscription)));
+            // EMAIL 8 — Payment Failed
+            try {
+              const sub = await stripe.subscriptions.retrieve(String(invoice.subscription));
+              const customerId = sub.customer as string;
+              const portalSession = await stripe.billingPortal.sessions.create({
+                customer: customerId,
+                return_url: (process.env.PUBLIC_URL || process.env.BASE_URL || "https://app.otobi.ai").replace(/\/$/, "") + "/pricing",
+              });
+              const subs = await db.select({ userId: subscriptions.userId }).from(subscriptions).where(eq(subscriptions.stripeSubscriptionId, sub.id)).limit(1);
+              if (subs[0]) {
+                const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, subs[0].userId)).limit(1);
+                if (u?.email) {
+                  const { sendEmail, getPaymentFailedHtml } = await import("./email.service");
+                  await sendEmail(
+                    u.email,
+                    "Action required — your OTOBI payment failed",
+                    getPaymentFailedHtml(portalSession.url || ""),
+                  );
+                }
+              }
+            } catch (e) {
+              console.warn("[Stripe] Payment failed email error:", e);
+            }
           }
+          break;
+        }
+
+        case "payment_intent.succeeded": {
+          // Ad wallet and credit pack purchases are handled in checkout.session.completed.
+          // This event can be used for idempotency or logging if needed.
+          console.log("[Stripe Webhook] payment_intent.succeeded:", (event.data.object as any)?.id);
           break;
         }
       }

@@ -54,6 +54,13 @@ describe("Wiring — v4 endpoints callable with auth", () => {
     const out = await caller.credits.packages();
     expect(Array.isArray(out)).toBe(true);
   });
+
+  it("pricing.userCount returns a number", async () => {
+    const caller = appRouter.createCaller(unauthedCtx);
+    const out = await caller.pricing.userCount();
+    expect(typeof out).toBe("number");
+    expect(out).toBeGreaterThanOrEqual(0);
+  });
 });
 
 describe("Chaos — graceful degradation", () => {

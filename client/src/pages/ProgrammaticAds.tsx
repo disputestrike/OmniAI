@@ -1,16 +1,61 @@
 /**
- * Programmatic Ads (DSP) — Spec v4.
- * Ad wallet balance, fund CTA, campaigns list. One-stop programmatic buying.
+ * Programmatic Ads (DSP) — Spec v4. Gated: Starter+ only. Free sees locked state + upgrade CTA.
  */
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Wallet, PlusCircle, Target, TrendingUp, AlertCircle } from "lucide-react";
+import { Wallet, PlusCircle, Target, TrendingUp, Lock, Plus } from "lucide-react";
 import { useState } from "react";
+import { Link } from "wouter";
+import { toast } from "sonner";
+
+function CreateCampaignForm({ onCreated }: { onCreated: () => void }) {
+  const utils = trpc.useUtils();
+  const createCampaign = trpc.dsp.campaigns.create.useMutation({
+    onSuccess: () => {
+      utils.dsp.status.invalidate();
+      utils.dsp.campaigns.list.invalidate();
+      onCreated();
+      toast.success("Campaign created.");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const [name, setName] = useState("");
+  const [totalBudgetCents, setTotalBudgetCents] = useState(10000); // $100
+  const [creativeUrl, setCreativeUrl] = useState("");
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)} className="mb-4">
+        <Plus className="h-4 w-4 mr-2" />
+        Create campaign
+      </Button>
+    );
+  }
+  return (
+    <div className="rounded-lg border p-4 mb-4 space-y-3">
+      <p className="text-sm font-medium">New campaign</p>
+      <input placeholder="Campaign name" value={name} onChange={(e) => setName(e.target.value)} className="flex h-9 w-full max-w-xs rounded-md border border-input bg-transparent px-3 py-1 text-sm" />
+      <div className="flex items-center gap-2">
+        <label className="text-sm">Total budget ($)</label>
+        <input type="number" min={1} value={totalBudgetCents / 100} onChange={(e) => setTotalBudgetCents(Math.round(Number(e.target.value) * 100) || 0)} className="flex h-9 w-24 rounded-md border border-input px-3 py-1 text-sm" />
+      </div>
+      <input placeholder="Creative URL (optional)" value={creativeUrl} onChange={(e) => setCreativeUrl(e.target.value)} className="flex h-9 w-full max-w-md rounded-md border border-input bg-transparent px-3 py-1 text-sm" />
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => createCampaign.mutateAsync({ name: name || "My Campaign", totalBudgetCents: totalBudgetCents || 10000, creativeUrl: creativeUrl || undefined }).then(() => { setOpen(false); setName(""); setTotalBudgetCents(10000); setCreativeUrl(""); })} disabled={createCampaign.isPending || !name.trim()}>
+          {createCampaign.isPending ? "Creating…" : "Create"}
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      </div>
+    </div>
+  );
+}
 
 export default function ProgrammaticAds() {
-  const { data: status, isLoading } = trpc.dsp.status.useQuery();
+  const { data: featureAccess } = trpc.subscription.featureAccess.useQuery();
+  const hasDspAccess = featureAccess?.programmatic_ads ?? false;
+  const { data: status, isLoading } = trpc.dsp.status.useQuery(undefined, { enabled: hasDspAccess });
   const fundCheckout = trpc.dsp.fundCheckout.useMutation();
   const [amount, setAmount] = useState(50); // USD default
   const [funding, setFunding] = useState(false);
@@ -29,6 +74,37 @@ export default function ProgrammaticAds() {
 
   const balanceDollars = status ? (status.balanceCents / 100).toFixed(2) : "0.00";
   const spentDollars = status ? (status.totalSpentCents / 100).toFixed(2) : "0.00";
+
+  if (featureAccess && !hasDspAccess) {
+    return (
+      <div className="space-y-6 p-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            <Lock className="h-7 w-7 text-amber-600" />
+            Programmatic Ads
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Programmatic ad buying is available on Starter ($49/mo) and above. Upgrade to fund your ad wallet, launch campaigns, and track performance in one place.
+          </p>
+        </div>
+        <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800">
+          <CardHeader>
+            <CardTitle>Upgrade to unlock Programmatic Ads</CardTitle>
+            <CardDescription>
+              Starter and higher tiers include access to the ad wallet, DSP campaign creation, and performance sync. No manual approval required.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/pricing">
+              <Button className="bg-amber-600 hover:bg-amber-700 text-white">
+                View plans & upgrade
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 p-4">
@@ -117,8 +193,7 @@ export default function ProgrammaticAds() {
           </Button>
           {status && !status.enabled && (
             <p className="flex items-center gap-1 text-sm text-muted-foreground">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              Programmatic campaign execution (DSP) can be enabled by support. You can still fund your ad wallet and use it when campaigns are enabled.
+              DSP campaign execution will be available once your account is fully connected. You can fund your ad wallet now and create campaigns when ready.
             </p>
           )}
         </CardContent>
@@ -130,6 +205,7 @@ export default function ProgrammaticAds() {
           <CardDescription>Your programmatic ad campaigns. Create and manage from here.</CardDescription>
         </CardHeader>
         <CardContent>
+          <CreateCampaignForm onCreated={() => { /* refetch handled by invalidation */ }} />
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3].map((i) => (
@@ -137,7 +213,7 @@ export default function ProgrammaticAds() {
               ))}
             </div>
           ) : !status?.campaigns?.length ? (
-            <p className="text-sm text-muted-foreground">No campaigns yet. Fund your wallet and create your first campaign.</p>
+            <p className="text-sm text-muted-foreground mt-4">No campaigns yet. Fund your wallet and create your first campaign above.</p>
           ) : (
             <ul className="space-y-2">
               {status.campaigns.map((c) => (

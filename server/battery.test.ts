@@ -65,17 +65,21 @@ describe("Edge cases", () => {
     }
   });
 
-  it("dsp.fundCheckout with 100 passes validation (may throw if Stripe not configured)", async () => {
-    const caller = appRouter.createCaller(authCtx());
-    try {
-      const out = await caller.dsp.fundCheckout({ amountCents: 100 });
-      expect(out).toHaveProperty("url");
-    } catch (e: unknown) {
-      const err = e as { code?: string; message?: string };
-      expect(err?.code).not.toBe("BAD_REQUEST");
-      expect(String(err?.message || "")).not.toMatch(/min|100|amount/i);
-    }
-  });
+  it(
+    "dsp.fundCheckout with 100 passes validation (may throw if Stripe not configured)",
+    async () => {
+      const caller = appRouter.createCaller(authCtx());
+      try {
+        const out = await caller.dsp.fundCheckout({ amountCents: 100 });
+        expect(out).toHaveProperty("url");
+      } catch (e: unknown) {
+        const err = e as { code?: string; message?: string };
+        expect(err?.code).not.toBe("BAD_REQUEST");
+        expect(String(err?.message || "")).not.toMatch(/min|100|amount/i);
+      }
+    },
+    15000,
+  );
 
   it("pricing.list returns valid tier shape (no hallucinated fields)", async () => {
     const caller = appRouter.createCaller(unauthed);

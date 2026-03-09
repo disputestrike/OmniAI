@@ -160,4 +160,18 @@
       max-width: 1280px;
     }
   }
+  /* Item 4 — Mobile: 44px touch targets, 16px inputs (prevent iOS zoom) */
+  @media (max-width: 767px) {
+    button:not([class*="size-"]),
+    [role="button"]:not([aria-disabled="true"]),
+    a[href].inline-flex,
+    .min-h-\[44px\] {
+      min-height: 44px;
+    }
+    input:not([type="hidden"]),
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
 }

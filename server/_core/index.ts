@@ -9,6 +9,8 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic } from "./static";
 import { registerStripeRoutes } from "../stripe-routes";
+import { registerCreditsRoutes } from "../credits-routes";
+import { registerLandingRoutes } from "../landing-routes";
 import { securityHeaders, rateLimit } from "../security";
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -31,6 +33,15 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  const { ENV } = await import("./env");
+  if (ENV.sentryDsn) {
+    try {
+      const Sentry = await import("@sentry/node");
+      Sentry.init({ dsn: ENV.sentryDsn, tracesSampleRate: 0.1 });
+    } catch {
+      // Sentry optional
+    }
+  }
   const app = express();
   const server = createServer(app);
 
@@ -58,6 +69,8 @@ async function startServer() {
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  registerCreditsRoutes(app);
+  registerLandingRoutes(app);
   // Google OAuth only (GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET required)
   registerGoogleOAuthRoutes(app);
   registerEmailAuthRoutes(app);

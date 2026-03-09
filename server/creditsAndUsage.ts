@@ -278,10 +278,45 @@ export async function consumeLimit(userId: number, actionType: string, checkResu
     try {
       const col = meta.key;
       const current = Number((usage as unknown as Record<string, unknown>)[col]) || 0;
+      const tier = await getUserTier(userId);
+      const limits = TIER_LIMITS[tier];
+      const monthlyLimit =
+        col === "aiGenerationsUsed" ? limits.aiGenerationsMonthly
+        : col === "aiImagesUsed" ? limits.aiImagesMonthly
+        : col === "videoScriptsUsed" ? limits.videoScriptsMonthly
+        : col === "videoMinutesUsed" ? limits.videoGenMinutes
+        : col === "websiteAnalysesUsed" ? limits.websiteAnalyses
+        : 0;
       await db
         .update(userMonthlyUsage)
         .set({ [col]: current + 1 } as unknown as Partial<typeof userMonthlyUsage.$inferInsert>)
         .where(eq(userMonthlyUsage.userId, userId));
+      // EMAIL 10 — Usage 80% (once per period)
+      const usage80Sent = (usage as unknown as { usage80EmailSent?: boolean }).usage80EmailSent;
+      if (
+        monthlyLimit !== UNLIMITED &&
+        monthlyLimit > 0 &&
+        current + 1 >= 0.8 * monthlyLimit &&
+        !usage80Sent
+      ) {
+        try {
+          const [u] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+          if (u?.email) {
+            const { sendEmail, getUsage80Html, getBaseUrl } = await import("./email.service");
+            const base = getBaseUrl();
+            const generationsLeft = Math.max(0, monthlyLimit - (current + 1));
+            const resetDate = period.end.toLocaleDateString("en-US");
+            await sendEmail(
+              u.email,
+              "You have used 80% of your monthly generations",
+              getUsage80Html(generationsLeft, resetDate, `${base}/pricing#credits`, `${base}/pricing`),
+            );
+            await db.update(userMonthlyUsage).set({ usage80EmailSent: true }).where(eq(userMonthlyUsage.userId, userId));
+          }
+        } catch {
+          // ignore email errors
+        }
+      }
     } catch {
       // e.g. mock db without update in tests
     }

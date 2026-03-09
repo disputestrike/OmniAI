@@ -259,16 +259,15 @@ export const emailMarketingRouter = router({
       totalRecipients: activeContacts.length,
     });
 
-    // Send via notification API (batch)
+    const { sendEmail } = await import("./email.service");
+    const html = campaign.htmlBody || `<p>${(campaign.textBody || campaign.subject || "").replace(/\n/g, "</p><p>")}</p>`;
+
     let delivered = 0;
     let failed = 0;
     for (const contact of activeContacts) {
       try {
-        await notifyOwner({
-          title: campaign.subject,
-          content: campaign.textBody || campaign.subject,
-        });
-        delivered++;
+        const sent = await sendEmail(contact.email, campaign.subject, html);
+        if (sent) delivered++; else failed++;
       } catch {
         failed++;
       }
@@ -325,6 +324,7 @@ export const landingPageRouter = router({
     components: z.any().optional(),
     customCss: z.string().optional(),
     status: z.enum(["draft", "published", "archived"]).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })).mutation(async ({ input }) => {
     const { id, ...data } = input;
     await db.updateLandingPage(id, data as any);
@@ -454,20 +454,32 @@ export const automationRouter = router({
     return { success: true };
   }),
 
-  execute: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+  execute: protectedProcedure.input(z.object({ id: z.number(), context: z.object({ email: z.string().optional(), name: z.string().optional(), leadId: z.number().optional() }).optional() })).mutation(async ({ ctx, input }) => {
     const workflow = await db.getAutomationWorkflowById(input.id);
     if (!workflow) throw new TRPCError({ code: "NOT_FOUND" });
 
     const results: { action: string; status: string; message: string }[] = [];
     const actions = (workflow.actions as any[]) || [];
+    const recipient = input.context?.email || (actions.find((a: any) => a.type === "send_email")?.config?.to as string);
 
     for (const action of actions) {
       try {
         switch (action.type) {
-          case "send_email":
-            await notifyOwner({ title: action.config.subject || "Automation Email", content: action.config.body || "Automated message" });
-            results.push({ action: action.type, status: "success", message: "Email sent" });
+          case "send_email": {
+            const to = (action.config?.to as string) || recipient;
+            const subject = (action.config?.subject as string) || "Automation Email";
+            const body = (action.config?.body as string) || "Automated message";
+            const html = `<p>${body.replace(/\n/g, "</p><p>")}</p>`;
+            if (to) {
+              const { sendEmail } = await import("./email.service");
+              const sent = await sendEmail(to, subject, html);
+              results.push({ action: action.type, status: sent ? "success" : "failed", message: sent ? "Email sent" : "Send failed" });
+            } else {
+              await notifyOwner({ title: subject, content: body });
+              results.push({ action: action.type, status: "success", message: "Notification sent (no recipient)" });
+            }
             break;
+          }
           case "notify_team":
             await notifyOwner({ title: "Team Notification", content: action.config.message || "Workflow triggered" });
             results.push({ action: action.type, status: "success", message: "Team notified" });

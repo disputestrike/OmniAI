@@ -8,6 +8,7 @@ import { generateImage } from "./_core/imageGeneration";
 import * as db from "./db";
 import { TRPCError } from "@trpc/server";
 import { checkLimit, consumeLimit } from "./creditsAndUsage";
+import { checkTierAccess, getFeatureAccess } from "./tierAccess";
 
 const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
 import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
@@ -174,7 +175,7 @@ Return a JSON object with these fields:
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "ai_generation");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
 
       let productContext = "";
       if (input.productId) {
@@ -260,7 +261,7 @@ Return a JSON object with these fields:
       platform: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "ai_generation");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
       const response = await invokeLLM({
         messages: [
           { role: "system", content: "You are an expert content remixer. Take the given content and recreate it — make it better, more engaging, more persuasive, and more effective. Maintain the core message but elevate everything: the hook, the structure, the emotional appeal, and the CTA. If a target format is specified, adapt the content to that format." },
@@ -286,7 +287,7 @@ Return a JSON object with these fields:
       targetTypes: z.array(z.string()).min(1),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "ai_generation");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
       const original = await db.getContentById(input.contentId);
       if (!original) throw new TRPCError({ code: "NOT_FOUND" });
       const response = await invokeLLM({
@@ -449,7 +450,7 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "ai_image");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
       let productInfo = "";
       if (input.productId) {
         const product = await db.getProductById(input.productId);
@@ -508,7 +509,7 @@ CRITICAL RULES — YOU ARE A TRUSTED ADVISOR:
       depth: z.enum(["quick", "standard", "deep"]).default("standard"),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "website_analysis");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
       // Real-time website scraping: fetch actual page data before AI analysis
       let scrapedData = "";
       try {
@@ -751,7 +752,7 @@ Return JSON with:
       customPrompt: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
       const limit = await checkLimit(ctx.user.id, "video_script");
-      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+      if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG, cause: limit });
 
       let productContext = "";
       if (input.productId) {
@@ -983,13 +984,18 @@ Return JSON with:
     get: protectedProcedure.input(z.object({ id: z.number() })).query(async ({ input }) => {
       return db.getCampaignById(input.id);
     }),
+    assets: protectedProcedure.input(z.object({ campaignId: z.number() })).query(async ({ input }) => {
+      return db.getCampaignAssetsByCampaignId(input.campaignId);
+    }),
     create: protectedProcedure.input(z.object({
       name: z.string().min(1),
       description: z.string().optional(),
       productId: z.number().optional(),
+      goal: z.string().optional(),
       platforms: z.array(z.string()),
       objective: z.enum(["awareness", "traffic", "engagement", "leads", "sales", "app_installs"]),
       budget: z.string().optional(),
+      totalBudget: z.number().optional(),
       targetAudience: z.any().optional(),
       startDate: z.string().optional(),
       endDate: z.string().optional(),
@@ -999,9 +1005,11 @@ Return JSON with:
         productId: input.productId ?? null,
         name: input.name,
         description: input.description ?? null,
+        goal: input.goal ?? null,
         platforms: input.platforms,
         objective: input.objective,
         budget: input.budget ?? null,
+        totalBudget: input.totalBudget != null ? String(input.totalBudget) : null,
         targetAudience: input.targetAudience ?? null,
         startDate: input.startDate ? new Date(input.startDate) : null,
         endDate: input.endDate ? new Date(input.endDate) : null,
@@ -1055,6 +1063,36 @@ Provide: recommended content types per platform, posting schedule, audience targ
       });
 
       return { strategy: response.choices[0].message.content as string };
+    }),
+    wizardGenerate: protectedProcedure.input(z.object({
+      goal: z.string().min(1),
+      businessContext: z.object({
+        businessName: z.string().optional(),
+        whatYouSell: z.string().optional(),
+        targetAudience: z.string().optional(),
+        brandTone: z.string().optional(),
+      }).optional(),
+      details: z.object({
+        campaignName: z.string().min(1),
+        offer: z.string().min(1),
+        targetAudience: z.string().optional(),
+        budget: z.string().optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        channels: z.array(z.enum(["landing_page", "paid_ads", "email", "social", "sms"])),
+      }),
+    })).mutation(async ({ ctx, input }) => {
+      const { generateCampaignFromWizard } = await import("./campaignWizard");
+      return generateCampaignFromWizard(
+        ctx.user.id,
+        input.goal,
+        input.businessContext || {},
+        input.details
+      );
+    }),
+    wizardLaunch: protectedProcedure.input(z.object({ campaignId: z.number() })).mutation(async ({ ctx, input }) => {
+      const { launchWizardCampaign } = await import("./campaignWizard");
+      return launchWizardCampaign(ctx.user.id, input.campaignId);
     }),
   }),
 
@@ -1473,10 +1511,23 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
         purchasedCredits: wallet?.purchasedCredits ?? 0,
       };
     }),
+    featureAccess: protectedProcedure.query(({ ctx }) => {
+      return getFeatureAccess(ctx.user.subscriptionPlan ?? undefined);
+    }),
   }),
 
   // ─── Pricing (public — read from tier_limits_config when available; never hardcode in frontend) ─
   pricing: router({
+    userCount: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db || typeof db.select !== "function") return 0;
+      try {
+        const [row] = await db.select({ count: count() }).from(users);
+        return Number(row?.count ?? 0);
+      } catch {
+        return 0;
+      }
+    }),
     list: publicProcedure.query(async () => {
       const { getDb } = await import("./db");
       const { tierLimitsConfig } = await import("../drizzle/schema");
@@ -1509,9 +1560,11 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
     }),
   }),
 
-  // ─── DSP / Programmatic Ads (Spec v4) ───────────────────────────────
+  // ─── DSP / Programmatic Ads (Spec v4) — gated: Starter+ only ────────
   dsp: router({
     status: protectedProcedure.query(async ({ ctx }) => {
+      const access = checkTierAccess(ctx.user.subscriptionPlan ?? undefined, "programmatic_ads");
+      if (!access.allowed) throw new TRPCError({ code: "FORBIDDEN", message: "Programmatic Ads is available on Starter and above.", cause: access });
       const db = await getDb();
       if (!db) return { balanceCents: 0, totalSpentCents: 0, totalMarkupEarnedCents: 0, campaigns: [], enabled: false };
       const { dspAdWallets, dspCampaigns } = await import("../drizzle/schema");
@@ -1530,6 +1583,8 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
       };
     }),
     fundCheckout: protectedProcedure.input(z.object({ amountCents: z.number().min(100) })).mutation(async ({ ctx, input }) => {
+      const access = checkTierAccess(ctx.user.subscriptionPlan ?? undefined, "programmatic_ads");
+      if (!access.allowed) throw new TRPCError({ code: "FORBIDDEN", message: "Programmatic Ads is available on Starter and above.", cause: access });
       const { createDspFundCheckout } = await import("./stripe-routes");
       const origin = process.env.PUBLIC_URL || process.env.BASE_URL || "https://localhost:5000";
       const { url } = await createDspFundCheckout(ctx.user.id, input.amountCents, origin);
@@ -1538,11 +1593,70 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
     }),
     campaigns: router({
       list: protectedProcedure.query(async ({ ctx }) => {
+        const access = checkTierAccess(ctx.user.subscriptionPlan ?? undefined, "programmatic_ads");
+        if (!access.allowed) throw new TRPCError({ code: "FORBIDDEN", message: "Programmatic Ads is available on Starter and above.", cause: access });
         const db = await getDb();
         if (!db) return [];
         const { dspCampaigns } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
         return db.select().from(dspCampaigns).where(eq(dspCampaigns.userId, ctx.user.id));
+      }),
+      create: protectedProcedure.input(z.object({
+        name: z.string().min(1).max(255),
+        dailyBudgetCents: z.number().min(0).optional(),
+        totalBudgetCents: z.number().min(0).optional(),
+        targetingGeo: z.record(z.string(), z.unknown()).optional(),
+        creativeType: z.string().max(50).optional(),
+        creativeUrl: z.string().url().max(500).optional(),
+      })).mutation(async ({ ctx, input }) => {
+        const access = checkTierAccess(ctx.user.subscriptionPlan ?? undefined, "programmatic_ads");
+        if (!access.allowed) throw new TRPCError({ code: "FORBIDDEN", message: "Programmatic Ads is available on Starter and above.", cause: access });
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database unavailable" });
+        const { dspAdWallets, dspCampaigns, tierLimitsConfig } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const tier = (ctx.user.subscriptionPlan || "free") as string;
+        const tierRows = await db.select({ dspMinAdSpendCents: tierLimitsConfig.dspMinAdSpendCents, dspMarkupRateBps: tierLimitsConfig.dspMarkupRateBps }).from(tierLimitsConfig).where(eq(tierLimitsConfig.tier, tier)).limit(1);
+        const minSpendCents = tierRows[0]?.dspMinAdSpendCents ?? 10_000;
+        const markupBps = tierRows[0]?.dspMarkupRateBps ?? 3500;
+        const budgetCents = (input.totalBudgetCents ?? 0) || (input.dailyBudgetCents ?? 0) * 30;
+        if (budgetCents < minSpendCents) throw new TRPCError({ code: "BAD_REQUEST", message: `Minimum campaign spend for your plan is $${(minSpendCents / 100).toFixed(0)}.` });
+        const [wallet] = await db.select().from(dspAdWallets).where(eq(dspAdWallets.userId, ctx.user.id)).limit(1);
+        const balance = wallet?.balanceCents ?? 0;
+        if (balance < (input.dailyBudgetCents ?? 0) && balance < (input.totalBudgetCents ?? 0)) throw new TRPCError({ code: "BAD_REQUEST", message: "Insufficient ad wallet balance. Fund your wallet first." });
+        const insertResult = await db.insert(dspCampaigns).values({
+          userId: ctx.user.id,
+          name: input.name,
+          status: "draft",
+          dailyBudgetCents: input.dailyBudgetCents ?? null,
+          totalBudgetCents: input.totalBudgetCents ?? null,
+          markupRateBps: markupBps,
+          targetingGeo: input.targetingGeo ?? null,
+          creativeType: input.creativeType ?? null,
+          creativeUrl: input.creativeUrl ?? null,
+        });
+        const id = Number((insertResult as unknown as { insertId?: number }[])?.[0]?.insertId ?? 0);
+        const { isEpomConfigured } = await import("./services/epom.service");
+        if (isEpomConfigured() && wallet?.epomAccountId) {
+          try {
+            const { createEpomCampaign, setEpomStatus } = await import("./services/epom.service");
+            const epomRes = await createEpomCampaign(wallet.epomAccountId, {
+              name: input.name,
+              daily_budget_cents: input.dailyBudgetCents ?? Math.floor((input.totalBudgetCents ?? 0) / 30),
+              total_budget_cents: input.totalBudgetCents ?? (input.dailyBudgetCents ?? 0) * 30,
+              creative_url: input.creativeUrl,
+              creative_type: input.creativeType ?? "display",
+            }) as { campaignId?: string; id?: string };
+            const epomId = epomRes?.campaignId ?? epomRes?.id;
+            if (epomId) {
+              await db.update(dspCampaigns).set({ epomCampaignId: epomId, status: "active" }).where(eq(dspCampaigns.id, id));
+              await setEpomStatus(wallet.epomAccountId, epomId, "active");
+            }
+          } catch (e) {
+            console.warn("[dsp.campaigns.create] Epom create failed:", e);
+          }
+        }
+        return { id, status: "draft" as const };
       }),
     }),
   }),

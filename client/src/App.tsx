@@ -1,8 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import ServerError from "@/pages/ServerError";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { GA4PageView } from "./components/GA4PageView";
+import { LimitExceededModal } from "./components/LimitExceededModal";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import DashboardLayout from "./components/DashboardLayout";
 import Landing from "./pages/Landing";
@@ -12,6 +15,7 @@ import ContentStudio from "./pages/ContentStudio";
 import Creatives from "./pages/Creatives";
 import VideoAds from "./pages/VideoAds";
 import Campaigns from "./pages/Campaigns";
+import CampaignWizard from "./pages/CampaignWizard";
 import AbTesting from "./pages/AbTesting";
 import Scheduler from "./pages/Scheduler";
 import Leads from "./pages/Leads";
@@ -74,6 +78,7 @@ import Help from "./pages/Help";
 import AboutUs from "./pages/AboutUs";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import RefundPolicy from "./pages/RefundPolicy";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 
@@ -88,6 +93,7 @@ function DashboardRouter() {
         <Route path="/creatives" component={Creatives} />
         <Route path="/video-ads" component={VideoAds} />
         <Route path="/campaigns" component={Campaigns} />
+        <Route path="/campaign-wizard" component={CampaignWizard} />
         <Route path="/programmatic-ads" component={ProgrammaticAds} />
         <Route path="/ab-testing" component={AbTesting} />
         <Route path="/scheduler" component={Scheduler} />
@@ -161,6 +167,7 @@ function Router() {
       <Route path="/creatives" component={DashboardRouter} />
       <Route path="/video-ads" component={DashboardRouter} />
       <Route path="/campaigns" component={DashboardRouter} />
+      <Route path="/campaign-wizard" component={DashboardRouter} />
       <Route path="/programmatic-ads" component={DashboardRouter} />
       <Route path="/ab-testing" component={DashboardRouter} />
       <Route path="/scheduler" component={DashboardRouter} />
@@ -218,12 +225,14 @@ function Router() {
       <Route path="/forms" component={DashboardRouter} />
       <Route path="/help" component={DashboardRouter} />
       <Route path="/404" component={NotFound} />
+      <Route path="/500" component={ServerError} />
       <Route path="/about" component={AboutUs} />
       <Route path="/report/:shareToken" component={ReportView} />
       <Route path="/form/:slug" component={FormView} />
       <Route path="/login" component={Login} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
+      <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/contact" component={Contact} />
       <Route path="/" component={Landing} />
       <Route component={NotFound} />
@@ -237,6 +246,8 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <GA4PageView />
+          <LimitExceededModal />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

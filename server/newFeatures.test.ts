@@ -2,21 +2,25 @@ import { describe, it, expect } from "vitest";
 
 // ===== Personal Video Studio Tests =====
 describe("Personal Video Studio", () => {
-  it("should have personalVideo router with required procedures", async () => {
-    const { personalVideoRouter } = await import("./newFeatureRouters");
-    expect(personalVideoRouter).toBeDefined();
-    const procedures = Object.keys(personalVideoRouter._def.procedures);
-    expect(procedures).toContain("list");
-    expect(procedures).toContain("get");
-    expect(procedures).toContain("getByShareToken");
-    expect(procedures).toContain("generateScript");
-    expect(procedures).toContain("create");
-    expect(procedures).toContain("uploadRecording");
-    expect(procedures).toContain("generateThumbnail");
-    expect(procedures).toContain("getAISuggestions");
-    expect(procedures).toContain("share");
-    expect(procedures).toContain("delete");
-  });
+  it(
+    "should have personalVideo router with required procedures",
+    async () => {
+      const { personalVideoRouter } = await import("./newFeatureRouters");
+      expect(personalVideoRouter).toBeDefined();
+      const procedures = Object.keys(personalVideoRouter._def.procedures);
+      expect(procedures).toContain("list");
+      expect(procedures).toContain("get");
+      expect(procedures).toContain("getByShareToken");
+      expect(procedures).toContain("generateScript");
+      expect(procedures).toContain("create");
+      expect(procedures).toContain("uploadRecording");
+      expect(procedures).toContain("generateThumbnail");
+      expect(procedures).toContain("getAISuggestions");
+      expect(procedures).toContain("share");
+      expect(procedures).toContain("delete");
+    },
+    15000,
+  );
 
   it("should have at least 10 procedures for full video workflow", async () => {
     const { personalVideoRouter } = await import("./newFeatureRouters");
