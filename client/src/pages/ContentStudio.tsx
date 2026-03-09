@@ -111,12 +111,24 @@ export default function ContentStudio() {
   const urlSearch = useSearch();
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
 
-  // Pre-select product when opened from Products page (e.g. /content?productId=5)
+  // Pre-select product and pre-fill context when opened from Products page (e.g. /content?productId=5)
   useEffect(() => {
     const params = new URLSearchParams(typeof urlSearch === "string" ? urlSearch : "");
     const id = params.get("productId");
-    if (id) setProductId(id);
-  }, [urlSearch]);
+    if (id) {
+      setProductId(id);
+      const product = products?.find((p: { id: number }) => p.id === Number(id)) as { name?: string; positioning?: string; targetAudience?: string[]; tone?: string; keywords?: string[] } | undefined;
+      if (product && (product.positioning || product.targetAudience?.length || product.tone || product.keywords?.length)) {
+        const parts: string[] = [];
+        if (product.name) parts.push(`Product: ${product.name}`);
+        if (product.positioning) parts.push(`Positioning: ${product.positioning}`);
+        if (product.targetAudience?.length) parts.push(`Target audience: ${product.targetAudience.join(", ")}`);
+        if (product.tone) parts.push(`Tone: ${product.tone}`);
+        if (product.keywords?.length) parts.push(`SEO keywords: ${product.keywords.slice(0, 10).join(", ")}`);
+        if (parts.length) setCustomPrompt((prev) => (prev ? prev : parts.join(". ")));
+      }
+    }
+  }, [urlSearch, products]);
 
   const filtered = useMemo(() => {
     if (!contents) return [];

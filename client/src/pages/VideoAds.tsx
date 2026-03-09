@@ -152,12 +152,22 @@ export default function VideoAds() {
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
   const actors = (actorsData?.actors?.length ? actorsData.actors : DEFAULT_ACTORS) as typeof DEFAULT_ACTORS;
 
-  // Pre-select product when opened from Products page (e.g. /video-ads?productId=5)
+  // Pre-select product and pre-fill context when opened from Products page (e.g. /video-ads?productId=5)
   useEffect(() => {
     const params = new URLSearchParams(typeof search === "string" ? search : "");
     const id = params.get("productId");
-    if (id) setProductId(id);
-  }, [search]);
+    if (id) {
+      setProductId(id);
+      const product = products?.find((p: { id: number }) => p.id === Number(id)) as { name?: string; positioning?: string; targetAudience?: string[] } | undefined;
+      if (product && (product.positioning || product.targetAudience?.length)) {
+        const parts: string[] = [];
+        if (product.name) parts.push(`Product: ${product.name}`);
+        if (product.positioning) parts.push(`Positioning: ${product.positioning}`);
+        if (product.targetAudience?.length) parts.push(`Target audience: ${product.targetAudience.join(", ")}`);
+        if (parts.length) setCustomPrompt((prev) => (prev ? prev : parts.join(". ")));
+      }
+    }
+  }, [search, products]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

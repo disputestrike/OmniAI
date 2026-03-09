@@ -179,6 +179,9 @@ export default function Products() {
                     <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setLocation(`/video-ads?productId=${product.id}`)}>
                       <Video className="h-3 w-3 mr-1" />Create video ad
                     </Button>
+                    <Button size="sm" variant="outline" className="rounded-lg" onClick={() => setLocation(`/creatives?productId=${product.id}`)}>
+                      <ImageIcon className="h-3 w-3 mr-1" />Create visuals & thumbnails
+                    </Button>
                     <Button size="sm" variant="outline" className="rounded-lg" disabled={generatePhotoMut.isPending}
                       onClick={() => generatePhotoMut.mutate({ productName: product.name, scenes: ["white background studio", "lifestyle setting"], count: 2 })}>
                       {generatePhotoMut.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <ImageIcon className="h-3 w-3 mr-1" />}

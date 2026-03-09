@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Image, Loader2, Sparkles, Trash2, Download, Camera, Palette, Megaphone, ShoppingBag, Send } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearch } from "wouter";
 import { toast } from "sonner";
 import { WhatsNextCard } from "@/components/WhatsNextCard";
 import { FreeTierWatermark } from "@/components/FreeTierWatermark";
@@ -100,7 +101,27 @@ export default function Creatives() {
   const [pushConnectionId, setPushConnectionId] = useState("");
   const [pushAdName, setPushAdName] = useState("");
 
+  const urlSearch = useSearch();
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
+
+  // Pre-select product and pre-fill when opened from Products page (e.g. /creatives?productId=5)
+  useEffect(() => {
+    const params = new URLSearchParams(typeof urlSearch === "string" ? urlSearch : "");
+    const id = params.get("productId");
+    if (!id || !products?.length) return;
+    setProductId(id);
+    const product = products.find((p: { id: number }) => p.id === Number(id)) as { name?: string; description?: string; positioning?: string; tone?: string } | undefined;
+    if (product) {
+      if (product.name) setAdProductName(product.name);
+      if (product.description || product.positioning) setAdProductDesc(product.description || product.positioning || "");
+      if (product.name) setShootProductName(product.name);
+      const parts: string[] = [];
+      if (product.name) parts.push(`Product: ${product.name}`);
+      if (product.positioning) parts.push(`Positioning: ${product.positioning}`);
+      if (product.tone) parts.push(`Tone: ${product.tone}`);
+      if (parts.length) setCustomPrompt(parts.join(". "));
+    }
+  }, [urlSearch, products]);
 
   return (
     <div className="space-y-6 max-w-6xl">
