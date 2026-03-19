@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useLocation, useRoute } from "wouter";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import {
@@ -87,6 +87,15 @@ export default function CampaignWorkspace() {
     onError: e => toast.error(e.message),
   });
   const strategyMut = trpc.campaign.generateStrategy.useMutation({ onError: e => toast.error(e.message) });
+
+  // Auto-generate strategy when workspace first loads
+  const strategyTriggered = useRef(false);
+  useEffect(() => {
+    if (ws && !strategyTriggered.current && !strategyMut.isPending && !strategyMut.data) {
+      strategyTriggered.current = true;
+      strategyMut.mutate({ campaignId });
+    }
+  }, [ws]);
 
   if (!campaignId) { navigate("/campaigns"); return null; }
 
@@ -243,13 +252,17 @@ export default function CampaignWorkspace() {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-violet-400 transition-all"
                 style={{ background: "rgba(124,58,237,0.1)", border: "1px solid rgba(124,58,237,0.2)" }}>
                 {strategyMut.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
-                {strategyMut.isPending ? "Generating..." : "Generate strategy"}
+                {strategyMut.isPending ? "Generating..." : "Regenerate"}
               </button>
             </div>
             {strategyMut.data?.strategy ? (
               <div className="prose-dark text-sm"><Streamdown content={strategyMut.data.strategy} /></div>
+            ) : strategyMut.isPending ? (
+              <div className="flex items-center gap-2 text-sm text-zinc-500">
+                <Loader2 className="h-4 w-4 animate-spin text-violet-400" /> Generating your campaign strategy...
+              </div>
             ) : (
-              <p className="text-sm text-zinc-600">Click "Generate strategy" to get an AI-powered campaign plan tailored to your objective, platforms, and budget.</p>
+              <p className="text-sm text-zinc-600">Click "Regenerate" to refresh your campaign strategy.</p>
             )}
           </div>
 

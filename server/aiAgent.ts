@@ -740,6 +740,11 @@ export async function runAgentLoop(
     ? AGENT_SYSTEM_PROMPT + "\n\nIMPORTANT: The user has provided enough context. Call your tools NOW. Do not ask any questions."
     : AGENT_SYSTEM_PROMPT;
 
+  // Track campaignId across tool calls — inject it into every asset tool
+  // even if Claude forgets to pass it
+  let activeCampaignId: number | undefined;
+  const ASSET_TOOLS = new Set(["generateEmailSequence","generateSocialPosts","generateLandingPage","generateVideoScript","generateAdCreative"]);
+
   for (let iter = 0; iter < MAX_AGENT_ITERATIONS; iter++) {
     const { content: text, tool_calls } = await chatWithTools(systemPrompt, anthropicMessages, ANTHROPIC_AGENT_TOOLS);
 
@@ -753,7 +758,16 @@ export async function runAgentLoop(
 
       const toolResultBlocks: Array<Record<string, unknown>> = [];
       for (const tc of tool_calls) {
-        const result = await executeTool(userId, tc.name, tc.input as Record<string, unknown>);
+        // Force-inject campaignId into every asset tool call
+        const args = tc.input as Record<string, unknown>;
+        if (ASSET_TOOLS.has(tc.name) && activeCampaignId && !args.campaignId) {
+          args.campaignId = activeCampaignId;
+        }
+        const result = await executeTool(userId, tc.name, args);
+        // Capture campaignId as soon as createCampaign succeeds
+        if (result.kind === "createCampaign" && result.campaignId) {
+          activeCampaignId = result.campaignId;
+        }
         toolResults.push(result);
         toolResultBlocks.push({ type: "tool_result", tool_use_id: tc.id, content: JSON.stringify(result) });
       }

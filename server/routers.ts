@@ -1040,8 +1040,6 @@ Provide: recommended content types per platform, posting schedule, audience targ
       const campaign = await db.getCampaignById(campaignId);
       if (!campaign || campaign.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
 
-      // Each fetch is individually guarded — a missing column on an existing table
-      // returns [] instead of crashing the whole workspace
       const safe = async <T>(fn: () => Promise<T[]>): Promise<T[]> => {
         try { return await fn(); } catch { return []; }
       };
@@ -1068,7 +1066,60 @@ Provide: recommended content types per platform, posting schedule, audience targ
         safe(() => db.getCampaignAssetsByCampaignId(campaignId)),
       ]);
 
-      // Aggregate analytics
+      // Backfill fallback: if assets were created before campaignId column existed
+      // (NULL campaignId), show the user's most recent assets created within
+      // 5 minutes of this campaign as a best-effort association
+      const totalAssets = contents.length + creatives.length + videoAds.length +
+        emailSequences.length + landingPages.length;
+
+      let fallbackContents = contents;
+      let fallbackVideoAds = videoAds;
+      let fallbackEmailSeqs = emailSequences;
+      let fallbackPages = landingPages;
+
+      if (totalAssets === 0) {
+        const campaignCreatedAt = new Date(campaign.createdAt).getTime();
+        const windowMs = 10 * 60 * 1000; // 10 minute window
+
+        const [allContents, allVideos, allEmails, allPages] = await Promise.all([
+          safe(() => db.getContentsByUser(ctx.user.id)),
+          safe(() => db.getVideoAdsByUser(ctx.user.id)),
+          safe(() => db.getEmailCampaignsByUser(ctx.user.id)),
+          safe(() => db.getLandingPagesByUser(ctx.user.id)),
+        ]);
+
+        const inWindow = (item: { createdAt: Date | string }) => {
+          const t = new Date(item.createdAt).getTime();
+          return Math.abs(t - campaignCreatedAt) < windowMs;
+        };
+
+        fallbackContents = allContents.filter(inWindow).slice(0, 20) as typeof contents;
+        fallbackVideoAds = allVideos.filter(inWindow).slice(0, 10) as typeof videoAds;
+        fallbackEmailSeqs = allEmails.filter(inWindow).slice(0, 5) as typeof emailSequences;
+        fallbackPages = allPages.filter(inWindow).slice(0, 3) as typeof landingPages;
+
+        // Backfill campaignId on these orphaned assets so they're linked going forward
+        const updatePromises: Promise<unknown>[] = [];
+        for (const c of fallbackContents) {
+          if (!(c as any).campaignId) updatePromises.push(safe(() => db.updateContent((c as any).id, { campaignId } as any).then(() => [])));
+        }
+        for (const v of fallbackVideoAds) {
+          if (!(v as any).campaignId) updatePromises.push(safe(() => db.updateVideoAd((v as any).id, { campaignId } as any).then(() => [])));
+        }
+        for (const e of fallbackEmailSeqs) {
+          if (!(e as any).campaignId) updatePromises.push(safe(() => db.updateEmailCampaign((e as any).id, { campaignId } as any).then(() => [])));
+        }
+        for (const p of fallbackPages) {
+          if (!(p as any).campaignId) updatePromises.push(safe(() => db.updateLandingPage((p as any).id, { campaignId } as any).then(() => [])));
+        }
+        await Promise.allSettled(updatePromises);
+      }
+
+      const finalContents = fallbackContents;
+      const finalVideoAds = fallbackVideoAds;
+      const finalEmailSeqs = fallbackEmailSeqs;
+      const finalPages = fallbackPages;
+
       const totalImpressions = analytics.reduce((s, e) => s + Number(e.impressions || 0), 0);
       const totalClicks      = analytics.reduce((s, e) => s + Number(e.clicks || 0), 0);
       const totalConversions = analytics.reduce((s, e) => s + Number(e.conversions || 0), 0);
@@ -1076,22 +1127,22 @@ Provide: recommended content types per platform, posting schedule, audience targ
 
       return {
         campaign,
-        contents,
+        contents: finalContents,
         creatives,
-        videoAds,
-        emailSequences,
-        landingPages,
+        videoAds: finalVideoAds,
+        emailSequences: finalEmailSeqs,
+        landingPages: finalPages,
         scheduledPosts,
         leads,
         assets,
         analytics: { totalImpressions, totalClicks, totalConversions, totalRevenue, events: analytics },
         summary: {
-          contentCount:  contents.length,
+          contentCount:  finalContents.length,
           creativeCount: creatives.length,
-          videoCount:    videoAds.length,
-          emailCount:    emailSequences.length,
+          videoCount:    finalVideoAds.length,
+          emailCount:    finalEmailSeqs.length,
           leadCount:     leads.length,
-          pageCount:     landingPages.length,
+          pageCount:     finalPages.length,
           postCount:     scheduledPosts.length,
         },
       };
