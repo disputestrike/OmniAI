@@ -1,81 +1,47 @@
-/**
- * Item 3 — Persistent trial countdown banner. Shows when user has active trial.
- * Dismissible (session only); "Manage billing" opens Stripe portal.
- */
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { X, CreditCard } from "lucide-react";
 
-const BANNER_DISMISS_KEY = "otobi-trial-banner-dismissed";
+const KEY = "omni-trial-dismissed";
 
 export function TrialCountdownBanner() {
-  const { data: subStatus } = trpc.subscription.status.useQuery();
+  const { data: sub } = trpc.subscription.status.useQuery();
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    try {
-      setDismissed(sessionStorage.getItem(BANNER_DISMISS_KEY) === "1");
-    } catch {
-      setDismissed(false);
-    }
+    try { setDismissed(sessionStorage.getItem(KEY) === "1"); } catch { setDismissed(false); }
   }, []);
 
-  const trialEndsAt = subStatus?.trialEndsAt ? new Date(subStatus.trialEndsAt) : null;
+  const trialEndsAt = sub?.trialEndsAt ? new Date(sub.trialEndsAt) : null;
   const hasActiveTrial = trialEndsAt && trialEndsAt > new Date();
-  const show = hasActiveTrial && !dismissed;
+  if (!hasActiveTrial || dismissed) return null;
 
-  const handleDismiss = () => {
-    try {
-      sessionStorage.setItem(BANNER_DISMISS_KEY, "1");
-      setDismissed(true);
-    } catch {
-      setDismissed(true);
-    }
-  };
+  const daysLeft = Math.ceil((trialEndsAt!.getTime() - Date.now()) / 86400000);
+  const dateStr = trialEndsAt!.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-  const handleManageBilling = async () => {
-    if (!subStatus?.stripeCustomerId) return;
+  const handleBilling = async () => {
+    if (!sub?.stripeCustomerId) return;
     try {
-      const res = await fetch("/api/stripe/create-portal", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: subStatus.stripeCustomerId }),
-      });
+      const res = await fetch("/api/stripe/create-portal", { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId: sub.stripeCustomerId }) });
       const data = await res.json();
-      if (data.url) window.open(data.url, "_blank");
-    } catch {
-      window.location.href = "/pricing";
-    }
+      if (data.url) window.open(data.url, "_blank"); else window.location.href = "/pricing";
+    } catch { window.location.href = "/pricing"; }
   };
 
-  if (!show) return null;
-
-  const daysLeft = Math.ceil((trialEndsAt!.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
-  const amount = "$49";
-  const dateStr = trialEndsAt!.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const dismiss = () => { try { sessionStorage.setItem(KEY, "1"); } catch {} setDismissed(true); };
 
   return (
-    <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-100 text-sm flex items-center justify-center gap-4 py-2 px-4 flex-wrap min-h-[44px]">
-      <span className="text-center">
-        Your free trial ends on {dateStr} — your card will be charged {amount} on {dateStr}. Cancel anytime before then. ({daysLeft} day{daysLeft !== 1 ? "s" : ""} left)
+    <div className="flex items-center justify-center gap-4 flex-wrap py-2 px-4 text-xs font-medium"
+      style={{ background: "rgba(245,158,11,0.08)", borderBottom: "1px solid rgba(245,158,11,0.2)", color: "#fbbf24" }}>
+      <span>
+        Free trial ends {dateStr} — {daysLeft} day{daysLeft !== 1 ? "s" : ""} left. No charge if you cancel before then.
       </span>
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleManageBilling}
-          className="inline-flex items-center gap-1 font-medium text-amber-800 dark:text-amber-200 hover:underline min-h-[44px] px-3"
-        >
-          <CreditCard className="h-4 w-4" />
-          Manage billing
+        <button onClick={handleBilling} className="flex items-center gap-1 hover:text-white transition-colors">
+          <CreditCard className="h-3.5 w-3.5" /> Manage billing
         </button>
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="p-1 rounded hover:bg-amber-200/50 dark:hover:bg-amber-800/50 min-h-[44px] min-w-[44px] flex items-center justify-center"
-          aria-label="Dismiss"
-        >
-          <X className="h-4 w-4" />
+        <button onClick={dismiss} className="hover:text-white transition-colors p-1 rounded">
+          <X className="h-3.5 w-3.5" />
         </button>
       </div>
     </div>
