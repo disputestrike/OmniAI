@@ -167,6 +167,7 @@ function Router() {
       <Route path="/creatives" component={DashboardRouter} />
       <Route path="/video-ads" component={DashboardRouter} />
       <Route path="/campaigns" component={DashboardRouter} />
+      <Route path="/campaigns/:id" component={DashboardRouter} />
       <Route path="/campaign-wizard" component={DashboardRouter} />
       <Route path="/programmatic-ads" component={DashboardRouter} />
       <Route path="/ab-testing" component={DashboardRouter} />
