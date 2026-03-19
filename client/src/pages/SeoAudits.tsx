@@ -22,10 +22,10 @@ export default function SeoAudits() {
   const [industry, setIndustry] = useState("");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2"><Search className="h-6 w-6 text-primary" /> SEO Audits</h1>
-        <p className="text-muted-foreground">Audit websites, research keywords, and track rankings with AI-powered insights</p>
+        <p className="text-zinc-500">Audit websites, research keywords, and track rankings with AI-powered insights</p>
       </div>
 
       <Tabs defaultValue="audit" className="space-y-4">
@@ -49,21 +49,21 @@ export default function SeoAudits() {
           {runAudit.data && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+                <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
                   <p className="text-3xl font-bold text-primary">{runAudit.data.overallScore}</p>
-                  <p className="text-xs text-muted-foreground">Overall Score</p>
+                  <p className="text-xs text-zinc-500">Overall Score</p>
                 </CardContent></Card>
-                <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+                <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
                   <p className="text-3xl font-bold text-green-600">{runAudit.data.technicalScore}</p>
-                  <p className="text-xs text-muted-foreground">Technical</p>
+                  <p className="text-xs text-zinc-500">Technical</p>
                 </CardContent></Card>
-                <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+                <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
                   <p className="text-3xl font-bold text-blue-600">{runAudit.data.contentScore}</p>
-                  <p className="text-xs text-muted-foreground">Content</p>
+                  <p className="text-xs text-zinc-500">Content</p>
                 </CardContent></Card>
-                <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+                <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
                   <p className="text-3xl font-bold text-purple-600">{runAudit.data.authorityScore}</p>
-                  <p className="text-xs text-muted-foreground">Authority</p>
+                  <p className="text-xs text-zinc-500">Authority</p>
                 </CardContent></Card>
               </div>
 
@@ -73,13 +73,13 @@ export default function SeoAudits() {
                   <CardContent>
                     <div className="space-y-2">
                       {runAudit.data.issues.map((issue: any, i: number) => (
-                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-zinc-900/40">
                           <Badge className={issue.severity === "critical" ? "bg-red-100 text-red-800" : issue.severity === "warning" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"}>
                             {issue.severity}
                           </Badge>
                           <div>
                             <p className="font-medium text-sm">{issue.title}</p>
-                            <p className="text-xs text-muted-foreground">{issue.description}</p>
+                            <p className="text-xs text-zinc-500">{issue.description}</p>
                             {issue.fix && <p className="text-xs text-primary mt-1">Fix: {issue.fix}</p>}
                           </div>
                         </div>
@@ -95,7 +95,7 @@ export default function SeoAudits() {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {runAudit.data.keywords.map((kw: any, i: number) => (
-                        <Badge key={i} variant="outline" className="text-sm">{kw.keyword} <span className="ml-1 text-muted-foreground">vol: {kw.volume}</span></Badge>
+                        <Badge key={i} variant="outline" className="text-sm">{kw.keyword} <span className="ml-1 text-zinc-500">vol: {kw.volume}</span></Badge>
                       ))}
                     </div>
                   </CardContent>
@@ -141,7 +141,7 @@ export default function SeoAudits() {
                     </tr></thead>
                     <tbody>
                       {keywordResearch.data.keywords?.map((kw: any, i: number) => (
-                        <tr key={i} className="border-b hover:bg-muted/50">
+                        <tr key={i} className="border-b hover:bg-zinc-900/40">
                           <td className="p-2 font-medium">{kw.keyword}</td>
                           <td className="p-2">{kw.volume}</td>
                           <td className="p-2"><Badge className={kw.difficulty === "easy" ? "bg-green-100 text-green-800" : kw.difficulty === "medium" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800"}>{kw.difficulty}</Badge></td>
@@ -162,11 +162,11 @@ export default function SeoAudits() {
 
         <TabsContent value="history" className="space-y-4">
           {isLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
           ) : !audits?.length ? (
             <Card className="border-dashed"><CardContent className="py-12 text-center">
-              <Search className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground">No audits yet. Run your first SEO audit above.</p>
+              <Search className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+              <p className="text-zinc-500">No audits yet. Run your first SEO audit above.</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-3">
@@ -176,7 +176,7 @@ export default function SeoAudits() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="font-semibold">{audit.url}</h3>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-1 text-sm text-zinc-500">
                           <span>Score: <strong className="text-foreground">{audit.overallScore}/100</strong></span>
                           <span>{new Date(audit.createdAt).toLocaleDateString()}</span>
                         </div>

@@ -83,11 +83,11 @@ export default function Collaboration() {
   const teamMembers = teamQuery.data || [];
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Collaboration</h1>
-          <p className="text-muted-foreground text-sm mt-1">Work together with your team — messaging, task management, approvals, and notifications.</p>
+          <h1 className="page-title">Collaboration</h1>
+          <p className="page-subtitle">Work together with your team — messaging, task management, approvals, and notifications.</p>
         </div>
         <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
           <DialogTrigger asChild>
@@ -116,25 +116,25 @@ export default function Collaboration() {
       </div>
 
       {/* Team Members */}
-      <Card className="border-0 shadow-sm">
+      <Card className="glass rounded-2xl">
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <UsersRound className="h-5 w-5 text-violet-600" />
             <h3 className="font-semibold">Team Members ({teamMembers.length})</h3>
           </div>
           {teamMembers.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No team members yet. Invite your first team member to start collaborating.</p>
+            <p className="text-sm text-zinc-500">No team members yet. Invite your first team member to start collaborating.</p>
           ) : (
             <div className="space-y-2">
               {teamMembers.map((m: any) => (
-                <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                <div key={m.id} className="flex items-center justify-between p-3 rounded-lg bg-zinc-900/50">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                       {(m.user?.name || m.email || "?")[0].toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{m.user?.name || m.email}</p>
-                      <p className="text-xs text-muted-foreground">{m.email}</p>
+                      <p className="text-xs text-zinc-500">{m.email}</p>
                     </div>
                   </div>
                   <Badge variant="secondary" className="text-xs capitalize">{m.role}</Badge>
@@ -147,21 +147,21 @@ export default function Collaboration() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Team Chat */}
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <MessageSquare className="h-5 w-5 text-blue-600" />
               <h3 className="font-semibold">Team Chat</h3>
             </div>
-            <div className="h-64 overflow-y-auto space-y-2 mb-3 p-3 rounded-lg bg-muted/20">
+            <div className="h-64 overflow-y-auto space-y-2 mb-3 p-3 rounded-lg bg-zinc-900/20">
               {messages.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center mt-20">Start a conversation with your team</p>
+                <p className="text-sm text-zinc-500 text-center mt-20">Start a conversation with your team</p>
               ) : (
                 messages.map(msg => (
                   <div key={msg.id} className="p-2 rounded-lg bg-background shadow-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-primary">{msg.sender}</span>
-                      <span className="text-[10px] text-muted-foreground">{msg.time}</span>
+                      <span className="text-[10px] text-zinc-500">{msg.time}</span>
                     </div>
                     <p className="text-sm mt-0.5">{msg.text}</p>
                   </div>
@@ -181,7 +181,7 @@ export default function Collaboration() {
         </Card>
 
         {/* Task Management */}
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -215,21 +215,21 @@ export default function Collaboration() {
             </div>
             <div className="h-64 overflow-y-auto space-y-2">
               {tasks.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center mt-20">No tasks yet. Create your first task.</p>
+                <p className="text-sm text-zinc-500 text-center mt-20">No tasks yet. Create your first task.</p>
               ) : (
                 tasks.map(task => (
-                  <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 cursor-pointer hover:bg-muted/40" onClick={() => toggleTaskStatus(task.id)}>
+                  <div key={task.id} className="flex items-start gap-3 p-3 rounded-lg bg-zinc-900/20 cursor-pointer hover:bg-zinc-800/40" onClick={() => toggleTaskStatus(task.id)}>
                     {task.status === "done" ? (
                       <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                     ) : (
                       <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${task.status === "done" ? "line-through text-muted-foreground" : ""}`}>{task.title}</p>
-                      {task.description && <p className="text-xs text-muted-foreground mt-0.5">{task.description}</p>}
+                      <p className={`text-sm font-medium ${task.status === "done" ? "line-through text-zinc-500" : ""}`}>{task.title}</p>
+                      {task.description && <p className="text-xs text-zinc-500 mt-0.5">{task.description}</p>}
                       <div className="flex gap-2 mt-1">
                         <Badge variant="outline" className="text-[10px]">{task.priority}</Badge>
-                        <span className="text-[10px] text-muted-foreground">{task.createdAt}</span>
+                        <span className="text-[10px] text-zinc-500">{task.createdAt}</span>
                       </div>
                     </div>
                   </div>
@@ -242,7 +242,7 @@ export default function Collaboration() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Notifications */}
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Bell className="h-5 w-5 text-rose-600" />
@@ -250,15 +250,15 @@ export default function Collaboration() {
             </div>
             <div className="space-y-2">
               {notifications.map(n => (
-                <div key={n.id} className={`flex items-start gap-3 p-3 rounded-lg ${n.read ? "bg-muted/20" : "bg-primary/5 border border-primary/10"}`}>
+                <div key={n.id} className={`flex items-start gap-3 p-3 rounded-lg ${n.read ? "bg-zinc-900/20" : "bg-primary/5 border border-primary/10"}`}>
                   {n.read ? (
-                    <CheckCircle2 className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-zinc-500 shrink-0 mt-0.5" />
                   ) : (
                     <AlertCircle className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   )}
                   <div>
                     <p className="text-sm">{n.text}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{n.time}</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">{n.time}</p>
                   </div>
                 </div>
               ))}
@@ -267,7 +267,7 @@ export default function Collaboration() {
         </Card>
 
         {/* Approval Shortcuts */}
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <div className="flex items-center gap-2 mb-4">
               <Share2 className="h-5 w-5 text-indigo-600" />

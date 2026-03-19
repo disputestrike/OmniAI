@@ -127,10 +127,10 @@ export default function VideoStudio() {
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold">Video Studio</h1>
-        <p className="text-muted-foreground">Record personal videos, use AI teleprompter, and share with shareable links</p>
+        <p className="text-zinc-500">Record personal videos, use AI teleprompter, and share with shareable links</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -214,11 +214,11 @@ export default function VideoStudio() {
                 <CardHeader className="pb-3"><CardTitle className="text-sm">Recording Settings</CardTitle></CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <label className="text-xs text-muted-foreground">Video Title</label>
+                    <label className="text-xs text-zinc-500">Video Title</label>
                     <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="My video title..." />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Aspect Ratio</label>
+                    <label className="text-xs text-zinc-500">Aspect Ratio</label>
                     <Select value={aspectRatio} onValueChange={setAspectRatio}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -230,7 +230,7 @@ export default function VideoStudio() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground">Platform</label>
+                    <label className="text-xs text-zinc-500">Platform</label>
                     <Select value={scriptPlatform} onValueChange={setScriptPlatform}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -259,7 +259,7 @@ export default function VideoStudio() {
                   <CardContent className="space-y-3">
                     <Textarea value={script} onChange={e => setScript(e.target.value)} placeholder="Paste or generate your script..." rows={6} className="text-sm" />
                     <div>
-                      <label className="text-xs text-muted-foreground">Scroll Speed: {teleprompterSpeed}</label>
+                      <label className="text-xs text-zinc-500">Scroll Speed: {teleprompterSpeed}</label>
                       <input type="range" min={1} max={5} value={teleprompterSpeed} onChange={e => setTeleprompterSpeed(Number(e.target.value))} className="w-full" />
                     </div>
                   </CardContent>
@@ -323,25 +323,25 @@ export default function VideoStudio() {
 
         <TabsContent value="library" className="space-y-4">
           {!videos?.length ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Video className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No videos yet. Record your first video in the Studio tab!</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Video className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No videos yet. Record your first video in the Studio tab!</p></CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {videos.map(v => (
                 <Card key={v.id} className="overflow-hidden">
-                  <div className="aspect-video bg-muted relative">
+                  <div className="aspect-video bg-zinc-800 relative">
                     {v.thumbnailUrl ? (
                       <img src={v.thumbnailUrl} alt={v.title} className="w-full h-full object-cover" />
                     ) : v.videoUrl ? (
                       <video src={v.videoUrl} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"><Video className="w-8 h-8 text-muted-foreground" /></div>
+                      <div className="w-full h-full flex items-center justify-center"><Video className="w-8 h-8 text-zinc-500" /></div>
                     )}
                     <Badge className="absolute top-2 right-2" variant={v.status === "shared" ? "default" : v.status === "ready" ? "secondary" : "outline"}>{v.status}</Badge>
                     {v.duration && <span className="absolute bottom-2 right-2 bg-black/70 text-white text-xs px-2 py-0.5 rounded">{formatTime(v.duration)}</span>}
                   </div>
                   <CardContent className="p-3 space-y-2">
                     <h3 className="font-medium truncate">{v.title}</h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 text-xs text-zinc-500">
                       <Eye className="w-3 h-3" /> {v.viewCount || 0} views
                       <Clock className="w-3 h-3 ml-2" /> {new Date(v.createdAt!).toLocaleDateString()}
                     </div>
@@ -358,7 +358,7 @@ export default function VideoStudio() {
                       <Button variant="ghost" size="sm" onClick={() => { if (confirm("Delete this video?")) deleteMut.mutate({ id: v.id }); }}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                     {selectedVideo === v.id && suggestionsMut.data && (
-                      <div className="mt-2 p-2 bg-muted rounded text-xs space-y-1">
+                      <div className="mt-2 p-2 bg-zinc-800 rounded text-xs space-y-1">
                         <p className="font-medium">AI Suggestions:</p>
                         {suggestionsMut.data.improvements?.map((imp: string, i: number) => <p key={i}>- {imp}</p>)}
                       </div>

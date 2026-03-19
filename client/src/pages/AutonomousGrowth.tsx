@@ -72,7 +72,7 @@ export default function AutonomousGrowth() {
             <Zap className="h-6 w-6 text-primary" />
             Growth & Learning Engine
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-zinc-500 mt-1">
             Data flywheel, self-learning campaigns, market narratives, influence graph, and referral.
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function AutonomousGrowth() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><RefreshCw className="h-5 w-5" /> Data Flywheel</CardTitle>
-            <p className="text-sm text-muted-foreground">Anonymized patterns from campaigns improve predictions for everyone.</p>
+            <p className="text-sm text-zinc-500">Anonymized patterns from campaigns improve predictions for everyone.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2 flex-wrap">
@@ -114,7 +114,7 @@ export default function AutonomousGrowth() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5" /> Self-Learning Campaign Engine</CardTitle>
-            <p className="text-sm text-muted-foreground">Extract winning patterns from a campaign to reuse in future content.</p>
+            <p className="text-sm text-zinc-500">Extract winning patterns from a campaign to reuse in future content.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2 flex-wrap">
@@ -135,7 +135,7 @@ export default function AutonomousGrowth() {
             {myPatterns && myPatterns.length > 0 && (
               <ul className="space-y-2 text-sm">
                 {myPatterns.slice(0, 8).map((p) => (
-                  <li key={p.id} className="p-2 rounded bg-muted/50">{p.summary || `${p.platform} – ${p.emotion}`}</li>
+                  <li key={p.id} className="p-2 rounded bg-zinc-900/40">{p.summary || `${p.platform} – ${p.emotion}`}</li>
                 ))}
               </ul>
             )}
@@ -146,7 +146,7 @@ export default function AutonomousGrowth() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" /> Market Narrative Engine</CardTitle>
-            <p className="text-sm text-muted-foreground">Detect emerging narratives from content to align campaigns.</p>
+            <p className="text-sm text-zinc-500">Detect emerging narratives from content to align campaigns.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
@@ -169,9 +169,9 @@ export default function AutonomousGrowth() {
             {narratives && narratives.length > 0 && (
               <ul className="space-y-2 text-sm">
                 {narratives.slice(0, 5).map((n) => (
-                  <li key={n.id} className="p-2 rounded bg-muted/50">
+                  <li key={n.id} className="p-2 rounded bg-zinc-900/40">
                     <p className="font-medium">{n.summary.slice(0, 120)}…</p>
-                    {n.suggestedAngles?.length ? <p className="text-muted-foreground mt-1">Angles: {n.suggestedAngles.join(", ")}</p> : null}
+                    {n.suggestedAngles?.length ? <p className="text-zinc-500 mt-1">Angles: {n.suggestedAngles.join(", ")}</p> : null}
                   </li>
                 ))}
               </ul>
@@ -183,7 +183,7 @@ export default function AutonomousGrowth() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5" /> Audience Influence Graph</CardTitle>
-            <p className="text-sm text-muted-foreground">Define who influences your audience (personas, channels) for targeting.</p>
+            <p className="text-sm text-zinc-500">Define who influences your audience (personas, channels) for targeting.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2 flex-wrap items-end">
@@ -209,7 +209,7 @@ export default function AutonomousGrowth() {
             {influenceNodes && influenceNodes.length > 0 && (
               <ul className="space-y-2">
                 {influenceNodes.map((n) => (
-                  <li key={n.id} className="flex items-center justify-between p-2 rounded bg-muted/50">
+                  <li key={n.id} className="flex items-center justify-between p-2 rounded bg-zinc-900/40">
                     <span><Badge variant="outline" className="mr-2">{n.type}</Badge>{n.name}</span>
                     <Button variant="ghost" size="sm" onClick={() => deleteInfMut.mutate({ id: n.id })}><Trash2 className="h-4 w-4" /></Button>
                   </li>
@@ -223,7 +223,7 @@ export default function AutonomousGrowth() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Gift className="h-5 w-5" /> Referral</CardTitle>
-            <p className="text-sm text-muted-foreground">Share your link; when someone signs up, you get credit.</p>
+            <p className="text-sm text-zinc-500">Share your link; when someone signs up, you get credit.</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {refCode?.code && (
@@ -233,7 +233,7 @@ export default function AutonomousGrowth() {
               </div>
             )}
             {myReferrals && myReferrals.length > 0 && (
-              <p className="text-sm text-muted-foreground">Referrals: {myReferrals.length}</p>
+              <p className="text-sm text-zinc-500">Referrals: {myReferrals.length}</p>
             )}
           </CardContent>
         </Card>

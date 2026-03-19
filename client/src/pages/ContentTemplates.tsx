@@ -58,11 +58,11 @@ export default function ContentTemplates() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Content Templates</h1>
-          <p className="text-muted-foreground mt-1">Save your best content as reusable templates for quick generation</p>
+          <p className="text-zinc-500 mt-1">Save your best content as reusable templates for quick generation</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
@@ -88,7 +88,7 @@ export default function ContentTemplates() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Template body — use {"{{variable}}"} for dynamic parts</label>
+                <label className="text-xs text-zinc-500 mb-1 block">Template body — use {"{{variable}}"} for dynamic parts</label>
                 <Textarea
                   placeholder={"Introducing {{product_name}} — the ultimate solution for {{target_audience}}. Get yours today at {{price}}!"}
                   value={newTemplate.body}
@@ -97,7 +97,7 @@ export default function ContentTemplates() {
                 />
                 {newTemplate.body && extractVars(newTemplate.body).length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
-                    <span className="text-xs text-muted-foreground">Variables:</span>
+                    <span className="text-xs text-zinc-500">Variables:</span>
                     {extractVars(newTemplate.body).map(v => (
                       <Badge key={v} variant="secondary" className="text-xs">{`{{${v}}}`}</Badge>
                     ))}
@@ -121,17 +121,17 @@ export default function ContentTemplates() {
             {CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">{templatesQ.data?.length || 0} templates</span>
+        <span className="text-sm text-zinc-500">{templatesQ.data?.length || 0} templates</span>
       </div>
 
       {/* Templates Grid */}
       {templatesQ.isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />)}
+          {[1,2,3].map(i => <div key={i} className="h-48 bg-zinc-800 animate-pulse rounded-lg" />)}
         </div>
       ) : !templatesQ.data?.length ? (
         <Card className="border-dashed">
-          <CardContent className="py-12 text-center text-muted-foreground">
+          <CardContent className="py-12 text-center text-zinc-500">
             <FileText className="w-12 h-12 mx-auto mb-4 opacity-30" />
             <h3 className="text-lg font-medium">No templates yet</h3>
             <p className="text-sm mt-1 max-w-md mx-auto">Create templates from scratch or save your best-performing content as reusable templates. Use {"{{variables}}"} for dynamic parts that change each time.</p>
@@ -150,7 +150,7 @@ export default function ContentTemplates() {
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-base">{t.name}</CardTitle>
-                      {t.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{t.description}</p>}
+                      {t.description && <p className="text-xs text-zinc-500 mt-1 line-clamp-2">{t.description}</p>}
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -176,7 +176,7 @@ export default function ContentTemplates() {
                     {t.usageCount > 0 && <Badge variant="secondary" className="text-xs"><Star className="w-3 h-3 mr-1" />{t.usageCount} uses</Badge>}
                   </div>
                   {t.body && (
-                    <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 mb-3 line-clamp-3 font-mono">{t.body}</div>
+                    <div className="text-xs text-zinc-500 bg-zinc-900/40 rounded p-2 mb-3 line-clamp-3 font-mono">{t.body}</div>
                   )}
                   {vars.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
@@ -203,7 +203,7 @@ export default function ContentTemplates() {
             const vars = extractVars(template.body || "");
             return (
               <div className="space-y-3 pt-2">
-                <div className="text-sm text-muted-foreground bg-muted/50 rounded p-3 font-mono">{template.body}</div>
+                <div className="text-sm text-zinc-500 bg-zinc-900/40 rounded p-3 font-mono">{template.body}</div>
                 {vars.length > 0 && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Fill in variables:</label>

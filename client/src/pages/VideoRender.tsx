@@ -37,11 +37,11 @@ export default function VideoRender() {
   // No delete procedure available - videos are permanent
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">AI Video Studio</h1>
-          <p className="text-muted-foreground">Generate professional marketing videos with AI actors and scenes</p>
+          <p className="text-zinc-500">Generate professional marketing videos with AI actors and scenes</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" /> Create Video</Button></DialogTrigger>
@@ -51,7 +51,7 @@ export default function VideoRender() {
               <div>
                 <label className="text-sm font-medium">Script / Description *</label>
                 <Textarea value={script} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setScript(e.target.value)} placeholder="Describe your video or write a script. AI will generate scenes from this..." rows={6} />
-                <p className="text-xs text-muted-foreground mt-1">Tip: Write scene-by-scene for best results. E.g., "Scene 1: A professional woman presenting a product..."</p>
+                <p className="text-xs text-zinc-500 mt-1">Tip: Write scene-by-scene for best results. E.g., "Scene 1: A professional woman presenting a product..."</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -101,11 +101,11 @@ export default function VideoRender() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Video List */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your Videos</h3>
+          <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Your Videos</h3>
           {!videos?.length ? (
             <Card className="border-dashed"><CardContent className="py-8 text-center">
-              <Film className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No videos yet</p>
+              <Film className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500">No videos yet</p>
             </CardContent></Card>
           ) : videos.map((v: any) => (
             <Card key={v.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedVideo === v.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedVideo(v.id)}>
@@ -114,13 +114,13 @@ export default function VideoRender() {
                   {v.thumbnailUrl ? (
                     <img src={v.thumbnailUrl} alt="" className="w-16 h-10 rounded object-cover" />
                   ) : (
-                    <div className="w-16 h-10 rounded bg-muted flex items-center justify-center"><Film className="w-4 h-4 text-muted-foreground" /></div>
+                    <div className="w-16 h-10 rounded bg-zinc-800 flex items-center justify-center"><Film className="w-4 h-4 text-zinc-500" /></div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{v.script?.substring(0, 40)}...</p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge variant={v.status === "completed" ? "default" : v.status === "rendering" ? "secondary" : "destructive"} className="text-xs">{v.status}</Badge>
-                      <span className="text-xs text-muted-foreground">{v.aspectRatio}</span>
+                      <span className="text-xs text-zinc-500">{v.aspectRatio}</span>
                     </div>
                   </div>
                 </div>
@@ -133,8 +133,8 @@ export default function VideoRender() {
         <div className="lg:col-span-2">
           {!selectedVideo || !videoDetail ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-16">
-              <Film className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Select a video to preview</p>
+              <Film className="w-12 h-12 text-zinc-500 mb-4" />
+              <p className="text-zinc-500">Select a video to preview</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-4">
@@ -157,12 +157,12 @@ export default function VideoRender() {
                     <div className="flex flex-col items-center py-12">
                       <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
                       <p className="font-medium">Rendering your video...</p>
-                      <p className="text-sm text-muted-foreground mt-1">This typically takes 30-60 seconds</p>
+                      <p className="text-sm text-zinc-500 mt-1">This typically takes 30-60 seconds</p>
                     </div>
                   ) : videoDetail.status === "failed" ? (
                     <div className="flex flex-col items-center py-12">
                       <p className="text-destructive font-medium">Rendering failed</p>
-                      <p className="text-sm text-muted-foreground mt-1">{videoDetail.errorMessage || "Unknown error"}</p>
+                      <p className="text-sm text-zinc-500 mt-1">{videoDetail.errorMessage || "Unknown error"}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -181,16 +181,16 @@ export default function VideoRender() {
 
                       {/* Video metadata */}
                       <div className="grid grid-cols-3 gap-3">
-                        <div className="p-3 rounded-lg bg-muted/50">
-                          <p className="text-xs text-muted-foreground">Style</p>
+                        <div className="p-3 rounded-lg bg-zinc-900/40">
+                          <p className="text-xs text-zinc-500">Style</p>
                           <p className="font-medium text-sm capitalize">{(videoDetail.metadata as any)?.avatarStyle || 'photorealistic'}</p>
                         </div>
-                        <div className="p-3 rounded-lg bg-muted/50">
-                          <p className="text-xs text-muted-foreground">Aspect Ratio</p>
+                        <div className="p-3 rounded-lg bg-zinc-900/40">
+                          <p className="text-xs text-zinc-500">Aspect Ratio</p>
                           <p className="font-medium text-sm">{(videoDetail.metadata as any)?.aspectRatio || '16:9'}</p>
                         </div>
-                        <div className="p-3 rounded-lg bg-muted/50">
-                          <p className="text-xs text-muted-foreground">Duration</p>
+                        <div className="p-3 rounded-lg bg-zinc-900/40">
+                          <p className="text-xs text-zinc-500">Duration</p>
                           <p className="font-medium text-sm">{videoDetail.duration || "—"}s</p>
                         </div>
                       </div>
@@ -198,7 +198,7 @@ export default function VideoRender() {
                       {/* Script */}
                       <div>
                         <p className="text-sm font-medium mb-2">Script</p>
-                        <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">{(videoDetail.metadata as any)?.script || ''}</p>
+                        <p className="text-sm text-zinc-500 bg-zinc-900/50 p-3 rounded-lg">{(videoDetail.metadata as any)?.script || ''}</p>
                       </div>
                     </div>
                   )}

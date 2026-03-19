@@ -151,13 +151,13 @@ export default function CreatorProfile() {
   if (profileLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -165,7 +165,7 @@ export default function CreatorProfile() {
             <User className="w-6 h-6 text-indigo-600" />
             Creator Profile
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="page-subtitle">
             Build your public portfolio and showcase your best work to clients and collaborators.
           </p>
         </div>
@@ -194,7 +194,7 @@ export default function CreatorProfile() {
                   <div className="space-y-1.5">
                     <Label>Profile URL Slug</Label>
                     <div className="flex items-center gap-1">
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">/creator/</span>
+                      <span className="text-xs text-zinc-500 whitespace-nowrap">/creator/</span>
                       <Input value={profileSlug} onChange={e => setProfileSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))} placeholder="your-name" />
                     </div>
                   </div>
@@ -243,7 +243,7 @@ export default function CreatorProfile() {
                   <Switch checked={isPublic} onCheckedChange={setIsPublic} />
                   <div>
                     <p className="text-sm font-medium">{isPublic ? "Public Profile" : "Private Profile"}</p>
-                    <p className="text-xs text-muted-foreground">{isPublic ? "Anyone with the link can view your profile" : "Only you can see your profile"}</p>
+                    <p className="text-xs text-zinc-500">{isPublic ? "Anyone with the link can view your profile" : "Only you can see your profile"}</p>
                   </div>
                 </div>
                 <div className="flex gap-2 pt-2">
@@ -271,7 +271,7 @@ export default function CreatorProfile() {
             </Avatar>
             <div className="pb-1">
               <h2 className="text-xl font-bold">{profile?.displayName || user?.name || "Your Name"}</h2>
-              {profile?.tagline && <p className="text-sm text-muted-foreground">{profile.tagline}</p>}
+              {profile?.tagline && <p className="text-sm text-zinc-500">{profile.tagline}</p>}
             </div>
             <div className="ml-auto flex items-center gap-2 pb-1">
               {profile?.isPublic ? (
@@ -282,7 +282,7 @@ export default function CreatorProfile() {
             </div>
           </div>
 
-          {profile?.bio && <p className="text-sm text-muted-foreground mb-3">{profile.bio}</p>}
+          {profile?.bio && <p className="text-sm text-zinc-500 mb-3">{profile.bio}</p>}
 
           {/* Specialties */}
           {(() => { const specs = Array.isArray(profile?.specialties) ? (profile.specialties as unknown as string[]) : []; return specs.length > 0 ? (
@@ -294,7 +294,7 @@ export default function CreatorProfile() {
           ) : null; })()}
 
           {/* Social Links */}
-          <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="flex items-center gap-3 text-zinc-500">
             {profile?.website && <a href={profile.website} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors"><Globe className="w-4 h-4" /></a>}
             {profile?.instagram && <a href={`https://instagram.com/${profile.instagram.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="hover:text-pink-600 transition-colors"><Instagram className="w-4 h-4" /></a>}
             {profile?.twitter && <a href={`https://twitter.com/${profile.twitter.replace("@", "")}`} target="_blank" rel="noopener noreferrer" className="hover:text-sky-500 transition-colors"><Twitter className="w-4 h-4" /></a>}
@@ -310,15 +310,15 @@ export default function CreatorProfile() {
           <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t">
             <div className="text-center">
               <p className="text-xl font-bold text-indigo-600">{allItems.length}</p>
-              <p className="text-xs text-muted-foreground">Portfolio Items</p>
+              <p className="text-xs text-zinc-500">Portfolio Items</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-purple-600">{featuredItems.length}</p>
-              <p className="text-xs text-muted-foreground">Featured Works</p>
+              <p className="text-xs text-zinc-500">Featured Works</p>
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-pink-600">{profile?.totalViews || 0}</p>
-              <p className="text-xs text-muted-foreground">Profile Views</p>
+              <p className="text-xs text-zinc-500">Profile Views</p>
             </div>
           </div>
         </CardContent>
@@ -393,14 +393,14 @@ export default function CreatorProfile() {
 
       {portfolioLoading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
         </div>
       ) : allItems.length === 0 ? (
         <Card>
           <CardContent className="py-14 text-center">
-            <Sparkles className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <Sparkles className="w-10 h-10 text-zinc-500 mx-auto mb-3" />
             <h3 className="font-semibold text-lg mb-1">No portfolio items yet</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            <p className="text-sm text-zinc-500 max-w-sm mx-auto">
               Add your best work — ad copy, creatives, campaigns, or social posts — to showcase your skills.
             </p>
             <Button className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white" onClick={() => setAddItemOpen(true)}>
@@ -428,7 +428,7 @@ export default function CreatorProfile() {
           </TabsContent>
           <TabsContent value="featured" className="mt-4">
             {featuredItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No featured items. Star an item to feature it.</p>
+              <p className="text-sm text-zinc-500 text-center py-6">No featured items. Star an item to feature it.</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {featuredItems.map((item: any) => (
@@ -469,14 +469,14 @@ function PortfolioCard({ item, onDelete, onToggleFeatured }: { item: any; onDele
           {!item.isPublic && <Badge variant="secondary" className="text-xs"><EyeOff className="w-3 h-3 mr-1" />Private</Badge>}
         </div>
         <p className="font-semibold text-sm mb-1">{item.title}</p>
-        {item.description && <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{item.description}</p>}
+        {item.description && <p className="text-xs text-zinc-500 mb-2 line-clamp-2">{item.description}</p>}
         {item.contentText && (
           <div className="bg-gray-50 rounded p-2 mb-2">
             <p className="text-xs text-gray-700 line-clamp-3">{item.contentText}</p>
           </div>
         )}
         <div className="flex items-center gap-1 mt-2">
-          <Button variant="ghost" size="sm" onClick={onToggleFeatured} className={`text-xs h-7 ${item.isFeatured ? "text-amber-600" : "text-muted-foreground"}`}>
+          <Button variant="ghost" size="sm" onClick={onToggleFeatured} className={`text-xs h-7 ${item.isFeatured ? "text-amber-600" : "text-zinc-500"}`}>
             <Star className="w-3 h-3 mr-1" />{item.isFeatured ? "Unfeature" : "Feature"}
           </Button>
           <Button variant="ghost" size="sm" onClick={onDelete} className="text-xs h-7 text-red-500 hover:text-red-700 hover:bg-red-50 ml-auto">

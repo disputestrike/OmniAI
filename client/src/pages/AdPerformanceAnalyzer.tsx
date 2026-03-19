@@ -78,7 +78,7 @@ export default function AdPerformanceAnalyzer() {
   const latestReport = reports?.[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -86,7 +86,7 @@ export default function AdPerformanceAnalyzer() {
             <BarChart3 className="w-6 h-6 text-violet-600" />
             Ad Performance Analyzer
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="page-subtitle">
             AI-powered analysis of your ad campaigns — identify winners, fix underperformers, and maximize ROAS.
           </p>
         </div>
@@ -125,9 +125,9 @@ export default function AdPerformanceAnalyzer() {
         <CardContent>
           {connectedPlatforms.length === 0 ? (
             <div className="text-center py-6">
-              <BarChart3 className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No connected ad accounts found.</p>
-              <p className="text-xs text-muted-foreground mt-1">Go to <strong>Ad Platforms</strong> to connect Meta Ads, Google Ads, or TikTok Ads.</p>
+              <BarChart3 className="w-10 h-10 text-zinc-500 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500">No connected ad accounts found.</p>
+              <p className="text-xs text-zinc-500 mt-1">Go to <strong>Ad Platforms</strong> to connect Meta Ads, Google Ads, or TikTok Ads.</p>
             </div>
           ) : (
             <div className="flex flex-col sm:flex-row gap-3">
@@ -175,7 +175,7 @@ export default function AdPerformanceAnalyzer() {
               <Brain className="w-8 h-8 text-violet-600 absolute inset-0 m-auto animate-bounce" />
             </div>
             <p className="font-semibold text-violet-700">AI is analyzing your campaigns...</p>
-            <p className="text-sm text-muted-foreground mt-1">Identifying patterns, winners, and optimization opportunities</p>
+            <p className="text-sm text-zinc-500 mt-1">Identifying patterns, winners, and optimization opportunities</p>
             <Progress value={65} className="max-w-xs mx-auto mt-4" />
           </CardContent>
         </Card>
@@ -200,18 +200,18 @@ export default function AdPerformanceAnalyzer() {
                       </div>
                       <div>
                         <p className="font-medium text-sm">{report.platform.replace(/_/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase())} Analysis</p>
-                        <p className="text-xs text-muted-foreground">{report.dateRange?.replace(/_/g, " ")} · {new Date(report.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-zinc-500">{report.dateRange?.replace(/_/g, " ")} · {new Date(report.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={report.status === "complete" ? "default" : "secondary"} className="text-xs">
                         {report.status}
                       </Badge>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <ChevronRight className="w-4 h-4 text-zinc-500" />
                     </div>
                   </div>
                   {report.aiAnalysis && (
-                    <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{report.aiAnalysis}</p>
+                    <p className="text-xs text-zinc-500 mt-2 line-clamp-2">{report.aiAnalysis}</p>
                   )}
                 </CardContent>
               </Card>
@@ -237,9 +237,9 @@ export default function AdPerformanceAnalyzer() {
       {!analyze.isPending && !analyze.data && (!reports || reports.length === 0) && (
         <Card>
           <CardContent className="py-16 text-center">
-            <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <BarChart3 className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
             <h3 className="font-semibold text-lg mb-1">No analyses yet</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            <p className="text-sm text-zinc-500 max-w-sm mx-auto">
               Connect an ad account and run your first analysis to get AI-powered insights on your campaign performance.
             </p>
           </CardContent>
@@ -266,7 +266,7 @@ function AnalysisResults({ report }: { report: any }) {
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-gray-700 mb-1">Summary</p>
-              <p className="text-xs text-muted-foreground max-w-xs">{analysis.summary}</p>
+              <p className="text-xs text-zinc-500 max-w-xs">{analysis.summary}</p>
             </div>
           </div>
           <Progress value={analysis.overallScore} className="mt-3 h-2" />
@@ -294,7 +294,7 @@ function AnalysisResults({ report }: { report: any }) {
                       <p className="font-medium text-sm">{p.name}</p>
                       <Badge className="text-xs bg-green-100 text-green-700 border-green-200">{p.metric}: {p.value}</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{p.reason}</p>
+                    <p className="text-xs text-zinc-500">{p.reason}</p>
                   </div>
                   <ArrowUpRight className="w-4 h-4 text-green-600 shrink-0" />
                 </div>
@@ -313,7 +313,7 @@ function AnalysisResults({ report }: { report: any }) {
                   </div>
                   <div>
                     <p className="font-medium text-sm">{p.pattern}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{p.description}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{p.description}</p>
                     <Badge className="mt-1 text-xs bg-blue-50 text-blue-600 border-blue-200">{p.impact}</Badge>
                   </div>
                 </div>
@@ -333,7 +333,7 @@ function AnalysisResults({ report }: { report: any }) {
                   <div>
                     <p className="font-medium text-sm">{u.name}</p>
                     <p className="text-xs text-red-600 mt-0.5">{u.issue}</p>
-                    <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Lightbulb className="w-3 h-3 text-amber-500" /> {u.recommendation}</p>
+                    <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1"><Lightbulb className="w-3 h-3 text-amber-500" /> {u.recommendation}</p>
                   </div>
                 </div>
               </CardContent>
@@ -348,7 +348,7 @@ function AnalysisResults({ report }: { report: any }) {
                   </div>
                   <div>
                     <p className="font-medium text-sm">{b.action}: {b.campaign}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{b.reason}</p>
+                    <p className="text-xs text-zinc-500 mt-0.5">{b.reason}</p>
                     <Badge className="mt-1 text-xs bg-amber-50 text-amber-700 border-amber-200">{b.expectedImpact}</Badge>
                   </div>
                 </div>
@@ -372,7 +372,7 @@ function AnalysisResults({ report }: { report: any }) {
                         {a.priority} priority
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">{a.expectedResult}</p>
+                    <p className="text-xs text-zinc-500">{a.expectedResult}</p>
                   </div>
                 </div>
               </CardContent>

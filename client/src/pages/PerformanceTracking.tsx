@@ -37,11 +37,11 @@ export default function PerformanceTracking() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Performance Tracking</h1>
-          <p className="text-muted-foreground mt-1">Monitor engagement metrics across all your platforms</p>
+          <p className="text-zinc-500 mt-1">Monitor engagement metrics across all your platforms</p>
         </div>
         <Dialog open={showRecord} onOpenChange={setShowRecord}>
           <DialogTrigger asChild>
@@ -59,27 +59,27 @@ export default function PerformanceTracking() {
               <Input placeholder="Post URL (optional)" value={newMetric.postUrl} onChange={e => setNewMetric({ ...newMetric, postUrl: e.target.value })} />
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs text-muted-foreground">Likes</label>
+                  <label className="text-xs text-zinc-500">Likes</label>
                   <Input type="number" value={newMetric.likes} onChange={e => setNewMetric({ ...newMetric, likes: parseInt(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Shares</label>
+                  <label className="text-xs text-zinc-500">Shares</label>
                   <Input type="number" value={newMetric.shares} onChange={e => setNewMetric({ ...newMetric, shares: parseInt(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Comments</label>
+                  <label className="text-xs text-zinc-500">Comments</label>
                   <Input type="number" value={newMetric.comments} onChange={e => setNewMetric({ ...newMetric, comments: parseInt(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Reach</label>
+                  <label className="text-xs text-zinc-500">Reach</label>
                   <Input type="number" value={newMetric.reach} onChange={e => setNewMetric({ ...newMetric, reach: parseInt(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Impressions</label>
+                  <label className="text-xs text-zinc-500">Impressions</label>
                   <Input type="number" value={newMetric.impressions} onChange={e => setNewMetric({ ...newMetric, impressions: parseInt(e.target.value) || 0 })} />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Clicks</label>
+                  <label className="text-xs text-zinc-500">Clicks</label>
                   <Input type="number" value={newMetric.clicks} onChange={e => setNewMetric({ ...newMetric, clicks: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
@@ -97,49 +97,49 @@ export default function PerformanceTracking() {
           <CardContent className="py-4 text-center">
             <BarChart3 className="w-5 h-5 mx-auto mb-1 text-primary" />
             <div className="text-xl font-bold">{summary?.totalPosts || 0}</div>
-            <div className="text-[10px] text-muted-foreground">Total Posts</div>
+            <div className="text-[10px] text-zinc-500">Total Posts</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <Heart className="w-5 h-5 mx-auto mb-1 text-red-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalLikes || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Total Likes</div>
+            <div className="text-[10px] text-zinc-500">Total Likes</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <Share2 className="w-5 h-5 mx-auto mb-1 text-blue-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalShares || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Total Shares</div>
+            <div className="text-[10px] text-zinc-500">Total Shares</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <MessageCircle className="w-5 h-5 mx-auto mb-1 text-green-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalComments || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Comments</div>
+            <div className="text-[10px] text-zinc-500">Comments</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <Users className="w-5 h-5 mx-auto mb-1 text-purple-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalReach || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Reach</div>
+            <div className="text-[10px] text-zinc-500">Reach</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <Eye className="w-5 h-5 mx-auto mb-1 text-orange-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalImpressions || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Impressions</div>
+            <div className="text-[10px] text-zinc-500">Impressions</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-4 text-center">
             <MousePointer className="w-5 h-5 mx-auto mb-1 text-cyan-500" />
             <div className="text-xl font-bold">{formatNum(summary?.totalClicks || 0)}</div>
-            <div className="text-[10px] text-muted-foreground">Clicks</div>
+            <div className="text-[10px] text-zinc-500">Clicks</div>
           </CardContent>
         </Card>
       </div>
@@ -152,7 +152,7 @@ export default function PerformanceTracking() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-muted-foreground">
+                  <tr className="border-b text-zinc-500">
                     <th className="text-left py-2 pr-4">Platform</th>
                     <th className="text-right py-2 px-2">Posts</th>
                     <th className="text-right py-2 px-2">Likes</th>
@@ -165,7 +165,7 @@ export default function PerformanceTracking() {
                 </thead>
                 <tbody>
                   {Object.entries(summary.byPlatform).map(([platform, data]: [string, any]) => (
-                    <tr key={platform} className="border-b last:border-0 hover:bg-muted/50">
+                    <tr key={platform} className="border-b last:border-0 hover:bg-zinc-900/40">
                       <td className="py-2 pr-4 font-medium capitalize">{platform}</td>
                       <td className="text-right py-2 px-2">{data.count}</td>
                       <td className="text-right py-2 px-2">{formatNum(data.likes)}</td>
@@ -197,10 +197,10 @@ export default function PerformanceTracking() {
         </div>
 
         {metricsQ.isLoading ? (
-          <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />)}</div>
+          <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-zinc-800 animate-pulse rounded-lg" />)}</div>
         ) : !metricsQ.data?.length ? (
           <Card className="border-dashed">
-            <CardContent className="py-8 text-center text-muted-foreground">
+            <CardContent className="py-8 text-center text-zinc-500">
               <BarChart3 className="w-10 h-10 mx-auto mb-3 opacity-40" />
               <p className="font-medium">No metrics recorded yet</p>
               <p className="text-sm mt-1">Record your first post metrics to start tracking performance</p>
@@ -217,9 +217,9 @@ export default function PerformanceTracking() {
                       {m.postUrl ? (
                         <a href={m.postUrl} target="_blank" rel="noopener" className="text-sm text-primary hover:underline truncate block">{m.postUrl}</a>
                       ) : (
-                        <span className="text-sm text-muted-foreground">No URL</span>
+                        <span className="text-sm text-zinc-500">No URL</span>
                       )}
-                      <span className="text-xs text-muted-foreground">{new Date(m.recordedAt).toLocaleString()}</span>
+                      <span className="text-xs text-zinc-500">{new Date(m.recordedAt).toLocaleString()}</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs">
                       <span className="flex items-center gap-1"><Heart className="w-3 h-3 text-red-500" />{formatNum(m.likes || 0)}</span>

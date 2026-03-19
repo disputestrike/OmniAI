@@ -36,11 +36,11 @@ export default function BrandVoice() {
   const selectedData = voices?.find(v => v.id === selectedVoice);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Brand Voice</h1>
-          <p className="text-muted-foreground">Train AI to write in your brand's unique voice and tone</p>
+          <p className="text-zinc-500">Train AI to write in your brand's unique voice and tone</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
@@ -62,7 +62,7 @@ export default function BrandVoice() {
               <div>
                 <label className="text-sm font-medium">Sample Text (paste existing content)</label>
                 <Textarea value={sampleText} onChange={e => setSampleText(e.target.value)} placeholder="Paste a blog post, email, or ad copy that represents your brand voice..." rows={6} />
-                <p className="text-xs text-muted-foreground mt-1">The more text you provide, the better the AI can learn your voice</p>
+                <p className="text-xs text-zinc-500 mt-1">The more text you provide, the better the AI can learn your voice</p>
               </div>
               <Button onClick={() => createMutation.mutate({ name, description, sampleText })} disabled={!name || createMutation.isPending} className="w-full">
                 {createMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</> : <><Sparkles className="w-4 h-4 mr-2" /> Create & Analyze Voice</>}
@@ -73,20 +73,20 @@ export default function BrandVoice() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-zinc-500" /></div>
       ) : !voices?.length ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Mic className="w-12 h-12 text-muted-foreground mb-4" />
+            <Mic className="w-12 h-12 text-zinc-500 mb-4" />
             <h3 className="text-lg font-semibold">No Brand Voices Yet</h3>
-            <p className="text-muted-foreground text-center max-w-md mt-2">Create your first brand voice profile to ensure all AI-generated content matches your brand's unique tone and style.</p>
+            <p className="text-zinc-500 text-center max-w-md mt-2">Create your first brand voice profile to ensure all AI-generated content matches your brand's unique tone and style.</p>
             <Button className="mt-4" onClick={() => setShowCreate(true)}><Plus className="w-4 h-4 mr-2" /> Create Your First Voice</Button>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your Voices</h3>
+            <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Your Voices</h3>
             {voices.map(voice => (
               <Card key={voice.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedVoice === voice.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedVoice(voice.id)}>
                 <CardContent className="p-4">
@@ -96,7 +96,7 @@ export default function BrandVoice() {
                         <span className="font-medium">{voice.name}</span>
                         {voice.isDefault && <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">{voice.description || "No description"}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{voice.description || "No description"}</p>
                     </div>
                     <Badge variant={voice.status === "ready" ? "default" : voice.status === "processing" ? "secondary" : "destructive"}>
                       {voice.status}
@@ -132,30 +132,30 @@ export default function BrandVoice() {
                   {selectedData.status === "processing" ? (
                     <div className="flex flex-col items-center py-8">
                       <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-                      <p className="text-muted-foreground">AI is analyzing your brand voice...</p>
-                      <p className="text-xs text-muted-foreground mt-1">This usually takes 10-30 seconds</p>
+                      <p className="text-zinc-500">AI is analyzing your brand voice...</p>
+                      <p className="text-xs text-zinc-500 mt-1">This usually takes 10-30 seconds</p>
                     </div>
                   ) : selectedData.voiceProfile ? (
-                    <div className="space-y-6">
+                    <div className="space-y-6 animate-fade-up">
                       {(() => {
                         const vp = selectedData.voiceProfile as any;
                         return (
                           <>
                             <div className="grid grid-cols-2 gap-4">
-                              <div className="p-3 rounded-lg bg-muted/50">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Tone</p>
+                              <div className="p-3 rounded-lg bg-zinc-900/40">
+                                <p className="text-xs font-medium text-zinc-500 uppercase">Tone</p>
                                 <p className="font-medium mt-1">{vp.tone}</p>
                               </div>
-                              <div className="p-3 rounded-lg bg-muted/50">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Style</p>
+                              <div className="p-3 rounded-lg bg-zinc-900/40">
+                                <p className="text-xs font-medium text-zinc-500 uppercase">Style</p>
                                 <p className="font-medium mt-1">{vp.style}</p>
                               </div>
-                              <div className="p-3 rounded-lg bg-muted/50">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Formality</p>
+                              <div className="p-3 rounded-lg bg-zinc-900/40">
+                                <p className="text-xs font-medium text-zinc-500 uppercase">Formality</p>
                                 <p className="font-medium mt-1 capitalize">{vp.formality}</p>
                               </div>
-                              <div className="p-3 rounded-lg bg-muted/50">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Personality</p>
+                              <div className="p-3 rounded-lg bg-zinc-900/40">
+                                <p className="text-xs font-medium text-zinc-500 uppercase">Personality</p>
                                 <p className="font-medium mt-1">{vp.personality}</p>
                               </div>
                             </div>
@@ -175,7 +175,7 @@ export default function BrandVoice() {
                               <p className="text-sm font-medium mb-2">Sample Phrases in This Voice</p>
                               <div className="space-y-2">
                                 {(vp.samplePhrases || []).map((p: string, i: number) => (
-                                  <div key={i} className="p-2 rounded bg-muted/30 text-sm italic">"{p}"</div>
+                                  <div key={i} className="p-2 rounded bg-zinc-900/50 text-sm italic">"{p}"</div>
                                 ))}
                               </div>
                             </div>
@@ -184,15 +184,15 @@ export default function BrandVoice() {
                       })()}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground text-center py-8">Voice profile not available. Try recreating this voice.</p>
+                    <p className="text-zinc-500 text-center py-8">Voice profile not available. Try recreating this voice.</p>
                   )}
                 </CardContent>
               </Card>
             ) : (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-16">
-                  <Mic className="w-8 h-8 text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">Select a voice profile to view details</p>
+                  <Mic className="w-8 h-8 text-zinc-500 mb-3" />
+                  <p className="text-zinc-500">Select a voice profile to view details</p>
                 </CardContent>
               </Card>
             )}

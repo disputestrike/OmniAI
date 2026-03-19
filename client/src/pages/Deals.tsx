@@ -44,11 +44,11 @@ export default function Deals() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Handshake className="h-6 w-6 text-primary" /> CRM Deals</h1>
-          <p className="text-muted-foreground">Track deals through your sales pipeline with AI forecasting</p>
+          <p className="text-zinc-500">Track deals through your sales pipeline with AI forecasting</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => forecast.mutate()} disabled={forecast.isPending}>
@@ -85,11 +85,11 @@ export default function Deals() {
           {STAGES.map(s => {
             const p = pipeline.find((pp: any) => pp.stage === s.value);
             return (
-              <Card key={s.value} className="border-0 shadow-sm">
+              <Card key={s.value} className="glass rounded-2xl">
                 <CardContent className="p-4 text-center">
                   <Badge className={`${s.color} mb-2`}>{s.label}</Badge>
                   <p className="text-2xl font-bold">{p?.count ?? 0}</p>
-                  <p className="text-xs text-muted-foreground">${p?.totalValue ?? "0"}</p>
+                  <p className="text-xs text-zinc-500">${p?.totalValue ?? "0"}</p>
                 </CardContent>
               </Card>
             );
@@ -103,14 +103,14 @@ export default function Deals() {
           <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" /> AI Sales Forecast</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div><p className="text-xs text-muted-foreground">30-Day Forecast</p><p className="text-lg font-bold">{forecast.data.forecast30d}</p></div>
-              <div><p className="text-xs text-muted-foreground">90-Day Forecast</p><p className="text-lg font-bold">{forecast.data.forecast90d}</p></div>
-              <div><p className="text-xs text-muted-foreground">Win Rate</p><p className="text-lg font-bold">{forecast.data.winRate}</p></div>
-              <div><p className="text-xs text-muted-foreground">Avg Deal Size</p><p className="text-lg font-bold">{forecast.data.avgDealSize}</p></div>
+              <div><p className="text-xs text-zinc-500">30-Day Forecast</p><p className="text-lg font-bold">{forecast.data.forecast30d}</p></div>
+              <div><p className="text-xs text-zinc-500">90-Day Forecast</p><p className="text-lg font-bold">{forecast.data.forecast90d}</p></div>
+              <div><p className="text-xs text-zinc-500">Win Rate</p><p className="text-lg font-bold">{forecast.data.winRate}</p></div>
+              <div><p className="text-xs text-zinc-500">Avg Deal Size</p><p className="text-lg font-bold">{forecast.data.avgDealSize}</p></div>
             </div>
             {forecast.data.recommendations?.length > 0 && (
               <div><p className="text-sm font-medium mb-1">Recommendations:</p>
-                <ul className="text-sm text-muted-foreground space-y-1">{forecast.data.recommendations.map((r: string, i: number) => <li key={i}>• {r}</li>)}</ul>
+                <ul className="text-sm text-zinc-500 space-y-1">{forecast.data.recommendations.map((r: string, i: number) => <li key={i}>• {r}</li>)}</ul>
               </div>
             )}
           </CardContent>
@@ -119,11 +119,11 @@ export default function Deals() {
 
       {/* Deal List */}
       {isLoading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
       ) : !deals?.length ? (
         <Card className="border-dashed"><CardContent className="py-12 text-center">
-          <Handshake className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No deals yet. Create your first deal to start tracking your pipeline.</p>
+          <Handshake className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+          <p className="text-zinc-500">No deals yet. Create your first deal to start tracking your pipeline.</p>
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
@@ -138,12 +138,12 @@ export default function Deals() {
                         <h3 className="font-semibold">{deal.title}</h3>
                         <Badge className={stageInfo?.color}>{stageInfo?.label}</Badge>
                       </div>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 mt-1 text-sm text-zinc-500">
                         {deal.value && <span className="flex items-center gap-1"><DollarSign className="h-3 w-3" />{deal.value}</span>}
                         <span>{deal.probability}% probability</span>
                         <span>{new Date(deal.createdAt).toLocaleDateString()}</span>
                       </div>
-                      {deal.notes && <p className="text-sm text-muted-foreground mt-1 line-clamp-1">{deal.notes}</p>}
+                      {deal.notes && <p className="text-sm text-zinc-500 mt-1 line-clamp-1">{deal.notes}</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <Select value={deal.stage} onValueChange={(v) => updateDeal.mutate({ id: deal.id, stage: v as any })}>

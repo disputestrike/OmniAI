@@ -40,10 +40,10 @@ export default function ImageEditor() {
   const isProcessing = removeBgMut.isPending || resizeMut.isPending || upscaleMut.isPending || filterMut.isPending;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold">Image Editor</h1>
-        <p className="text-muted-foreground">Remove backgrounds, resize for platforms, upscale, and apply filters</p>
+        <p className="text-zinc-500">Remove backgrounds, resize for platforms, upscale, and apply filters</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -62,7 +62,7 @@ export default function ImageEditor() {
             </TabsList>
 
             <TabsContent value="removebg" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground">AI will remove the background and return a clean subject.</p>
+              <p className="text-sm text-zinc-500">AI will remove the background and return a clean subject.</p>
               <Button onClick={() => removeBgMut.mutate({ imageUrl })} disabled={!imageUrl || isProcessing} className="w-full">
                 {removeBgMut.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Removing...</> : <><Scissors className="w-4 h-4 mr-2" /> Remove Background</>}
               </Button>
@@ -94,7 +94,7 @@ export default function ImageEditor() {
             </TabsContent>
 
             <TabsContent value="upscale" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground">AI will enhance resolution and sharpen details while maintaining composition.</p>
+              <p className="text-sm text-zinc-500">AI will enhance resolution and sharpen details while maintaining composition.</p>
               <Button onClick={() => upscaleMut.mutate({ imageUrl })} disabled={!imageUrl || isProcessing} className="w-full">
                 {upscaleMut.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Upscaling...</> : <><ArrowUp className="w-4 h-4 mr-2" /> Upscale Image</>}
               </Button>
@@ -125,11 +125,11 @@ export default function ImageEditor() {
         </div>
 
         <div>
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-3">Result</h3>
+          <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-3">Result</h3>
           {isProcessing ? (
             <Card><CardContent className="flex flex-col items-center py-16">
               <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-              <p className="text-muted-foreground">Processing your image...</p>
+              <p className="text-zinc-500">Processing your image...</p>
             </CardContent></Card>
           ) : resultUrl ? (
             <div className="space-y-3">
@@ -150,8 +150,8 @@ export default function ImageEditor() {
             </div>
           ) : (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-16">
-              <ImageIcon className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Edited images will appear here</p>
+              <ImageIcon className="w-12 h-12 text-zinc-500 mb-4" />
+              <p className="text-zinc-500">Edited images will appear here</p>
             </CardContent></Card>
           )}
         </div>

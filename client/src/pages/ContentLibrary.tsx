@@ -101,12 +101,12 @@ export default function ContentLibrary() {
   const getStatusBadge = (status: string) => STATUSES.find(s => s.value === status) || STATUSES[0];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Content Library</h1>
-          <p className="text-muted-foreground mt-1">Search, browse, and manage all your content in one place</p>
+          <p className="text-zinc-500 mt-1">Search, browse, and manage all your content in one place</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => navigate("/content-ingest")}>
@@ -124,25 +124,25 @@ export default function ContentLibrary() {
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{stats.total}</div>
-              <div className="text-sm text-muted-foreground">Total Content</div>
+              <div className="text-sm text-zinc-500">Total Content</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{Object.keys(stats.byType).length}</div>
-              <div className="text-sm text-muted-foreground">Content Types</div>
+              <div className="text-sm text-zinc-500">Content Types</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{stats.byStatus?.published || 0}</div>
-              <div className="text-sm text-muted-foreground">Published</div>
+              <div className="text-sm text-zinc-500">Published</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-4">
               <div className="text-2xl font-bold">{stats.byStatus?.draft || 0}</div>
-              <div className="text-sm text-muted-foreground">Drafts</div>
+              <div className="text-sm text-zinc-500">Drafts</div>
             </CardContent>
           </Card>
         </div>
@@ -153,7 +153,7 @@ export default function ContentLibrary() {
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <Input
                 placeholder="Search by title, content..."
                 value={searchQuery}
@@ -219,7 +219,7 @@ export default function ContentLibrary() {
       <div className="space-y-2">
         {/* Select All Header */}
         {results && results.items.length > 0 && (
-          <div className="flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 px-4 py-2 text-sm text-zinc-500">
             <Checkbox checked={selectedIds.size === results.items.length && results.items.length > 0} onCheckedChange={selectAll} />
             <span className="flex-1">Content ({results.total} total)</span>
             <span className="w-24 text-center">Type</span>
@@ -246,7 +246,7 @@ export default function ContentLibrary() {
                   <Checkbox checked={selectedIds.has(item.id)} onCheckedChange={() => toggleSelect(item.id)} />
                   <div className="flex-1 min-w-0 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : item.id)}>
                     <div className="font-medium truncate">{item.title || "Untitled"}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
+                    <div className="text-xs text-zinc-500 mt-0.5">
                       <Clock className="w-3 h-3 inline mr-1" />
                       {new Date(item.createdAt).toLocaleDateString()} {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
@@ -273,7 +273,7 @@ export default function ContentLibrary() {
                 {/* Expanded Content */}
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t space-y-3">
-                    <div className="bg-muted/50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                    <div className="bg-zinc-900/40 rounded-lg p-4 max-h-64 overflow-y-auto">
                       <pre className="whitespace-pre-wrap text-sm">{item.body || "No content"}</pre>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -306,9 +306,9 @@ export default function ContentLibrary() {
         {results && results.items.length === 0 && !isLoading && (
           <Card>
             <CardContent className="p-12 text-center">
-              <FileText className="w-12 h-12 mx-auto text-muted-foreground/30 mb-4" />
+              <FileText className="w-12 h-12 mx-auto text-zinc-500/30 mb-4" />
               <h3 className="text-lg font-medium mb-2">No content found</h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-zinc-500 mb-4">
                 {searchQuery || typeFilter || platformFilter || statusFilter
                   ? "Try adjusting your filters"
                   : "Start creating content to build your library"}
@@ -324,7 +324,7 @@ export default function ContentLibrary() {
         {/* Pagination */}
         {results && results.total > 50 && (
           <div className="flex items-center justify-between pt-4">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-zinc-500">
               Showing {page * 50 + 1}-{Math.min((page + 1) * 50, results.total)} of {results.total}
             </span>
             <div className="flex gap-2">
@@ -345,12 +345,12 @@ export default function ContentLibrary() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-zinc-500">
               Select platforms and we'll automatically schedule this content at the best times for maximum engagement.
             </p>
             <div className="grid grid-cols-2 gap-2">
               {PLATFORMS.map(p => (
-                <label key={p} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${schedulePlatforms.includes(p) ? "border-primary bg-primary/5" : "hover:bg-muted/50"}`}>
+                <label key={p} className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all ${schedulePlatforms.includes(p) ? "border-primary bg-primary/5" : "hover:bg-zinc-900/40"}`}>
                   <Checkbox
                     checked={schedulePlatforms.includes(p)}
                     onCheckedChange={(checked) => {
@@ -363,11 +363,11 @@ export default function ContentLibrary() {
             </div>
 
             {optimalTimes && schedulePlatforms.length > 0 && (
-              <div className="bg-muted/50 rounded-lg p-3 space-y-1">
-                <div className="text-xs font-medium text-muted-foreground">Next optimal slots for {schedulePlatforms[0]}:</div>
+              <div className="bg-zinc-900/40 rounded-lg p-3 space-y-1">
+                <div className="text-xs font-medium text-zinc-500">Next optimal slots for {schedulePlatforms[0]}:</div>
                 {optimalTimes.nextSlots.slice(0, 3).map((slot, i) => (
                   <div key={i} className="text-sm flex items-center gap-2">
-                    <Clock className="w-3 h-3 text-muted-foreground" />
+                    <Clock className="w-3 h-3 text-zinc-500" />
                     {new Date(slot).toLocaleDateString()} at {new Date(slot).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 ))}

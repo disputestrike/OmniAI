@@ -138,7 +138,7 @@ export default function VoiceoverStudio() {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Mic className="h-6 w-6 text-primary" /> Voiceover Studio
           </h1>
-          <p className="text-muted-foreground mt-1">Convert any text to professional AI voiceovers in 16 languages with 16+ voice styles</p>
+          <p className="text-zinc-500 mt-1">Convert any text to professional AI voiceovers in 16 languages with 16+ voice styles</p>
         </div>
         <div className="flex gap-2">
           <Badge variant="outline" className="text-xs">ElevenLabs</Badge>
@@ -161,7 +161,7 @@ export default function VoiceoverStudio() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center justify-between">
                     <span className="flex items-center gap-2"><Wand2 className="h-4 w-4 text-primary" /> Script</span>
-                    <span className="text-xs font-normal text-muted-foreground">{charCount} chars · ~{estimatedDuration}s</span>
+                    <span className="text-xs font-normal text-zinc-500">{charCount} chars · ~{estimatedDuration}s</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -173,7 +173,7 @@ export default function VoiceoverStudio() {
                     className="resize-none font-mono text-sm"
                   />
                   <div className="flex gap-2 flex-wrap">
-                    <span className="text-xs text-muted-foreground self-center">Templates:</span>
+                    <span className="text-xs text-zinc-500 self-center">Templates:</span>
                     {SCRIPT_TEMPLATES.map(t => (
                       <Button key={t.label} variant="outline" size="sm" className="h-7 text-xs" onClick={() => setScript(t.text)}>
                         {t.label}
@@ -198,14 +198,14 @@ export default function VoiceoverStudio() {
                       <Button size="icon" variant="default" className="h-10 w-10 rounded-full shrink-0" onClick={togglePlay}>
                         {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </Button>
-                      <div className="flex-1 h-2 bg-muted rounded-full">
+                      <div className="flex-1 h-2 bg-zinc-800 rounded-full">
                         <div className="h-full bg-primary rounded-full w-0 transition-all" />
                       </div>
                       <Button variant="outline" size="sm" onClick={handleDownload}>
                         <Download className="h-4 w-4 mr-1.5" /> Download MP3
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-3 line-clamp-2 italic">"{generatedAudio.text.slice(0, 120)}{generatedAudio.text.length > 120 ? "..." : ""}"</p>
+                    <p className="text-xs text-zinc-500 mt-3 line-clamp-2 italic">"{generatedAudio.text.slice(0, 120)}{generatedAudio.text.length > 120 ? "..." : ""}"</p>
                   </CardContent>
                 </Card>
               )}
@@ -229,7 +229,7 @@ export default function VoiceoverStudio() {
                         <div className="px-2 py-1">
                           <div className="flex gap-1 mb-1">
                             {(["all", "male", "female"] as const).map(g => (
-                              <button key={g} className={`text-xs px-2 py-0.5 rounded ${genderFilter === g ? "bg-primary text-primary-foreground" : "bg-muted"}`} onClick={() => setGenderFilter(g)}>
+                              <button key={g} className={`text-xs px-2 py-0.5 rounded ${genderFilter === g ? "bg-primary text-primary-foreground" : "bg-zinc-800"}`} onClick={() => setGenderFilter(g)}>
                                 {g.charAt(0).toUpperCase() + g.slice(1)}
                               </button>
                             ))}
@@ -239,14 +239,14 @@ export default function VoiceoverStudio() {
                           <SelectItem key={v.id} value={v.id}>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{v.name}</span>
-                              <span className="text-xs text-muted-foreground">{v.accent} · {v.style}</span>
+                              <span className="text-xs text-zinc-500">{v.accent} · {v.style}</span>
                             </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                     {selectedVoiceData && (
-                      <p className="text-xs text-muted-foreground mt-1">{selectedVoiceData.description}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{selectedVoiceData.description}</p>
                     )}
                   </div>
 
@@ -284,10 +284,10 @@ export default function VoiceoverStudio() {
                   <div>
                     <Label className="text-sm flex items-center justify-between">
                       <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Speed</span>
-                      <span className="font-normal text-muted-foreground">{speed[0].toFixed(1)}x</span>
+                      <span className="font-normal text-zinc-500">{speed[0].toFixed(1)}x</span>
                     </Label>
                     <Slider value={speed} onValueChange={setSpeed} min={0.5} max={2.0} step={0.1} className="mt-2" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-zinc-500 mt-1">
                       <span>0.5x Slow</span>
                       <span>2.0x Fast</span>
                     </div>
@@ -297,17 +297,17 @@ export default function VoiceoverStudio() {
                   <div>
                     <Label className="text-sm flex items-center justify-between">
                       Stability
-                      <span className="font-normal text-muted-foreground">{stability[0]}%</span>
+                      <span className="font-normal text-zinc-500">{stability[0]}%</span>
                     </Label>
                     <Slider value={stability} onValueChange={setStability} min={0} max={100} step={5} className="mt-2" />
-                    <p className="text-xs text-muted-foreground mt-1">Higher = more consistent, lower = more expressive</p>
+                    <p className="text-xs text-zinc-500 mt-1">Higher = more consistent, lower = more expressive</p>
                   </div>
 
                   {/* Clarity */}
                   <div>
                     <Label className="text-sm flex items-center justify-between">
                       Clarity + Similarity
-                      <span className="font-normal text-muted-foreground">{clarity[0]}%</span>
+                      <span className="font-normal text-zinc-500">{clarity[0]}%</span>
                     </Label>
                     <Slider value={clarity} onValueChange={setClarity} min={0} max={100} step={5} className="mt-2" />
                   </div>
@@ -335,13 +335,13 @@ export default function VoiceoverStudio() {
         {/* ── Voice Library Tab ── */}
         <TabsContent value="voices" className="space-y-5 mt-5">
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-muted-foreground">Filter:</span>
+            <span className="text-sm text-zinc-500">Filter:</span>
             {(["all", "male", "female"] as const).map(g => (
               <Button key={g} variant={genderFilter === g ? "default" : "outline"} size="sm" onClick={() => setGenderFilter(g)}>
                 {g.charAt(0).toUpperCase() + g.slice(1)}
               </Button>
             ))}
-            <span className="text-xs text-muted-foreground ml-auto">{filteredVoices.length} voices</span>
+            <span className="text-xs text-zinc-500 ml-auto">{filteredVoices.length} voices</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -355,16 +355,16 @@ export default function VoiceoverStudio() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-semibold">{voice.name}</h3>
-                      <p className="text-xs text-muted-foreground">{voice.accent} · {voice.style}</p>
+                      <p className="text-xs text-zinc-500">{voice.accent} · {voice.style}</p>
                     </div>
                     <Badge variant={voice.gender === "male" ? "secondary" : "outline"} className="text-xs capitalize">
                       {voice.gender}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-3">{voice.description}</p>
+                  <p className="text-sm text-zinc-500 mb-3">{voice.description}</p>
                   <div className="flex gap-1 flex-wrap">
                     {voice.tags.map(tag => (
-                      <span key={tag} className="text-xs bg-muted px-1.5 py-0.5 rounded">#{tag}</span>
+                      <span key={tag} className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded">#{tag}</span>
                     ))}
                   </div>
                   <Button variant="outline" size="sm" className="w-full mt-3" onClick={(e) => { e.stopPropagation(); setSelectedVoice(voice.id); setTab("studio"); }}>

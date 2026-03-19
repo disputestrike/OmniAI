@@ -105,8 +105,8 @@ export default function Funnels() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Funnels</h1>
-          <p className="text-muted-foreground text-sm mt-1">Build multi-step lead and sales funnels. Add landing pages, forms, payment, and thank-you steps.</p>
+          <h1 className="page-title">Funnels</h1>
+          <p className="page-subtitle">Build multi-step lead and sales funnels. Add landing pages, forms, payment, and thank-you steps.</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
@@ -127,11 +127,11 @@ export default function Funnels() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <h3 className="font-medium text-sm text-muted-foreground">Your Funnels</h3>
+          <h3 className="font-medium text-sm text-zinc-500">Your Funnels</h3>
           {isLoading ? (
             <div className="space-y-2">{[1, 2, 3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-3 h-14" /></Card>)}</div>
           ) : !funnels?.length ? (
-            <Card className="border-0 shadow-sm"><CardContent className="p-6 text-center text-muted-foreground text-sm">No funnels yet. Create one to get started.</CardContent></Card>
+            <Card className="glass rounded-2xl"><CardContent className="p-6 text-center text-zinc-500 text-sm">No funnels yet. Create one to get started.</CardContent></Card>
           ) : (
             <div className="space-y-2">
               {funnels.map((f: { id: number; name: string; slug: string; status: string }) => (
@@ -142,12 +142,12 @@ export default function Funnels() {
                 >
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <GitBranch className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <GitBranch className="h-4 w-4 shrink-0 text-zinc-500" />
                       <span className="font-medium truncate">{f.name}</span>
                       <Badge variant="secondary" className="text-xs shrink-0">{f.status}</Badge>
                     </div>
                     <Button variant="ghost" size="icon" className="shrink-0" onClick={e => { e.stopPropagation(); if (confirm("Delete this funnel?")) deleteMut.mutate({ id: f.id }); }}>
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Trash2 className="h-3.5 w-3.5 text-zinc-500" />
                     </Button>
                   </CardContent>
                 </Card>
@@ -157,7 +157,7 @@ export default function Funnels() {
         </div>
         <div className="md:col-span-2">
           {selectedId && funnelDetail ? (
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Steps</CardTitle>
@@ -183,12 +183,12 @@ export default function Funnels() {
               </CardHeader>
               <CardContent>
                 {(funnelDetail.steps as { id: number; title: string; stepType: string; orderIndex: number }[]).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No steps yet. Add a step to define your funnel flow.</p>
+                  <p className="text-sm text-zinc-500">No steps yet. Add a step to define your funnel flow.</p>
                 ) : (
                   <div className="space-y-2">
                     {(funnelDetail.steps as { id: number; title: string; stepType: string; orderIndex: number }[]).sort((a, b) => a.orderIndex - b.orderIndex).map((step, idx) => (
-                      <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
-                        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-900/50">
+                        <GripVertical className="h-4 w-4 text-zinc-500 shrink-0" />
                         <span className="text-sm font-medium">{idx + 1}. {step.title}</span>
                         <Badge variant="outline" className="text-xs">{step.stepType}</Badge>
                         <Button variant="ghost" size="icon" className="ml-auto shrink-0" onClick={() => { if (confirm("Remove this step?")) deleteStepMut.mutate({ id: step.id }); }}>
@@ -199,7 +199,7 @@ export default function Funnels() {
                   </div>
                 )}
                 <div className="mt-4 flex items-center gap-2">
-                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Label className="text-xs text-zinc-500">Status</Label>
                   <Select value={funnelDetail.status} onValueChange={(v: "draft" | "active" | "archived") => updateMut.mutate({ id: selectedId, status: v })}>
                     <SelectTrigger className="w-32 h-8"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="draft">Draft</SelectItem><SelectItem value="active">Active</SelectItem><SelectItem value="archived">Archived</SelectItem></SelectContent>
@@ -212,13 +212,13 @@ export default function Funnels() {
             <Card className="border-0 shadow-sm mt-4">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2"><BarChart3 className="h-5 w-5" /> Funnel health (drop-off)</CardTitle>
-                <p className="text-sm text-muted-foreground">Views and completions per step. Record events when visitors view or complete steps (e.g. from your funnel pages).</p>
+                <p className="text-sm text-zinc-500">Views and completions per step. Record events when visitors view or complete steps (e.g. from your funnel pages).</p>
               </CardHeader>
               <CardContent>
                 {funnelAnalytics && funnelAnalytics.length > 0 ? (
                   <div className="rounded-lg border overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead><tr className="bg-muted/50 border-b"><th className="text-left p-3 font-medium">Step</th><th className="text-right p-3 font-medium">Views</th><th className="text-right p-3 font-medium">Completes</th><th className="text-right p-3 font-medium">Drop-off</th></tr></thead>
+                      <thead><tr className="bg-zinc-900/40 border-b"><th className="text-left p-3 font-medium">Step</th><th className="text-right p-3 font-medium">Views</th><th className="text-right p-3 font-medium">Completes</th><th className="text-right p-3 font-medium">Drop-off</th></tr></thead>
                       <tbody>
                         {funnelAnalytics.map((row: { stepId: number; stepTitle: string; views: number; completes: number; dropOffPercent: number }) => (
                           <tr key={row.stepId} className="border-b last:border-0">
@@ -232,7 +232,7 @@ export default function Funnels() {
                     </table>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No events yet. When you embed or link to your funnel steps, call <code className="bg-muted px-1 rounded">funnel.recordStepEvent</code> with <code className="bg-muted px-1 rounded">view</code> or <code className="bg-muted px-1 rounded">complete</code> to see drop-off here.</p>
+                  <p className="text-sm text-zinc-500">No events yet. When you embed or link to your funnel steps, call <code className="bg-zinc-800 px-1 rounded">funnel.recordStepEvent</code> with <code className="bg-zinc-800 px-1 rounded">view</code> or <code className="bg-zinc-800 px-1 rounded">complete</code> to see drop-off here.</p>
                 )}
               </CardContent>
             </Card>
@@ -260,9 +260,9 @@ export default function Funnels() {
                 {abTests && abTests.length > 0 ? (
                   <div className="space-y-2">
                     {abTests.map((t: { id: number; name: string; status: string; funnelStepId: number }) => (
-                      <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                      <div key={t.id} className="flex items-center justify-between p-3 rounded-lg border bg-zinc-900/50">
                         <div className="flex items-center gap-2">
-                          <FlaskConical className="h-4 w-4 text-muted-foreground" />
+                          <FlaskConical className="h-4 w-4 text-zinc-500" />
                           <span className="font-medium">{t.name}</span>
                           <Badge variant="secondary" className="text-xs">{t.status}</Badge>
                         </div>
@@ -271,14 +271,14 @@ export default function Funnels() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No A/B tests. Create one to test different versions of a step (e.g. headlines, CTAs).</p>
+                  <p className="text-sm text-zinc-500">No A/B tests. Create one to test different versions of a step (e.g. headlines, CTAs).</p>
                 )}
                 {selectedAbTestId && abTestResults ? (
                   <div className="mt-4 pt-4 border-t">
                     <p className="text-sm font-medium mb-2">Results: {abTestResults.test.name}</p>
                     <div className="rounded-lg border overflow-hidden">
                       <table className="w-full text-sm">
-                        <thead><tr className="bg-muted/50 border-b"><th className="text-left p-2 font-medium">Variation</th><th className="text-right p-2 font-medium">Traffic %</th><th className="text-right p-2 font-medium">Views</th><th className="text-right p-2 font-medium">Conversions</th><th className="text-right p-2 font-medium">Conv. rate</th></tr></thead>
+                        <thead><tr className="bg-zinc-900/40 border-b"><th className="text-left p-2 font-medium">Variation</th><th className="text-right p-2 font-medium">Traffic %</th><th className="text-right p-2 font-medium">Views</th><th className="text-right p-2 font-medium">Conversions</th><th className="text-right p-2 font-medium">Conv. rate</th></tr></thead>
                         <tbody>
                           {abTestResults.variations.map((v: { id: number; name: string; trafficPercent: number; views: number; conversions: number; conversionRate: number }) => (
                             <tr key={v.id} className="border-b last:border-0"><td className="p-2">{v.name}</td><td className="text-right p-2">{v.trafficPercent}%</td><td className="text-right p-2">{v.views}</td><td className="text-right p-2">{v.conversions}</td><td className="text-right p-2">{v.conversionRate}%</td></tr>
@@ -296,7 +296,7 @@ export default function Funnels() {
             </Card>
           ) : null}
           {!selectedId ? (
-            <Card className="border-0 shadow-sm"><CardContent className="p-12 text-center text-muted-foreground">Select a funnel or create one to edit steps.</CardContent></Card>
+            <Card className="glass rounded-2xl"><CardContent className="p-12 text-center text-zinc-500">Select a funnel or create one to edit steps.</CardContent></Card>
           ) : null}
         </div>
       </div>

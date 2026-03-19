@@ -46,10 +46,10 @@ export default function Intelligence() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Website Intelligence</h1>
-        <p className="text-muted-foreground mt-1">Analyze any website's marketing strategy, traffic, SEO, and competitive landscape — like SimilarWeb, powered by AI.</p>
+        <h1 className="page-title text-2xl">Website Intelligence</h1>
+        <p className="text-zinc-500 mt-1">Analyze any website's marketing strategy, traffic, SEO, and competitive landscape — like SimilarWeb, powered by AI.</p>
       </div>
 
       {/* Input Section */}
@@ -59,7 +59,7 @@ export default function Intelligence() {
             <div className="flex-1">
               <Label htmlFor="url" className="mb-2 block">Website URL</Label>
               <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                 <Input
                   id="url"
                   placeholder="https://example.com"
@@ -99,14 +99,14 @@ export default function Intelligence() {
           <CardContent className="py-12 text-center">
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
             <h3 className="text-lg font-semibold">Analyzing {url}...</h3>
-            <p className="text-muted-foreground mt-2">Running comprehensive marketing intelligence analysis. This may take 15-30 seconds.</p>
+            <p className="text-zinc-500 mt-2">Running comprehensive marketing intelligence analysis. This may take 15-30 seconds.</p>
           </CardContent>
         </Card>
       )}
 
       {/* Report */}
       {report && (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-up">
           {/* Overview Header */}
           <Card className="bg-gradient-to-r from-primary/5 to-primary/10">
             <CardHeader>
@@ -125,22 +125,22 @@ export default function Intelligence() {
                 <div className="bg-background rounded-lg p-4 text-center">
                   <Eye className="h-5 w-5 mx-auto mb-1 text-blue-500" />
                   <div className="text-2xl font-bold">{report.overview?.estimatedMonthlyTraffic}</div>
-                  <div className="text-xs text-muted-foreground">Monthly Traffic</div>
+                  <div className="text-xs text-zinc-500">Monthly Traffic</div>
                 </div>
                 <div className="bg-background rounded-lg p-4 text-center">
                   <TrendingUp className="h-5 w-5 mx-auto mb-1 text-green-500" />
                   <div className="text-2xl font-bold">#{report.overview?.globalRank}</div>
-                  <div className="text-xs text-muted-foreground">Global Rank</div>
+                  <div className="text-xs text-zinc-500">Global Rank</div>
                 </div>
                 <div className="bg-background rounded-lg p-4 text-center">
                   <MousePointer className="h-5 w-5 mx-auto mb-1 text-orange-500" />
                   <div className="text-2xl font-bold">{report.overview?.bounceRate}</div>
-                  <div className="text-xs text-muted-foreground">Bounce Rate</div>
+                  <div className="text-xs text-zinc-500">Bounce Rate</div>
                 </div>
                 <div className="bg-background rounded-lg p-4 text-center">
                   <Clock className="h-5 w-5 mx-auto mb-1 text-purple-500" />
                   <div className="text-2xl font-bold">{report.overview?.avgVisitDuration}</div>
-                  <div className="text-xs text-muted-foreground">Avg Visit Duration</div>
+                  <div className="text-xs text-zinc-500">Avg Visit Duration</div>
                 </div>
               </div>
             </CardContent>
@@ -214,11 +214,11 @@ export default function Intelligence() {
                     <div className="flex gap-4">
                       <div className="flex-1 bg-blue-50 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-blue-600">{report.audienceDemographics?.genderSplit?.male}</div>
-                        <div className="text-sm text-muted-foreground">Male</div>
+                        <div className="text-sm text-zinc-500">Male</div>
                       </div>
                       <div className="flex-1 bg-pink-50 rounded-lg p-4 text-center">
                         <div className="text-2xl font-bold text-pink-600">{report.audienceDemographics?.genderSplit?.female}</div>
-                        <div className="text-sm text-muted-foreground">Female</div>
+                        <div className="text-sm text-zinc-500">Female</div>
                       </div>
                     </div>
                   </CardContent>
@@ -243,25 +243,25 @@ export default function Intelligence() {
                   <Card>
                     <CardContent className="pt-4 text-center">
                       <div className="text-3xl font-bold text-primary">{report.seoAnalysis?.domainAuthority}</div>
-                      <div className="text-sm text-muted-foreground">Domain Authority</div>
+                      <div className="text-sm text-zinc-500">Domain Authority</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-4 text-center">
                       <div className="text-3xl font-bold text-green-600">{report.seoAnalysis?.backlinks}</div>
-                      <div className="text-sm text-muted-foreground">Backlinks</div>
+                      <div className="text-sm text-zinc-500">Backlinks</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-4 text-center">
                       <div className="text-3xl font-bold text-blue-600">{report.seoAnalysis?.organicTraffic}</div>
-                      <div className="text-sm text-muted-foreground">Organic Traffic</div>
+                      <div className="text-sm text-zinc-500">Organic Traffic</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="pt-4 text-center">
                       <div className="text-3xl font-bold text-orange-600">{report.seoAnalysis?.topKeywords?.length || 0}</div>
-                      <div className="text-sm text-muted-foreground">Tracked Keywords</div>
+                      <div className="text-sm text-zinc-500">Tracked Keywords</div>
                     </CardContent>
                   </Card>
                 </div>
@@ -319,11 +319,11 @@ export default function Intelligence() {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <div className="text-2xl font-bold">{sp.followers}</div>
-                          <div className="text-xs text-muted-foreground">Followers</div>
+                          <div className="text-xs text-zinc-500">Followers</div>
                         </div>
                         <div>
                           <div className="text-2xl font-bold">{sp.postFrequency}</div>
-                          <div className="text-xs text-muted-foreground">Post Frequency</div>
+                          <div className="text-xs text-zinc-500">Post Frequency</div>
                         </div>
                       </div>
                     </CardContent>
@@ -350,7 +350,7 @@ export default function Intelligence() {
                     <h4 className="font-medium mb-3">Top Content</h4>
                     <div className="space-y-2">
                       {report.contentStrategy?.topContent?.map((tc: any, i: number) => (
-                        <div key={i} className="flex justify-between items-center p-2 rounded bg-muted/50">
+                        <div key={i} className="flex justify-between items-center p-2 rounded bg-zinc-900/40">
                           <span className="text-sm font-medium">{tc.title}</span>
                           <Badge variant="secondary">{tc.estimatedViews} views</Badge>
                         </div>
@@ -450,7 +450,7 @@ export default function Intelligence() {
                         <Badge variant="outline">{rec.category}</Badge>
                       </div>
                       <p className="text-sm font-medium">{rec.recommendation}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Expected Impact: {rec.expectedImpact}</p>
+                      <p className="text-xs text-zinc-500 mt-1">Expected Impact: {rec.expectedImpact}</p>
                     </div>
                   ))}
                 </CardContent>
@@ -466,10 +466,10 @@ export default function Intelligence() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {report.marketingBudgetSuggestion?.breakdown?.map((item: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded bg-muted/50">
+                    <div key={i} className="flex items-center justify-between p-3 rounded bg-zinc-900/40">
                       <div>
                         <span className="font-medium">{item.channel}</span>
-                        <span className="text-muted-foreground ml-2 text-sm">({item.percentage})</span>
+                        <span className="text-zinc-500 ml-2 text-sm">({item.percentage})</span>
                       </div>
                       <span className="font-bold">{item.amount}</span>
                     </div>
@@ -488,42 +488,42 @@ export default function Intelligence() {
             <CardContent className="pt-6 text-center">
               <BarChart3 className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">Traffic Analysis</h3>
-              <p className="text-sm text-muted-foreground">Estimated monthly traffic, sources breakdown, bounce rate, and visit duration.</p>
+              <p className="text-sm text-zinc-500">Estimated monthly traffic, sources breakdown, bounce rate, and visit duration.</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Users className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">Audience Intelligence</h3>
-              <p className="text-sm text-muted-foreground">Demographics, geography, age distribution, gender split, and interests.</p>
+              <p className="text-sm text-zinc-500">Demographics, geography, age distribution, gender split, and interests.</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Target className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">SEO & Competitors</h3>
-              <p className="text-sm text-muted-foreground">Domain authority, top keywords, backlinks, content gaps, and competitor analysis.</p>
+              <p className="text-sm text-zinc-500">Domain authority, top keywords, backlinks, content gaps, and competitor analysis.</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <Zap className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">SWOT Analysis</h3>
-              <p className="text-sm text-muted-foreground">Strengths, weaknesses, opportunities, and threats for any website.</p>
+              <p className="text-sm text-zinc-500">Strengths, weaknesses, opportunities, and threats for any website.</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <TrendingUp className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">Action Plan</h3>
-              <p className="text-sm text-muted-foreground">Prioritized recommendations with expected impact for immediate execution.</p>
+              <p className="text-sm text-zinc-500">Prioritized recommendations with expected impact for immediate execution.</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-6 text-center">
               <BarChart3 className="h-10 w-10 mx-auto mb-3 text-primary" />
               <h3 className="font-semibold mb-1">Budget Planning</h3>
-              <p className="text-sm text-muted-foreground">Suggested marketing budget with channel-by-channel breakdown.</p>
+              <p className="text-sm text-zinc-500">Suggested marketing budget with channel-by-channel breakdown.</p>
             </CardContent>
           </Card>
         </div>

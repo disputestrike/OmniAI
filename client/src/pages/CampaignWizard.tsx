@@ -102,7 +102,7 @@ export default function CampaignWizard() {
           <Megaphone className="w-6 h-6" />
           Create New Campaign
         </h1>
-        <p className="text-muted-foreground mt-1">Set your goal — OTOBI generates landing page, ads, emails, and social posts in one flow.</p>
+        <p className="text-zinc-500 mt-1">Set your goal — OTOBI generates landing page, ads, emails, and social posts in one flow.</p>
       </div>
 
       {step === 1 && (
@@ -114,7 +114,7 @@ export default function CampaignWizard() {
               <Button type="button" variant="outline" size="sm" onClick={clearAllGoals}>Clear all</Button>
             </div>
             {GOALS.map((g) => (
-              <label key={g.id} className="flex items-center gap-2 cursor-pointer rounded-lg border p-3 hover:bg-muted/50">
+              <label key={g.id} className="flex items-center gap-2 cursor-pointer rounded-lg border p-3 hover:bg-zinc-900/40">
                 <Checkbox checked={goals.includes(g.id)} onCheckedChange={() => toggleGoal(g.id)} />
                 <span>{g.label}</span>
               </label>
@@ -211,7 +211,7 @@ export default function CampaignWizard() {
                 <li key={i} className="flex items-center justify-between rounded-lg border p-3">
                   <div>
                     <span className="font-medium capitalize">{a.assetType.replace(/_/g, " ")}</span>
-                    {(a.title || a.preview) && <span className="text-muted-foreground ml-2">— {a.title || a.preview?.slice(0, 50)}</span>}
+                    {(a.title || a.preview) && <span className="text-zinc-500 ml-2">— {a.title || a.preview?.slice(0, 50)}</span>}
                   </div>
                   <Button variant="ghost" size="sm" onClick={() => {
                     if (a.assetType === "landing_page") setLocation("/landing-pages");

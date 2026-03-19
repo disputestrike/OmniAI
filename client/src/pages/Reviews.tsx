@@ -58,8 +58,8 @@ export default function Reviews() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Reviews & Reputation</h1>
-          <p className="text-muted-foreground text-sm mt-1">Track and respond to reviews from Google, Facebook, Yelp, or add them manually.</p>
+          <h1 className="page-title">Reviews & Reputation</h1>
+          <p className="page-subtitle">Track and respond to reviews from Google, Facebook, Yelp, or add them manually.</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={showAddSource} onOpenChange={setShowAddSource}>
@@ -104,11 +104,11 @@ export default function Reviews() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardHeader className="pb-2"><CardTitle className="text-base">Sources</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {!sources?.length ? <p className="text-sm text-muted-foreground">No sources yet. Add Google, Facebook, Yelp, or manual.</p> : sources.map((s: { id: number; name: string | null; sourceType: string; status: string }) => (
-              <div key={s.id} className="flex items-center justify-between p-2 rounded-lg border cursor-pointer hover:bg-muted/50" onClick={() => setSelectedSourceId(s.id)}>
+            {!sources?.length ? <p className="text-sm text-zinc-500">No sources yet. Add Google, Facebook, Yelp, or manual.</p> : sources.map((s: { id: number; name: string | null; sourceType: string; status: string }) => (
+              <div key={s.id} className="flex items-center justify-between p-2 rounded-lg border cursor-pointer hover:bg-zinc-900/40" onClick={() => setSelectedSourceId(s.id)}>
                 <span className="font-medium text-sm">{s.name || s.sourceType}</span>
                 <Badge variant="secondary" className="text-xs">{s.status}</Badge>
               </div>
@@ -117,19 +117,19 @@ export default function Reviews() {
         </Card>
         <div className="md:col-span-2 space-y-4">
           {selectedSourceId != null && (
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader className="pb-2"><CardTitle className="text-base">Reviews</CardTitle></CardHeader>
               <CardContent>
-                {!reviews?.length ? <p className="text-sm text-muted-foreground">No reviews for this source. Add one manually or connect the platform API.</p> : (
+                {!reviews?.length ? <p className="text-sm text-zinc-500">No reviews for this source. Add one manually or connect the platform API.</p> : (
                   <div className="space-y-4">
                     {(reviews as unknown as { id: number; authorName: string | null; rating: number; text: string | null; reply: string | null; reviewedAt: string }[]).map(r => (
-                      <div key={r.id} className="p-4 rounded-lg border bg-muted/20">
+                      <div key={r.id} className="p-4 rounded-lg border bg-zinc-900/20">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-sm">{r.authorName || "Anonymous"}</span>
                           <div className="flex text-amber-500">{[1,2,3,4,5].map(i => <Star key={i} className={`h-4 w-4 ${i <= r.rating ? "fill-current" : ""}`} />)}</div>
                         </div>
-                        {r.text && <p className="text-sm text-muted-foreground mb-2">{r.text}</p>}
-                        {r.reply && <div className="pl-3 border-l-2 border-primary/30"><p className="text-sm text-muted-foreground">Reply: {r.reply}</p></div>}
+                        {r.text && <p className="text-sm text-zinc-500 mb-2">{r.text}</p>}
+                        {r.reply && <div className="pl-3 border-l-2 border-primary/30"><p className="text-sm text-zinc-500">Reply: {r.reply}</p></div>}
                         {replyingToId === r.id ? (
                           <div className="mt-2"><Textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Your reply" rows={2} className="mb-2" /><Button size="sm" onClick={() => replyMut.mutate({ id: r.id, reply: replyText })}>Save reply</Button></div>
                         ) : (

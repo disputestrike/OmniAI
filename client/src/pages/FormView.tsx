@@ -23,9 +23,9 @@ export default function FormView() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  if (!slug) return <div className="min-h-screen flex items-center justify-center p-4"><p className="text-muted-foreground">Missing form slug.</p></div>;
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center p-4"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
-  if (error || !form) return <div className="min-h-screen flex items-center justify-center p-4"><p className="text-muted-foreground">Form not found or inactive.</p></div>;
+  if (!slug) return <div className="min-h-screen flex items-center justify-center p-4"><p className="text-zinc-500">Missing form slug.</p></div>;
+  if (isLoading) return <div className="min-h-screen flex items-center justify-center p-4"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>;
+  if (error || !form) return <div className="min-h-screen flex items-center justify-center p-4"><p className="text-zinc-500">Form not found or inactive.</p></div>;
 
   const fields = (form.fields ?? []) as { id: number; fieldType: string; label: string; placeholder?: string; required?: boolean; options?: string[] }[];
 
@@ -43,7 +43,7 @@ export default function FormView() {
 
   if (submitted && !form.redirectUrl)
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-900/50">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 flex flex-col items-center gap-4">
             <CheckCircle className="h-12 w-12 text-green-600" />
@@ -54,11 +54,11 @@ export default function FormView() {
     );
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/30">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-zinc-900/50">
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle>{form.name}</CardTitle>
-          {form.description ? <p className="text-sm text-muted-foreground">{form.description}</p> : null}
+          {form.description ? <p className="text-sm text-zinc-500">{form.description}</p> : null}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

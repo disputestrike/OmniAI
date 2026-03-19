@@ -83,7 +83,7 @@ export default function ProgrammaticAds() {
             <Lock className="h-7 w-7 text-amber-600" />
             Programmatic Ads
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-zinc-500 mt-1">
             Programmatic ad buying is available on Starter ($49/mo) and above. Upgrade to fund your ad wallet, launch campaigns, and track performance in one place.
           </p>
         </div>
@@ -109,8 +109,8 @@ export default function ProgrammaticAds() {
   return (
     <div className="space-y-6 p-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Programmatic Ads</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="page-title">Programmatic Ads</h1>
+        <p className="text-zinc-500 mt-1">
           One-stop programmatic ad buying. Fund your ad wallet, launch campaigns, and track performance — all in one place.
         </p>
       </div>
@@ -127,7 +127,7 @@ export default function ProgrammaticAds() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Ad Wallet Balance</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
+            <Wallet className="h-4 w-4 text-zinc-500" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -135,13 +135,13 @@ export default function ProgrammaticAds() {
             ) : (
               <span className="text-2xl font-bold">${balanceDollars}</span>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Available for programmatic campaigns</p>
+            <p className="text-xs text-zinc-500 mt-1">Available for programmatic campaigns</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <Target className="h-4 w-4 text-zinc-500" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -149,7 +149,7 @@ export default function ProgrammaticAds() {
             ) : (
               <span className="text-2xl font-bold">${spentDollars}</span>
             )}
-            <p className="text-xs text-muted-foreground mt-1">Lifetime campaign spend</p>
+            <p className="text-xs text-zinc-500 mt-1">Lifetime campaign spend</p>
           </CardContent>
         </Card>
         <Card>
@@ -162,7 +162,7 @@ export default function ProgrammaticAds() {
             ) : (
               <span className="text-2xl font-bold">{status?.campaigns?.length ?? 0}</span>
             )}
-            <p className="text-xs text-muted-foreground mt-1">DSP campaigns</p>
+            <p className="text-xs text-zinc-500 mt-1">DSP campaigns</p>
           </CardContent>
         </Card>
       </div>
@@ -192,7 +192,7 @@ export default function ProgrammaticAds() {
             {funding ? "Redirecting…" : "Add funds"}
           </Button>
           {status && !status.enabled && (
-            <p className="flex items-center gap-1 text-sm text-muted-foreground">
+            <p className="flex items-center gap-1 text-sm text-zinc-500">
               DSP campaign execution will be available once your account is fully connected. You can fund your ad wallet now and create campaigns when ready.
             </p>
           )}
@@ -213,14 +213,14 @@ export default function ProgrammaticAds() {
               ))}
             </div>
           ) : !status?.campaigns?.length ? (
-            <p className="text-sm text-muted-foreground mt-4">No campaigns yet. Fund your wallet and create your first campaign above.</p>
+            <p className="text-sm text-zinc-500 mt-4">No campaigns yet. Fund your wallet and create your first campaign above.</p>
           ) : (
             <ul className="space-y-2">
               {status.campaigns.map((c) => (
                 <li key={c.id} className="flex items-center justify-between rounded-lg border p-3">
                   <div>
                     <p className="font-medium">{c.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-zinc-500">
                       {c.impressions ?? 0} impr. · {c.clicks ?? 0} clicks · ${((c.spentCents ?? 0) / 100).toFixed(2)} spent
                       {c.aiQualityScore != null ? ` · AI score: ${c.aiQualityScore}` : ""}
                     </p>

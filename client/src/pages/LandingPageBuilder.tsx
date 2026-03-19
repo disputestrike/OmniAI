@@ -108,11 +108,11 @@ export default function LandingPageBuilder() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Landing Page Builder</h1>
-          <p className="text-muted-foreground">Create high-converting landing pages with AI</p>
+          <p className="text-zinc-500">Create high-converting landing pages with AI</p>
         </div>
         <Dialog open={showCreate} onOpenChange={(open) => { setShowCreate(open); if (!open) setCreateMode("choice"); }}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" /> New Page</Button></DialogTrigger>
@@ -120,7 +120,7 @@ export default function LandingPageBuilder() {
             <DialogHeader><DialogTitle>Create Landing Page</DialogTitle></DialogHeader>
             {createMode === "choice" && (
               <div className="space-y-3 mt-4">
-                <p className="text-sm text-muted-foreground">Choose how to start:</p>
+                <p className="text-sm text-zinc-500">Choose how to start:</p>
                 <Button variant="outline" className="w-full justify-start" onClick={() => setCreateMode("ai")}>
                   <Sparkles className="w-4 h-4 mr-2" /> Build with AI — describe your page in one sentence
                 </Button>
@@ -177,11 +177,11 @@ export default function LandingPageBuilder() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Page List */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your Pages</h3>
+          <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Your Pages</h3>
           {!pages?.length ? (
             <Card className="border-dashed"><CardContent className="py-8 text-center">
-              <Globe className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No pages yet</p>
+              <Globe className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500">No pages yet</p>
             </CardContent></Card>
           ) : pages.map(p => (
             <Card key={p.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedPage === p.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedPage(p.id)}>
@@ -189,7 +189,7 @@ export default function LandingPageBuilder() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-medium text-sm">{p.title}</span>
-                    <p className="text-xs text-muted-foreground">/{p.slug}</p>
+                    <p className="text-xs text-zinc-500">/{p.slug}</p>
                   </div>
                   <Badge variant={p.status === "published" ? "default" : "outline"} className="text-xs">{p.status}</Badge>
                 </div>
@@ -202,8 +202,8 @@ export default function LandingPageBuilder() {
         <div className="lg:col-span-3">
           {!selectedPage || !pageDetail ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-16">
-              <Layout className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Select a page to edit or create a new one</p>
+              <Layout className="w-12 h-12 text-zinc-500 mb-4" />
+              <p className="text-zinc-500">Select a page to edit or create a new one</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-4">
@@ -234,7 +234,7 @@ export default function LandingPageBuilder() {
               {/* Block library: add blocks */}
               <Card className="border-dashed">
                 <CardContent className="p-3">
-                  <p className="text-xs font-medium text-muted-foreground uppercase mb-2">Add block</p>
+                  <p className="text-xs font-medium text-zinc-500 uppercase mb-2">Add block</p>
                   <div className="flex flex-wrap gap-2">
                     {blockLibrary.map(block => (
                       <Button key={block.type} variant="outline" size="sm" className="gap-1.5" onClick={() => addBlock(block)}>
@@ -284,7 +284,7 @@ export default function LandingPageBuilder() {
                       ) : null}
                     </div>
                     <div className="mt-3">
-                      <label className="text-xs font-medium text-muted-foreground">Redirect after submit (URL or page slug)</label>
+                      <label className="text-xs font-medium text-zinc-500">Redirect after submit (URL or page slug)</label>
                       <Input value={redirectAfterSubmit} onChange={e => setRedirectAfterSubmit(e.target.value)} placeholder="/thank-you or https://..." className="mt-1" onBlur={() => updatePage.mutate({ id: selectedPage!, metadata: { ...(pageDetail?.metadata as object || {}), redirectAfterSubmit: redirectAfterSubmit || undefined } })} />
                     </div>
                   </CardContent>
@@ -298,7 +298,7 @@ export default function LandingPageBuilder() {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <GripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+                          <GripVertical className="w-4 h-4 text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
                           <Badge variant="secondary" className="uppercase text-xs">{comp.type}</Badge>
                           <span className="text-sm font-medium">{comp.props?.headline || comp.props?.title || comp.props?.text || `${comp.type} section`}</span>
                         </div>
@@ -311,7 +311,7 @@ export default function LandingPageBuilder() {
                         <div className="mt-4 space-y-3 border-t pt-4">
                           {Object.entries(comp.props || {}).map(([key, value]) => (
                             <div key={key}>
-                              <label className="text-xs font-medium text-muted-foreground uppercase">{key}</label>
+                              <label className="text-xs font-medium text-zinc-500 uppercase">{key}</label>
                               {typeof value === "string" ? (
                                 value.length > 100 ? (
                                   <Textarea defaultValue={value} className="mt-1 text-sm" rows={3} onBlur={e => {
@@ -327,7 +327,7 @@ export default function LandingPageBuilder() {
                                   }} />
                                 )
                               ) : (
-                                <p className="text-xs text-muted-foreground mt-1">{JSON.stringify(value).substring(0, 200)}</p>
+                                <p className="text-xs text-zinc-500 mt-1">{JSON.stringify(value).substring(0, 200)}</p>
                               )}
                             </div>
                           ))}
@@ -345,7 +345,7 @@ export default function LandingPageBuilder() {
                   <CardContent>
                     <div className="border rounded-lg overflow-hidden">
                       <table className="w-full text-sm">
-                        <thead className="bg-muted/50"><tr>
+                        <thead className="bg-zinc-900/40"><tr>
                           <th className="text-left p-2 font-medium">Date</th>
                           <th className="text-left p-2 font-medium">Data</th>
                         </tr></thead>

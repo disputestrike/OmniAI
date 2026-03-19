@@ -42,11 +42,11 @@ export default function Team() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Users className="h-6 w-6 text-primary" /> Team Collaboration</h1>
-          <p className="text-muted-foreground">Manage your marketing team, roles, and permissions</p>
+          <p className="text-zinc-500">Manage your marketing team, roles, and permissions</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><UserPlus className="h-4 w-4 mr-2" /> Invite Member</Button></DialogTrigger>
@@ -72,10 +72,10 @@ export default function Team() {
       </div>
 
       {/* Lead assignment */}
-      <Card className="border-0 shadow-sm">
+      <Card className="glass rounded-2xl">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2"><UserCircle className="h-4 w-4" /> Lead assignment</CardTitle>
-          <p className="text-sm text-muted-foreground">When new leads are created (e.g. from forms or imports), assign them manually in Lead Manager or automatically in rotation.</p>
+          <p className="text-sm text-zinc-500">When new leads are created (e.g. from forms or imports), assign them manually in Lead Manager or automatically in rotation.</p>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-3">
           <Select value={leadAssignMode} onValueChange={(v: "manual" | "round_robin") => setLeadAssignMode(v)}>
@@ -93,37 +93,37 @@ export default function Team() {
           }}>
             {saveAssignment.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}Save
           </Button>
-          {assignmentSetting?.mode === "round_robin" && <span className="text-xs text-muted-foreground">New leads will be assigned in rotation.</span>}
+          {assignmentSetting?.mode === "round_robin" && <span className="text-xs text-zinc-500">New leads will be assigned in rotation.</span>}
         </CardContent>
       </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold">{members?.length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Total Members</p>
+          <p className="text-sm text-zinc-500">Total Members</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-purple-600">{members?.filter((m: any) => m.role === "admin").length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Admins</p>
+          <p className="text-sm text-zinc-500">Admins</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-green-600">{members?.filter((m: any) => m.status === "active").length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Active</p>
+          <p className="text-sm text-zinc-500">Active</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-amber-600">{members?.filter((m: any) => m.status === "invited").length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Pending</p>
+          <p className="text-sm text-zinc-500">Pending</p>
         </CardContent></Card>
       </div>
 
       {/* Members List */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
       ) : !members?.length ? (
         <Card className="border-dashed"><CardContent className="py-12 text-center">
-          <Users className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No team members yet. Invite your first team member to start collaborating.</p>
+          <Users className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+          <p className="text-zinc-500">No team members yet. Invite your first team member to start collaborating.</p>
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
@@ -141,7 +141,7 @@ export default function Team() {
                         {getRoleBadge(member.role)}
                         <Badge variant={member.status === "active" ? "default" : "outline"}>{member.status}</Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-zinc-500">
                         Joined {new Date(member.createdAt).toLocaleDateString()}
                         {member.permissions && ` · Permissions: ${(member.permissions as string[]).join(", ")}`}
                       </p>

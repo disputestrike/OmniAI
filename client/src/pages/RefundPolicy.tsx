@@ -16,9 +16,9 @@ export default function RefundPolicy() {
         <Card className="shadow-lg border-0">
           <CardHeader>
             <CardTitle className="text-2xl">Refund Policy</CardTitle>
-            <p className="text-sm text-muted-foreground">Last updated: March 2025</p>
+            <p className="text-sm text-zinc-500">Last updated: March 2025</p>
           </CardHeader>
-          <CardContent className="prose prose-slate max-w-none space-y-6 text-muted-foreground">
+          <CardContent className="prose prose-slate max-w-none space-y-6 text-zinc-500">
             <p>
               OTOBI AI offers a <strong className="text-foreground">7-day money-back guarantee</strong> on all paid subscriptions.
               If you are not satisfied within the first 7 days of your paid subscription (after your free trial ends), contact us at{" "}

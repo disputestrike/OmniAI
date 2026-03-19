@@ -79,8 +79,8 @@ export default function Forms() {
     <div className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Forms</h1>
-          <p className="text-muted-foreground text-sm mt-1">Create standalone forms and surveys. Share a link or embed; responses become leads when you enable it.</p>
+          <h1 className="page-title">Forms</h1>
+          <p className="page-subtitle">Create standalone forms and surveys. Share a link or embed; responses become leads when you enable it.</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild><Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />New form</Button></DialogTrigger>
@@ -99,22 +99,22 @@ export default function Forms() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="space-y-2">
-          <h3 className="font-medium text-sm text-muted-foreground">Your forms</h3>
+          <h3 className="font-medium text-sm text-zinc-500">Your forms</h3>
           {isLoading ? (
             <div className="space-y-2">{[1, 2, 3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-3 h-14" /></Card>)}</div>
           ) : !forms?.length ? (
-            <Card className="border-0 shadow-sm"><CardContent className="p-6 text-center text-muted-foreground text-sm">No forms yet. Create one to collect responses.</CardContent></Card>
+            <Card className="glass rounded-2xl"><CardContent className="p-6 text-center text-zinc-500 text-sm">No forms yet. Create one to collect responses.</CardContent></Card>
           ) : (
             <div className="space-y-2">
               {forms.map((f) => (
                 <Card key={f.id} className={`cursor-pointer border transition-all ${selectedId === f.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedId(f.id)}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-2 min-w-0">
-                      <FileQuestion className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      <FileQuestion className="h-4 w-4 shrink-0 text-zinc-500" />
                       <span className="font-medium truncate">{f.name}</span>
                       <Badge variant="secondary" className="text-xs shrink-0">{f.submissionCount ?? 0}</Badge>
                     </div>
-                    <Button variant="ghost" size="icon" className="shrink-0" onClick={e => { e.stopPropagation(); if (confirm("Delete this form?")) deleteMut.mutate({ id: f.id }); }}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></Button>
+                    <Button variant="ghost" size="icon" className="shrink-0" onClick={e => { e.stopPropagation(); if (confirm("Delete this form?")) deleteMut.mutate({ id: f.id }); }}><Trash2 className="h-3.5 w-3.5 text-zinc-500" /></Button>
                   </CardContent>
                 </Card>
               ))}
@@ -123,7 +123,7 @@ export default function Forms() {
         </div>
         <div className="md:col-span-2">
           {selectedId && formDetail ? (
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <CardTitle className="text-lg">Fields</CardTitle>
@@ -151,11 +151,11 @@ export default function Forms() {
               </CardHeader>
               <CardContent>
                 {(formDetail.fields as { id: number; label: string; fieldType: string; required: boolean }[]).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No fields yet. Add fields to build your form.</p>
+                  <p className="text-sm text-zinc-500">No fields yet. Add fields to build your form.</p>
                 ) : (
                   <div className="space-y-2 mb-4">
                     {(formDetail.fields as { id: number; label: string; fieldType: string; required: boolean }[]).map(f => (
-                      <div key={f.id} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30">
+                      <div key={f.id} className="flex items-center gap-3 p-3 rounded-lg border bg-zinc-900/50">
                         <span className="text-sm font-medium">{f.label}</span>
                         <Badge variant="outline" className="text-xs">{f.fieldType}</Badge>
                         {f.required && <Badge variant="secondary" className="text-xs">Required</Badge>}
@@ -165,7 +165,7 @@ export default function Forms() {
                   </div>
                 )}
                 <div className="pt-3 border-t">
-                  <Label className="text-xs text-muted-foreground">Share link (for active form)</Label>
+                  <Label className="text-xs text-zinc-500">Share link (for active form)</Label>
                   <div className="flex gap-2 mt-1">
                     <Input readOnly value={shareUrl} className="font-mono text-sm" />
                     <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success("Link copied"); }}><Copy className="h-4 w-4" /></Button>
@@ -177,12 +177,12 @@ export default function Forms() {
                 {showResponses && (
                   <div className="mt-4 pt-4 border-t">
                     <h4 className="font-medium text-sm mb-2">Responses</h4>
-                    {!responses?.length ? <p className="text-sm text-muted-foreground">No responses yet.</p> : (
+                    {!responses?.length ? <p className="text-sm text-zinc-500">No responses yet.</p> : (
                       <div className="space-y-2 max-h-60 overflow-y-auto">
                         {(responses as { id: number; data: Record<string, string>; createdAt: string }[]).map(r => (
                           <div key={r.id} className="p-2 rounded border text-sm">
-                            {Object.entries(r.data || {}).map(([k, v]) => <div key={k}><span className="text-muted-foreground">{k}:</span> {String(v)}</div>)}
-                            <div className="text-muted-foreground text-xs mt-1">{new Date(r.createdAt).toLocaleString()}</div>
+                            {Object.entries(r.data || {}).map(([k, v]) => <div key={k}><span className="text-zinc-500">{k}:</span> {String(v)}</div>)}
+                            <div className="text-zinc-500 text-xs mt-1">{new Date(r.createdAt).toLocaleString()}</div>
                           </div>
                         ))}
                       </div>
@@ -192,7 +192,7 @@ export default function Forms() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-0 shadow-sm"><CardContent className="p-12 text-center text-muted-foreground">Select a form or create one to edit fields and get the share link.</CardContent></Card>
+            <Card className="glass rounded-2xl"><CardContent className="p-12 text-center text-zinc-500">Select a form or create one to edit fields and get the share link.</CardContent></Card>
           )}
         </div>
       </div>

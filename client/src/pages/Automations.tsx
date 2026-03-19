@@ -44,11 +44,11 @@ export default function Automations() {
   const actions = (workflowDetail?.actions as any[]) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Automation Workflows</h1>
-          <p className="text-muted-foreground">Automate repetitive marketing tasks with triggers and actions</p>
+          <p className="text-zinc-500">Automate repetitive marketing tasks with triggers and actions</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" /> New Workflow</Button></DialogTrigger>
@@ -82,7 +82,7 @@ export default function Automations() {
                     }}>
                       <CardContent className="p-3">
                         <span className="font-medium text-sm">{t.name}</span>
-                        <p className="text-xs text-muted-foreground">{t.description}</p>
+                        <p className="text-xs text-zinc-500">{t.description}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -96,11 +96,11 @@ export default function Automations() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Workflow List */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your Workflows</h3>
+          <h3 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Your Workflows</h3>
           {!workflows?.length ? (
             <Card className="border-dashed"><CardContent className="py-8 text-center">
-              <Zap className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No workflows yet</p>
+              <Zap className="w-8 h-8 text-zinc-500 mx-auto mb-2" />
+              <p className="text-sm text-zinc-500">No workflows yet</p>
             </CardContent></Card>
           ) : workflows.map(w => (
             <Card key={w.id} className={`cursor-pointer transition-all hover:shadow-md ${selectedWorkflow === w.id ? "ring-2 ring-primary" : ""}`} onClick={() => setSelectedWorkflow(w.id)}>
@@ -113,7 +113,7 @@ export default function Automations() {
                       <Badge variant={w.status === "active" ? "default" : "secondary"} className="text-xs">{w.status}</Badge>
                     </div>
                   </div>
-                  {(w.runCount ?? 0) > 0 && <span className="text-xs text-muted-foreground">{w.runCount} runs</span>}
+                  {(w.runCount ?? 0) > 0 && <span className="text-xs text-zinc-500">{w.runCount} runs</span>}
                 </div>
               </CardContent>
             </Card>
@@ -124,8 +124,8 @@ export default function Automations() {
         <div className="lg:col-span-2">
           {!selectedWorkflow || !workflowDetail ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-16">
-              <GitBranch className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Select a workflow to view or edit</p>
+              <GitBranch className="w-12 h-12 text-zinc-500 mb-4" />
+              <p className="text-zinc-500">Select a workflow to view or edit</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-4">
@@ -158,7 +158,7 @@ export default function Automations() {
                       <Zap className="w-5 h-5 text-primary" />
                       <div>
                         <p className="font-medium text-sm">Trigger: {workflowDetail.triggerType.replace(/_/g, " ")}</p>
-                        <p className="text-xs text-muted-foreground">When this event occurs, the workflow runs</p>
+                        <p className="text-xs text-zinc-500">When this event occurs, the workflow runs</p>
                       </div>
                     </div>
 
@@ -167,30 +167,30 @@ export default function Automations() {
                       <div className="space-y-2">
                         {actions.map((action: any, idx: number) => (
                           <div key={idx}>
-                            <div className="flex justify-center"><ArrowRight className="w-4 h-4 text-muted-foreground rotate-90" /></div>
-                            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border">
+                            <div className="flex justify-center"><ArrowRight className="w-4 h-4 text-zinc-500 rotate-90" /></div>
+                            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/40 border">
                               <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold">{idx + 1}</div>
                               <div className="flex-1">
                                 <p className="font-medium text-sm capitalize">{action.type.replace(/_/g, " ")}</p>
-                                <p className="text-xs text-muted-foreground">{action.config?.subject || action.config?.message || action.config?.title || JSON.stringify(action.config).substring(0, 80)}</p>
+                                <p className="text-xs text-zinc-500">{action.config?.subject || action.config?.message || action.config?.title || JSON.stringify(action.config).substring(0, 80)}</p>
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-muted-foreground text-center py-4">No actions configured. Use a template or add actions.</p>
+                      <p className="text-sm text-zinc-500 text-center py-4">No actions configured. Use a template or add actions.</p>
                     )}
 
                     {/* Stats */}
                     {(workflowDetail.runCount ?? 0) > 0 && (
                       <div className="grid grid-cols-2 gap-3 pt-4 border-t">
-                        <div className="p-3 rounded-lg bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Total Runs</p>
+                        <div className="p-3 rounded-lg bg-zinc-900/50">
+                          <p className="text-xs text-zinc-500">Total Runs</p>
                           <p className="text-lg font-bold">{workflowDetail.runCount ?? 0}</p>
                         </div>
-                        <div className="p-3 rounded-lg bg-muted/30">
-                          <p className="text-xs text-muted-foreground">Last Run</p>
+                        <div className="p-3 rounded-lg bg-zinc-900/50">
+                          <p className="text-xs text-zinc-500">Last Run</p>
                           <p className="text-sm font-medium">{workflowDetail.lastRunAt ? new Date(workflowDetail.lastRunAt).toLocaleString() : "Never"}</p>
                         </div>
                       </div>

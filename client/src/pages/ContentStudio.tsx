@@ -162,11 +162,11 @@ export default function ContentStudio() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Content Studio</h1>
-          <p className="text-muted-foreground text-sm mt-1">Generate, remix, and repurpose marketing content across 22 formats and all platforms.</p>
+          <h1 className="page-title">Content Studio</h1>
+          <p className="page-subtitle">Generate, remix, and repurpose marketing content across 22 formats and all platforms.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="rounded-xl" onClick={() => { setRemixContent(""); setRemixOpen(true); }}>
@@ -187,9 +187,9 @@ export default function ContentStudio() {
                     <div className="grid grid-cols-2 gap-2">
                       {cat.types.map(t => (
                         <button key={t.value} onClick={() => setType(t.value)}
-                          className={`p-3 rounded-xl text-left transition-all border ${type === t.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/30 hover:bg-muted/50"}`}>
+                          className={`p-3 rounded-xl text-left transition-all border ${type === t.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:border-primary/30 hover:bg-zinc-800/50"}`}>
                           <p className="text-sm font-medium">{t.label}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{t.desc}</p>
+                          <p className="text-xs text-zinc-500 mt-0.5">{t.desc}</p>
                         </button>
                       ))}
                     </div>
@@ -232,7 +232,7 @@ export default function ContentStudio() {
       <Dialog open={remixOpen} onOpenChange={setRemixOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><RefreshCw className="h-5 w-5 text-primary" />Remix Content</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Paste any content — a competitor's ad, a viral post, an article — and AI will recreate it better, more engaging, and more effective.</p>
+          <p className="text-sm text-zinc-500">Paste any content — a competitor's ad, a viral post, an article — and AI will recreate it better, more engaging, and more effective.</p>
           <div className="space-y-3 mt-2">
             <div>
               <Label>Original Content *</Label>
@@ -270,7 +270,7 @@ export default function ContentStudio() {
       <Dialog open={repurposeOpen} onOpenChange={setRepurposeOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Shuffle className="h-5 w-5 text-primary" />Repurpose Content</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Turn one piece of content into multiple formats. Select the formats you want to create.</p>
+          <p className="text-sm text-zinc-500">Turn one piece of content into multiple formats. Select the formats you want to create.</p>
           <div className="space-y-3 mt-2">
             <div className="grid grid-cols-2 gap-2">
               {allTypes.map(t => (
@@ -290,7 +290,7 @@ export default function ContentStudio() {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
           <Input className="pl-9" placeholder="Search content..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Select value={filterType} onValueChange={setFilterType}>
@@ -306,11 +306,11 @@ export default function ContentStudio() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-3">{[1,2,3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-6 h-24" /></Card>)}</div>
       ) : !filtered.length ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-12 text-center">
-            <PenTool className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <PenTool className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">{contents?.length ? "No matching content" : "No content yet"}</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Generate any type of marketing content, remix competitor content, or repurpose existing pieces across 22 formats.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Generate any type of marketing content, remix competitor content, or repurpose existing pieces across 22 formats.</p>
             {!contents?.length && (
               <div className="flex items-center justify-center gap-3 mt-4">
                 <Button className="rounded-xl" onClick={() => setOpen(true)}><Sparkles className="h-4 w-4 mr-2" />Generate Content</Button>
@@ -322,7 +322,7 @@ export default function ContentStudio() {
       ) : (
         <div className="space-y-3">
           {filtered.map(content => (
-            <Card key={content.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+            <Card key={content.id} className="glass glass-hover rounded-2xl transition-all">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0 flex-1 cursor-pointer" onClick={() => setExpandedId(expandedId === content.id ? null : content.id)}>

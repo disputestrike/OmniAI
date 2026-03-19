@@ -40,11 +40,11 @@ export default function Approvals() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><CheckCircle className="h-6 w-6 text-primary" /> Approval Workflows</h1>
-          <p className="text-muted-foreground">Submit content for review and manage approval chains</p>
+          <p className="text-zinc-500">Submit content for review and manage approval chains</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> New Request</Button></DialogTrigger>
@@ -73,17 +73,17 @@ export default function Approvals() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-amber-600">{pending?.length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Pending Review</p>
+          <p className="text-sm text-zinc-500">Pending Review</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-green-600">{allApprovals?.filter((a: any) => a.status === "approved").length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Approved</p>
+          <p className="text-sm text-zinc-500">Approved</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-red-600">{allApprovals?.filter((a: any) => a.status === "rejected").length ?? 0}</p>
-          <p className="text-sm text-muted-foreground">Rejected</p>
+          <p className="text-sm text-zinc-500">Rejected</p>
         </CardContent></Card>
       </div>
 
@@ -96,8 +96,8 @@ export default function Approvals() {
         <TabsContent value="pending" className="space-y-3">
           {!pending?.length ? (
             <Card className="border-dashed"><CardContent className="py-12 text-center">
-              <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground">No pending approvals. All caught up!</p>
+              <CheckCircle className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+              <p className="text-zinc-500">No pending approvals. All caught up!</p>
             </CardContent></Card>
           ) : (
             pending.map((item: any) => (
@@ -106,11 +106,11 @@ export default function Approvals() {
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold">{item.title}</h3>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
                         <Badge variant="outline">{item.entityType}</Badge>
                         <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                       </div>
-                      {item.description && <p className="text-sm text-muted-foreground mt-1">{item.description}</p>}
+                      {item.description && <p className="text-sm text-zinc-500 mt-1">{item.description}</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button size="sm" variant="outline" className="text-red-600 border-red-200 hover:bg-red-50"
@@ -131,10 +131,10 @@ export default function Approvals() {
 
         <TabsContent value="all" className="space-y-3">
           {isLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
           ) : !allApprovals?.length ? (
             <Card className="border-dashed"><CardContent className="py-12 text-center">
-              <p className="text-muted-foreground">No approval requests yet.</p>
+              <p className="text-zinc-500">No approval requests yet.</p>
             </CardContent></Card>
           ) : (
             allApprovals.map((item: any) => (
@@ -146,12 +146,12 @@ export default function Approvals() {
                         <h3 className="font-semibold">{item.title}</h3>
                         {getStatusBadge(item.status)}
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 mt-1 text-sm text-zinc-500">
                         <Badge variant="outline">{item.entityType}</Badge>
                         <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                         {item.reviewedAt && <span>Reviewed: {new Date(item.reviewedAt).toLocaleDateString()}</span>}
                       </div>
-                      {item.comment && <p className="text-sm text-muted-foreground mt-1 italic">"{item.comment}"</p>}
+                      {item.comment && <p className="text-sm text-zinc-500 mt-1 italic">"{item.comment}"</p>}
                     </div>
                   </div>
                 </CardContent>

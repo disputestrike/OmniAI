@@ -24,7 +24,7 @@ function ScoreRing({ score, label, size = "lg" }: { score: number; label: string
   return (
     <div className={`flex flex-col items-center gap-1 ${isLg ? "p-4" : "p-2"} rounded-xl ${bgColor}`}>
       <span className={`font-bold ${isLg ? "text-4xl" : "text-xl"} ${color}`}>{score.toFixed(1)}</span>
-      <span className={`text-muted-foreground ${isLg ? "text-sm" : "text-xs"} text-center`}>{label}</span>
+      <span className={`text-zinc-500 ${isLg ? "text-sm" : "text-xs"} text-center`}>{label}</span>
     </div>
   );
 }
@@ -92,7 +92,7 @@ export default function ContentScorer() {
               <Sparkles className="h-6 w-6 text-primary" />
               AI Content Scorer
             </h1>
-            <p className="text-muted-foreground mt-1">Rate your content 1-10 with specific improvement suggestions before you publish</p>
+            <p className="text-zinc-500 mt-1">Rate your content 1-10 with specific improvement suggestions before you publish</p>
           </div>
           {result && (
             <div className="flex items-center gap-2">
@@ -115,7 +115,7 @@ export default function ContentScorer() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Platform</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Platform</label>
                     <Select value={platform} onValueChange={setPlatform}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -126,7 +126,7 @@ export default function ContentScorer() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Content Type</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Content Type</label>
                     <Select value={contentType} onValueChange={setContentType}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -139,7 +139,7 @@ export default function ContentScorer() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Target Audience (optional)</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Target Audience (optional)</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. fitness enthusiasts"
@@ -148,7 +148,7 @@ export default function ContentScorer() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Product/Brand (optional)</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Product/Brand (optional)</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. Nike Air Max"
@@ -164,7 +164,7 @@ export default function ContentScorer() {
                   className="min-h-[200px] resize-none"
                 />
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{content.length} characters</span>
+                  <span className="text-xs text-zinc-500">{content.length} characters</span>
                   <Button onClick={handleScore} disabled={scoreMutation.isPending || !content.trim()} className="gap-2">
                     {scoreMutation.isPending ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Star className="h-4 w-4" />}
                     {scoreMutation.isPending ? "Scoring..." : "Score My Content"}
@@ -175,12 +175,12 @@ export default function ContentScorer() {
 
             {/* Quick Tips */}
             {!result && (
-              <Card className="bg-muted/30">
+              <Card className="bg-zinc-900/50">
                 <CardContent className="pt-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">What gets scored:</p>
+                  <p className="text-xs font-medium text-zinc-500 mb-2">What gets scored:</p>
                   <div className="grid grid-cols-2 gap-1.5">
                     {["Hook strength", "Clarity", "Emotional resonance", "CTA strength", "Platform fit", "Engagement potential", "Authenticity", "Viral potential"].map(item => (
-                      <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <div key={item} className="flex items-center gap-1.5 text-xs text-zinc-500">
                         <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
                         {item}
                       </div>
@@ -219,7 +219,7 @@ export default function ContentScorer() {
                     <div className="space-y-2">
                       {Object.entries(result.breakdown).map(([key, val]) => (
                         <div key={key} className="flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground w-24 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
+                          <span className="text-xs text-zinc-500 w-24 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
                           <Progress value={(val as number) * 10} className="flex-1 h-1.5" />
                           <span className="text-xs font-medium w-6 text-right">{val as number}</span>
                         </div>
@@ -251,7 +251,7 @@ export default function ContentScorer() {
                           </p>
                           <ul className="space-y-1">
                             {result.strengths.map((s: string, i: number) => (
-                              <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
+                              <li key={i} className="text-xs text-zinc-500 flex items-start gap-1.5">
                                 <span className="text-green-500 mt-0.5">✓</span> {s}
                               </li>
                             ))}
@@ -272,7 +272,7 @@ export default function ContentScorer() {
                                   <p className="text-xs font-medium">{imp.issue}</p>
                                   <ImpactBadge impact={imp.impact} />
                                 </div>
-                                <p className="text-xs text-muted-foreground">{imp.suggestion}</p>
+                                <p className="text-xs text-zinc-500">{imp.suggestion}</p>
                                 {imp.example && (
                                   <p className="text-xs bg-background rounded p-2 border border-border italic">
                                     "{imp.example}"
@@ -318,7 +318,7 @@ export default function ContentScorer() {
                     <Star className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="font-semibold">Score Your Content</h3>
-                  <p className="text-sm text-muted-foreground max-w-xs">
+                  <p className="text-sm text-zinc-500 max-w-xs">
                     Paste any content on the left and get an instant AI score with specific improvements before you publish.
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center mt-2">

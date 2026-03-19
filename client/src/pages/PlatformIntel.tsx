@@ -104,19 +104,19 @@ function PlatformCard({ spec, onClick, isSelected }: { spec: any; onClick: () =>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-zinc-500">
             <Type className="h-3 w-3" />
             <span>{spec.characterLimits.post.toLocaleString()} chars</span>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-zinc-500">
             <Hash className="h-3 w-3" />
             <span>{spec.hashtagStrategy.maxHashtags} tags</span>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-zinc-500">
             <Image className="h-3 w-3" />
             <span>{spec.imageSpecs.feedAspectRatio}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-zinc-500">
             <Video className="h-3 w-3" />
             <span>{spec.videoSpecs.maxLength}s max</span>
           </div>
@@ -131,7 +131,7 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className={`rounded-xl bg-gradient-to-br ${gradient} p-6 text-white`}>
         <div className="flex items-center gap-4">
@@ -158,8 +158,8 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {Object.entries(spec.characterLimits).map(([key, val]) => (
-              <div key={key} className="bg-muted/50 rounded-lg p-3">
-                <p className="text-xs text-muted-foreground capitalize">{key.replace(/([A-Z])/g, " $1")}</p>
+              <div key={key} className="bg-zinc-900/40 rounded-lg p-3">
+                <p className="text-xs text-zinc-500 capitalize">{key.replace(/([A-Z])/g, " $1")}</p>
                 <p className="text-lg font-bold">{(val as number).toLocaleString()}</p>
               </div>
             ))}
@@ -178,25 +178,25 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Feed Ratio</span>
+              <span className="text-zinc-500">Feed Ratio</span>
               <span className="font-medium">{spec.imageSpecs.feedAspectRatio}</span>
             </div>
             {spec.imageSpecs.storyAspectRatio && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Story Ratio</span>
+                <span className="text-zinc-500">Story Ratio</span>
                 <span className="font-medium">{spec.imageSpecs.storyAspectRatio}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Min Width</span>
+              <span className="text-zinc-500">Min Width</span>
               <span className="font-medium">{spec.imageSpecs.minWidth}px</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Max Size</span>
+              <span className="text-zinc-500">Max Size</span>
               <span className="font-medium">{spec.imageSpecs.maxFileSize}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Formats</span>
+              <span className="text-zinc-500">Formats</span>
               <span className="font-medium">{spec.imageSpecs.formats.join(", ")}</span>
             </div>
           </CardContent>
@@ -211,27 +211,27 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Max Length</span>
+              <span className="text-zinc-500">Max Length</span>
               <span className="font-medium">{spec.videoSpecs.maxLength}s</span>
             </div>
             {spec.videoSpecs.minLength && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Min Length</span>
+                <span className="text-zinc-500">Min Length</span>
                 <span className="font-medium">{spec.videoSpecs.minLength}s</span>
               </div>
             )}
             {spec.videoSpecs.recommendedLength && (
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Recommended</span>
+                <span className="text-zinc-500">Recommended</span>
                 <span className="font-medium">{spec.videoSpecs.recommendedLength}s</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Aspect Ratios</span>
+              <span className="text-zinc-500">Aspect Ratios</span>
               <span className="font-medium">{spec.videoSpecs.aspectRatios.join(", ")}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Max Size</span>
+              <span className="text-zinc-500">Max Size</span>
               <span className="font-medium">{spec.videoSpecs.maxFileSize}</span>
             </div>
           </CardContent>
@@ -248,20 +248,20 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-3 mb-3">
-            <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <p className="text-xs text-muted-foreground">Max</p>
+            <div className="bg-zinc-900/40 rounded-lg p-3 text-center">
+              <p className="text-xs text-zinc-500">Max</p>
               <p className="text-xl font-bold">{spec.hashtagStrategy.maxHashtags}</p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <p className="text-xs text-muted-foreground">Recommended</p>
+            <div className="bg-zinc-900/40 rounded-lg p-3 text-center">
+              <p className="text-xs text-zinc-500">Recommended</p>
               <p className="text-xl font-bold text-primary">{spec.hashtagStrategy.recommendedHashtags}</p>
             </div>
-            <div className="bg-muted/50 rounded-lg p-3 text-center">
-              <p className="text-xs text-muted-foreground">Placement</p>
+            <div className="bg-zinc-900/40 rounded-lg p-3 text-center">
+              <p className="text-xs text-zinc-500">Placement</p>
               <p className="text-sm font-bold capitalize">{spec.hashtagStrategy.placement}</p>
             </div>
           </div>
-          <p className="text-sm text-muted-foreground">{spec.hashtagStrategy.tips}</p>
+          <p className="text-sm text-zinc-500">{spec.hashtagStrategy.tips}</p>
         </CardContent>
       </Card>
 
@@ -281,7 +281,7 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
               if (!dayData) return null;
               const isPeakDay = spec.peakEngagement.days.includes(day);
               return (
-                <div key={day} className={`flex items-center gap-3 p-2 rounded-lg ${isPeakDay ? "bg-primary/5 border border-primary/20" : "bg-muted/30"}`}>
+                <div key={day} className={`flex items-center gap-3 p-2 rounded-lg ${isPeakDay ? "bg-primary/5 border border-primary/20" : "bg-zinc-900/50"}`}>
                   <span className={`text-sm font-medium w-24 ${isPeakDay ? "text-primary" : ""}`}>
                     {day.slice(0, 3)}
                     {isPeakDay && <Zap className="h-3 w-3 inline ml-1 text-primary" />}
@@ -341,10 +341,10 @@ function PlatformDetailPanel({ spec }: { spec: any }) {
         <CardContent>
           <div className="space-y-2">
             {spec.formatRecommendations.map((rec: any, i: number) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+              <div key={i} className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-lg">
                 <div>
                   <p className="font-medium text-sm">{rec.type}</p>
-                  <p className="text-xs text-muted-foreground">{rec.description}</p>
+                  <p className="text-xs text-zinc-500">{rec.description}</p>
                 </div>
                 <Badge
                   variant={rec.performanceRating === "high" ? "default" : "outline"}
@@ -394,7 +394,7 @@ function ContentFormatter() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -426,7 +426,7 @@ function ContentFormatter() {
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       isSelected
                         ? `bg-gradient-to-r ${gradient} text-white shadow-md`
-                        : "bg-muted hover:bg-muted/80 text-foreground"
+                        : "bg-zinc-800 hover:bg-zinc-800/80 text-foreground"
                     }`}
                   >
                     {PLATFORM_ICONS[spec.id]}
@@ -493,10 +493,10 @@ function ContentFormatter() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-muted/30 rounded-lg p-4 text-sm whitespace-pre-wrap font-mono">
+                  <div className="bg-zinc-900/50 rounded-lg p-4 text-sm whitespace-pre-wrap font-mono">
                     {result.formatted}
                   </div>
-                  <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4 mt-3 text-xs text-zinc-500">
                     <span>{result.characterCount} / {result.characterLimit} characters</span>
                     <span>Hashtags: {result.hashtagPlacement}</span>
                   </div>
@@ -536,7 +536,7 @@ function CrossPlatformAdapter() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -559,7 +559,7 @@ function CrossPlatformAdapter() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       sourcePlatform === spec.id
                         ? `bg-gradient-to-r ${PLATFORM_COLORS[spec.id] || "from-gray-500 to-gray-700"} text-white`
-                        : "bg-muted hover:bg-muted/80"
+                        : "bg-zinc-800 hover:bg-zinc-800/80"
                     }`}
                   >
                     {PLATFORM_ICONS[spec.id]}
@@ -578,7 +578,7 @@ function CrossPlatformAdapter() {
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                       targetPlatform === spec.id
                         ? `bg-gradient-to-r ${PLATFORM_COLORS[spec.id] || "from-gray-500 to-gray-700"} text-white`
-                        : "bg-muted hover:bg-muted/80"
+                        : "bg-zinc-800 hover:bg-zinc-800/80"
                     }`}
                   >
                     {PLATFORM_ICONS[spec.id]}
@@ -631,10 +631,10 @@ function CrossPlatformAdapter() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="bg-muted/30 rounded-lg p-4 text-sm whitespace-pre-wrap">
+            <div className="bg-zinc-900/50 rounded-lg p-4 text-sm whitespace-pre-wrap">
               {adaptedContent.adapted}
             </div>
-            <div className="mt-3 text-xs text-muted-foreground">
+            <div className="mt-3 text-xs text-zinc-500">
               Character limit: {adaptedContent.characterLimit} | Hashtag placement: {adaptedContent.hashtagStrategy?.placement}
             </div>
           </CardContent>
@@ -668,11 +668,11 @@ export default function PlatformIntel() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-64 bg-muted animate-pulse rounded" />
+      <div className="space-y-6 animate-fade-up">
+        <div className="h-8 w-64 bg-zinc-800 animate-pulse rounded" />
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-32 bg-muted animate-pulse rounded-xl" />
+            <div key={i} className="h-32 bg-zinc-800 animate-pulse rounded-xl" />
           ))}
         </div>
       </div>
@@ -680,10 +680,10 @@ export default function PlatformIntel() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Platform Intelligence</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="page-title">Platform Intelligence</h1>
+        <p className="text-zinc-500 mt-1">
           Master every platform. Character limits, aspect ratios, posting times, hashtag strategies — all in one place.
         </p>
       </div>
@@ -738,7 +738,7 @@ export default function PlatformIntel() {
                 <PlatformDetailPanel spec={selectedSpec} />
               ) : (
                 <Card className="h-full flex items-center justify-center min-h-[400px]">
-                  <div className="text-center text-muted-foreground">
+                  <div className="text-center text-zinc-500">
                     <Monitor className="h-12 w-12 mx-auto mb-3 opacity-30" />
                     <p className="font-medium">Select a platform</p>
                     <p className="text-sm">Click any platform card to see detailed specs</p>

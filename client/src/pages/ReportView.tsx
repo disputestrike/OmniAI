@@ -18,7 +18,7 @@ export default function ReportView() {
   if (!shareToken) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="max-w-md w-full"><CardContent className="p-6 text-center text-muted-foreground">Invalid report link.</CardContent></Card>
+        <Card className="max-w-md w-full"><CardContent className="p-6 text-center text-zinc-500">Invalid report link.</CardContent></Card>
       </div>
     );
   }
@@ -36,7 +36,7 @@ export default function ReportView() {
   if (error || !report) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <Card className="max-w-md w-full"><CardContent className="p-6 text-center text-muted-foreground">Report not found or expired.</CardContent></Card>
+        <Card className="max-w-md w-full"><CardContent className="p-6 text-center text-zinc-500">Report not found or expired.</CardContent></Card>
       </div>
     );
   }
@@ -46,16 +46,16 @@ export default function ReportView() {
   const data = payload?.data ?? payload;
 
   return (
-    <div className="min-h-screen bg-muted/30 py-8 px-4">
+    <div className="min-h-screen bg-zinc-900/50 py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+        <div className="flex items-center gap-2 text-zinc-500 text-sm">
           <FileText className="h-4 w-4" />
           <span>OTOBI AI — Shared report</span>
         </div>
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">{report.title}</CardTitle>
-            <p className="text-sm text-muted-foreground">Generated report (view only)</p>
+            <p className="text-sm text-zinc-500">Generated report (view only)</p>
           </CardHeader>
           <CardContent className="space-y-6">
             {type === "dashboard" && data && typeof data === "object" && "products" in data && (
@@ -63,7 +63,7 @@ export default function ReportView() {
                 {["products", "campaigns", "contents", "leads", "creatives"].map(key => (
                   <div key={key} className="p-3 rounded-lg border bg-background">
                     <p className="text-2xl font-bold">{(data as Record<string, number>)[key] ?? 0}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{key}</p>
+                    <p className="text-xs text-zinc-500 capitalize">{key}</p>
                   </div>
                 ))}
               </div>
@@ -72,22 +72,22 @@ export default function ReportView() {
               <div className="space-y-2">
                 {"summary" in data && typeof (data as any).summary === "object" && (
                   <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.impressions ?? 0}</p><p className="text-xs text-muted-foreground">Impressions</p></div>
-                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.clicks ?? 0}</p><p className="text-xs text-muted-foreground">Clicks</p></div>
-                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.conversions ?? 0}</p><p className="text-xs text-muted-foreground">Conversions</p></div>
+                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.impressions ?? 0}</p><p className="text-xs text-zinc-500">Impressions</p></div>
+                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.clicks ?? 0}</p><p className="text-xs text-zinc-500">Clicks</p></div>
+                    <div className="p-3 rounded-lg border"><p className="text-lg font-bold">{(data as any).summary.conversions ?? 0}</p><p className="text-xs text-zinc-500">Conversions</p></div>
                   </div>
                 )}
-                {"totalEvents" in data && <p className="text-sm text-muted-foreground">Total events: {(data as any).totalEvents ?? 0}</p>}
+                {"totalEvents" in data && <p className="text-sm text-zinc-500">Total events: {(data as any).totalEvents ?? 0}</p>}
               </div>
             )}
             {type === "ad_performance" && data && Array.isArray((data as any).reports) && (
               <div className="space-y-2">
                 <p className="text-sm font-medium">Ad performance reports ({(data as any).reports.length})</p>
-                <div className="text-sm text-muted-foreground">Summary data is available in the full dashboard.</div>
+                <div className="text-sm text-zinc-500">Summary data is available in the full dashboard.</div>
               </div>
             )}
             {(!data || (type !== "dashboard" && type !== "analytics" && type !== "ad_performance")) && (
-              <pre className="p-4 rounded-lg bg-muted text-xs overflow-auto max-h-96">{JSON.stringify(payload ?? report.payload, null, 2)}</pre>
+              <pre className="p-4 rounded-lg bg-zinc-800 text-xs overflow-auto max-h-96">{JSON.stringify(payload ?? report.payload, null, 2)}</pre>
             )}
           </CardContent>
         </Card>
@@ -95,7 +95,7 @@ export default function ReportView() {
           <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <p className="font-medium">Create reports like this with OTOBI AI</p>
-              <p className="text-sm text-muted-foreground">One platform for content, campaigns, analytics, and more.</p>
+              <p className="text-sm text-zinc-500">One platform for content, campaigns, analytics, and more.</p>
             </div>
             <Button onClick={() => { window.location.href = getLoginPageUrl(); }}>
               <Zap className="h-4 w-4 mr-2" /> Get started free

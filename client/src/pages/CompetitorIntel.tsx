@@ -36,11 +36,11 @@ export default function CompetitorIntel() {
   const unreadAlerts = alerts?.filter(a => !a.isRead).length || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Competitor Intelligence</h1>
-          <p className="text-muted-foreground">Track, analyze, and outmaneuver your competitors with AI-powered insights</p>
+          <p className="text-zinc-500">Track, analyze, and outmaneuver your competitors with AI-powered insights</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => positionMut.mutate()} disabled={positionMut.isPending || !competitors?.length}>
@@ -61,15 +61,15 @@ export default function CompetitorIntel() {
         <TabsContent value="dashboard" className="space-y-4">
           {/* Summary Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold">{competitors?.length || 0}</p><p className="text-xs text-muted-foreground">Tracked Competitors</p></CardContent></Card>
-            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-red-600">{competitors?.filter(c => c.threatLevel === "high" || c.threatLevel === "critical").length || 0}</p><p className="text-xs text-muted-foreground">High Threats</p></CardContent></Card>
-            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-green-600">{competitors?.filter(c => c.lastAnalyzedAt).length || 0}</p><p className="text-xs text-muted-foreground">Analyzed</p></CardContent></Card>
-            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-blue-600">{unreadAlerts}</p><p className="text-xs text-muted-foreground">New Alerts</p></CardContent></Card>
+            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold">{competitors?.length || 0}</p><p className="text-xs text-zinc-500">Tracked Competitors</p></CardContent></Card>
+            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-red-600">{competitors?.filter(c => c.threatLevel === "high" || c.threatLevel === "critical").length || 0}</p><p className="text-xs text-zinc-500">High Threats</p></CardContent></Card>
+            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-green-600">{competitors?.filter(c => c.lastAnalyzedAt).length || 0}</p><p className="text-xs text-zinc-500">Analyzed</p></CardContent></Card>
+            <Card><CardContent className="p-4 text-center"><p className="text-3xl font-bold text-blue-600">{unreadAlerts}</p><p className="text-xs text-zinc-500">New Alerts</p></CardContent></Card>
           </div>
 
           {/* Competitor Grid */}
           {!competitors?.length ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Globe className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No competitors tracked yet. Add your first competitor to start monitoring.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Globe className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No competitors tracked yet. Add your first competitor to start monitoring.</p></CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {competitors.map(c => {
@@ -90,13 +90,13 @@ export default function CompetitorIntel() {
                       {c.industry && <Badge variant="outline">{c.industry}</Badge>}
                       {metrics && (
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className="bg-muted p-2 rounded"><p className="text-muted-foreground">Est. Traffic</p><p className="font-medium">{metrics.estimatedTraffic?.toLocaleString() || "N/A"}</p></div>
-                          <div className="bg-muted p-2 rounded"><p className="text-muted-foreground">Social</p><p className="font-medium">{metrics.socialFollowers?.toLocaleString() || "N/A"}</p></div>
-                          <div className="bg-muted p-2 rounded"><p className="text-muted-foreground">Ads</p><p className="font-medium">{metrics.adCount || "N/A"}</p></div>
-                          <div className="bg-muted p-2 rounded"><p className="text-muted-foreground">Engagement</p><p className="font-medium">{metrics.engagementRate ? `${metrics.engagementRate}%` : "N/A"}</p></div>
+                          <div className="bg-zinc-800 p-2 rounded"><p className="text-zinc-500">Est. Traffic</p><p className="font-medium">{metrics.estimatedTraffic?.toLocaleString() || "N/A"}</p></div>
+                          <div className="bg-zinc-800 p-2 rounded"><p className="text-zinc-500">Social</p><p className="font-medium">{metrics.socialFollowers?.toLocaleString() || "N/A"}</p></div>
+                          <div className="bg-zinc-800 p-2 rounded"><p className="text-zinc-500">Ads</p><p className="font-medium">{metrics.adCount || "N/A"}</p></div>
+                          <div className="bg-zinc-800 p-2 rounded"><p className="text-zinc-500">Engagement</p><p className="font-medium">{metrics.engagementRate ? `${metrics.engagementRate}%` : "N/A"}</p></div>
                         </div>
                       )}
-                      {c.lastAnalyzedAt && <p className="text-xs text-muted-foreground">Last analyzed: {new Date(c.lastAnalyzedAt).toLocaleDateString()}</p>}
+                      {c.lastAnalyzedAt && <p className="text-xs text-zinc-500">Last analyzed: {new Date(c.lastAnalyzedAt).toLocaleDateString()}</p>}
                       <div className="flex gap-1">
                         <Button size="sm" onClick={() => { setSelectedCompetitor(c.id); setTab("analysis"); }}><Search className="w-3 h-3 mr-1" /> Analyze</Button>
                         <Button variant="ghost" size="sm" onClick={() => { if (confirm("Remove competitor?")) deleteMut.mutate({ id: c.id }); }}><Trash2 className="w-3 h-3" /></Button>
@@ -170,10 +170,10 @@ export default function CompetitorIntel() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {analysisResult.strategies.map((s: any, i: number) => (
-                        <div key={i} className="p-3 bg-muted rounded-lg">
+                        <div key={i} className="p-3 bg-zinc-800 rounded-lg">
                           <Badge variant="outline" className="mb-1">{s.category}</Badge>
                           <p className="font-medium text-sm">{s.name}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{s.description}</p>
+                          <p className="text-xs text-zinc-500 mt-1">{s.description}</p>
                         </div>
                       ))}
                     </div>
@@ -188,7 +188,7 @@ export default function CompetitorIntel() {
                   <CardContent>
                     <ol className="space-y-2">
                       {analysisResult.recommendations.map((r: string, i: number) => (
-                        <li key={i} className="flex items-start gap-3 p-2 bg-muted rounded"><span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{i + 1}</span><span className="text-sm">{r}</span></li>
+                        <li key={i} className="flex items-start gap-3 p-2 bg-zinc-800 rounded"><span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">{i + 1}</span><span className="text-sm">{r}</span></li>
                       ))}
                     </ol>
                   </CardContent>
@@ -200,7 +200,7 @@ export default function CompetitorIntel() {
 
         <TabsContent value="alerts" className="space-y-4">
           {!alerts?.length ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Bell className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No alerts yet. Alerts will appear when competitor changes are detected.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Bell className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No alerts yet. Alerts will appear when competitor changes are detected.</p></CardContent></Card>
           ) : (
             <div className="space-y-2">
               {alerts.map(a => (
@@ -208,8 +208,8 @@ export default function CompetitorIntel() {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <p className="font-medium text-sm">{a.title}</p>
-                      <p className="text-xs text-muted-foreground">{a.description}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{new Date(a.createdAt!).toLocaleString()}</p>
+                      <p className="text-xs text-zinc-500">{a.description}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{new Date(a.createdAt!).toLocaleString()}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={a.severity === "critical" ? "destructive" : a.severity === "warning" ? "default" : "secondary"}>{a.severity}</Badge>
@@ -236,7 +236,7 @@ export default function CompetitorIntel() {
                           <h3 className="font-medium">{p.name}</h3>
                           <Badge>{p.position}</Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">Market Share: {p.marketShare}</p>
+                        <p className="text-xs text-zinc-500 mb-2">Market Share: {p.marketShare}</p>
                         <div className="flex flex-wrap gap-1">{p.differentiators?.map((d: string, j: number) => <Badge key={j} variant="outline" className="text-xs">{d}</Badge>)}</div>
                       </CardContent>
                     </Card>

@@ -126,27 +126,27 @@ export default function Pricing() {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center space-y-3">
-        <h1 className="text-3xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <h1 className="page-title text-2xl">Simple, Transparent Pricing</h1>
+        <p className="text-zinc-500 max-w-2xl mx-auto">
           One platform that replaces Jasper + AdCreative.ai + Omneky + HubSpot CRM + SimilarWeb.
           Save thousands per month.
         </p>
 
         {/* Annual/Monthly Toggle */}
         <div className="flex items-center justify-center gap-3 pt-2">
-          <span className={`text-sm font-medium ${!isAnnual ? "text-foreground" : "text-muted-foreground"}`}>Monthly</span>
+          <span className={`text-sm font-medium ${!isAnnual ? "text-foreground" : "text-zinc-500"}`}>Monthly</span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
-            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isAnnual ? "bg-primary" : "bg-muted"}`}
+            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${isAnnual ? "bg-primary" : "bg-zinc-800"}`}
           >
             <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${isAnnual ? "translate-x-6" : "translate-x-1"}`} />
           </button>
-          <span className={`text-sm font-medium ${isAnnual ? "text-foreground" : "text-muted-foreground"}`}>
+          <span className={`text-sm font-medium ${isAnnual ? "text-foreground" : "text-zinc-500"}`}>
             Annual <Badge variant="secondary" className="ml-1 text-xs">Save $ when billed yearly</Badge>
           </span>
         </div>
         {/* User count — Item 7 */}
-        <p className="text-sm text-muted-foreground pt-2">
+        <p className="text-sm text-zinc-500 pt-2">
           {typeof userCount === "number" && userCount >= 100
             ? `Join ${userCount}+ marketers already using OTOBI AI`
             : "Join our growing community of marketers"}
@@ -156,7 +156,7 @@ export default function Pricing() {
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="h-10 w-28 rounded-lg bg-muted/60 flex items-center justify-center text-xs text-muted-foreground"
+              className="h-10 w-28 rounded-lg bg-zinc-900/60 flex items-center justify-center text-xs text-zinc-500"
             >
               Your Company
             </div>
@@ -193,20 +193,20 @@ export default function Pricing() {
                 <CardTitle className="text-lg">{tier.name}</CardTitle>
                 <div className="flex items-baseline gap-1">
                   <span className="text-3xl font-bold">${displayPrice}</span>
-                  <span className="text-sm text-muted-foreground">{tier.monthlyPrice === 0 ? "forever" : "/month"}</span>
+                  <span className="text-sm text-zinc-500">{tier.monthlyPrice === 0 ? "forever" : "/month"}</span>
                 </div>
                 {isAnnual && tier.monthlyPrice > 0 && (
                   <>
-                    <p className="text-xs text-muted-foreground line-through">${tier.monthlyPrice}/month</p>
+                    <p className="text-xs text-zinc-500 line-through">${tier.monthlyPrice}/month</p>
                     {annualSavings > 0 && (
                       <p className="text-xs text-emerald-600 font-medium">Save ${annualSavings}/year</p>
                     )}
                   </>
                 )}
-                <p className="text-xs text-muted-foreground">{tier.tagline}</p>
+                <p className="text-xs text-zinc-500">{tier.tagline}</p>
                 <div className="flex items-center gap-1.5 text-xs">
-                  <Users className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-muted-foreground">{meta.seats}</span>
+                  <Users className="h-3.5 w-3.5 text-zinc-500" />
+                  <span className="text-zinc-500">{meta.seats}</span>
                 </div>
               </CardHeader>
               <CardContent className="flex-1 flex flex-col justify-between space-y-4">
@@ -222,8 +222,8 @@ export default function Pricing() {
                   {feat.limitations.length > 0 && (
                     <ul className="space-y-1">
                       {feat.limitations.map((lim, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                          <X className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0 mt-0.5" />
+                        <li key={i} className="flex items-start gap-2 text-xs text-zinc-500">
+                          <X className="h-3.5 w-3.5 text-zinc-500/50 shrink-0 mt-0.5" />
                           <span>{lim}</span>
                         </li>
                       ))}
@@ -274,16 +274,16 @@ export default function Pricing() {
 
       {/* Credit packs — Need more? Top up from $9 */}
       {creditPackages && creditPackages.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-6">
             <h3 className="text-lg font-semibold text-center mb-2">Need more? Top up with credit packs from $9</h3>
-            <p className="text-sm text-muted-foreground text-center mb-4">One-time purchase. Credits never expire.</p>
+            <p className="text-sm text-zinc-500 text-center mb-4">One-time purchase. Credits never expire.</p>
             <div className="flex flex-wrap justify-center gap-3">
               {creditPackages.map((p: { id: string; name: string; credits: number; priceCentsAfterDiscount: number; priceCents: number; discountPercent: number }) => (
                 <div key={p.id} className="rounded-xl border bg-card px-4 py-3 text-center min-w-[120px]">
                   <p className="font-semibold text-sm">{p.name}</p>
                   <p className="text-lg font-bold text-primary">${(p.priceCentsAfterDiscount / 100).toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground">{p.credits} credits</p>
+                  <p className="text-xs text-zinc-500">{p.credits} credits</p>
                   <Button
                     size="sm"
                     variant="outline"
@@ -325,7 +325,7 @@ export default function Pricing() {
           {TESTIMONIALS.map((t, i) => (
             <Card key={i} className="border-0 shadow-sm bg-card">
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground italic">&ldquo;{t.quote}&rdquo;</p>
+                <p className="text-sm text-zinc-500 italic">&ldquo;{t.quote}&rdquo;</p>
                 <p className="text-sm font-medium mt-3">
                   — {t.author}, {t.title} at {t.company}
                 </p>
@@ -338,7 +338,7 @@ export default function Pricing() {
       {/* Replace bar */}
       <Card className="border-0 shadow-sm bg-primary/5">
         <CardContent className="p-6 text-center">
-          <p className="text-sm font-medium text-muted-foreground">
+          <p className="text-sm font-medium text-zinc-500">
             OTOBI replaces: Jasper ($69) + HeyGen ($89) + Arcads ($250) + Hootsuite ($199) + AdCreative ($119) + HubSpot CRM ($200) + SimilarWeb ($167) = <span className="line-through font-semibold">$1,093/month</span>.
           </p>
           <p className="text-lg font-bold text-primary mt-2">OTOBI Professional: $97/month.</p>
@@ -346,7 +346,7 @@ export default function Pricing() {
       </Card>
 
       {/* Comparison with competitors */}
-      <Card className="border-0 shadow-sm">
+      <Card className="glass rounded-2xl">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold text-center mb-4">Why OTOBI AI is the Best Value</h3>
           <div className="overflow-x-auto">
@@ -355,10 +355,10 @@ export default function Pricing() {
                 <tr className="border-b">
                   <th className="text-left py-2 px-3 font-medium">Capability</th>
                   <th className="text-center py-2 px-3 font-medium text-primary">OTOBI AI<br/><span className="text-xs font-normal">from $49/mo</span></th>
-                  <th className="text-center py-2 px-3 font-medium text-muted-foreground">Jasper<br/><span className="text-xs font-normal">$49-69/seat</span></th>
-                  <th className="text-center py-2 px-3 font-medium text-muted-foreground">AdCreative<br/><span className="text-xs font-normal">$25-359/mo</span></th>
-                  <th className="text-center py-2 px-3 font-medium text-muted-foreground">Omneky<br/><span className="text-xs font-normal">$99/mo</span></th>
-                  <th className="text-center py-2 px-3 font-medium text-muted-foreground">Arcads<br/><span className="text-xs font-normal">$110/mo</span></th>
+                  <th className="text-center py-2 px-3 font-medium text-zinc-500">Jasper<br/><span className="text-xs font-normal">$49-69/seat</span></th>
+                  <th className="text-center py-2 px-3 font-medium text-zinc-500">AdCreative<br/><span className="text-xs font-normal">$25-359/mo</span></th>
+                  <th className="text-center py-2 px-3 font-medium text-zinc-500">Omneky<br/><span className="text-xs font-normal">$99/mo</span></th>
+                  <th className="text-center py-2 px-3 font-medium text-zinc-500">Arcads<br/><span className="text-xs font-normal">$110/mo</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -378,20 +378,20 @@ export default function Pricing() {
                 ].map((row, i) => (
                   <tr key={i}>
                     <td className="py-2 px-3 text-xs">{row.cap}</td>
-                    <td className="text-center py-2 px-3">{row.us ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />}</td>
-                    <td className="text-center py-2 px-3">{row.j ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />}</td>
-                    <td className="text-center py-2 px-3">{row.a ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />}</td>
-                    <td className="text-center py-2 px-3">{row.o ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />}</td>
-                    <td className="text-center py-2 px-3">{row.ar ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />}</td>
+                    <td className="text-center py-2 px-3">{row.us ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-zinc-500/30 mx-auto" />}</td>
+                    <td className="text-center py-2 px-3">{row.j ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-zinc-500/30 mx-auto" />}</td>
+                    <td className="text-center py-2 px-3">{row.a ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-zinc-500/30 mx-auto" />}</td>
+                    <td className="text-center py-2 px-3">{row.o ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-zinc-500/30 mx-auto" />}</td>
+                    <td className="text-center py-2 px-3">{row.ar ? <Check className="h-4 w-4 text-emerald-500 mx-auto" /> : <X className="h-4 w-4 text-zinc-500/30 mx-auto" />}</td>
                   </tr>
                 ))}
                 <tr className="border-t-2 font-medium">
                   <td className="py-2 px-3 text-xs">Total cost for all features</td>
                   <td className="text-center py-2 px-3 text-primary text-xs font-bold">$49-497/mo</td>
-                  <td className="text-center py-2 px-3 text-muted-foreground text-xs">$49-69/seat</td>
-                  <td className="text-center py-2 px-3 text-muted-foreground text-xs">$25-359/mo</td>
-                  <td className="text-center py-2 px-3 text-muted-foreground text-xs">$99/mo</td>
-                  <td className="text-center py-2 px-3 text-muted-foreground text-xs">$110/mo</td>
+                  <td className="text-center py-2 px-3 text-zinc-500 text-xs">$49-69/seat</td>
+                  <td className="text-center py-2 px-3 text-zinc-500 text-xs">$25-359/mo</td>
+                  <td className="text-center py-2 px-3 text-zinc-500 text-xs">$99/mo</td>
+                  <td className="text-center py-2 px-3 text-zinc-500 text-xs">$110/mo</td>
                 </tr>
               </tbody>
             </table>
@@ -401,30 +401,30 @@ export default function Pricing() {
 
       {/* FAQ / Trust */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <h4 className="font-semibold text-sm mb-1">14-Day Free Trial</h4>
-            <p className="text-xs text-muted-foreground">Try any paid plan free for 14 days. No credit card required for the Free plan. Cancel anytime.</p>
+            <p className="text-xs text-zinc-500">Try any paid plan free for 14 days. No credit card required for the Free plan. Cancel anytime.</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <h4 className="font-semibold text-sm mb-1">Team Seat Pricing</h4>
-            <p className="text-xs text-muted-foreground">Professional includes 5 seats (+$15/extra). Business includes 15 seats (+$12/extra). Agency: unlimited.</p>
+            <p className="text-xs text-zinc-500">Professional includes 5 seats (+$15/extra). Business includes 15 seats (+$12/extra). Agency: unlimited.</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-5">
             <h4 className="font-semibold text-sm mb-1">Secure Payments</h4>
-            <p className="text-xs text-muted-foreground">
-              Powered by Stripe. Test with <code className="bg-muted px-1 py-0.5 rounded text-[10px]">4242 4242 4242 4242</code>.
+            <p className="text-xs text-zinc-500">
+              Powered by Stripe. Test with <code className="bg-zinc-800 px-1 py-0.5 rounded text-[10px]">4242 4242 4242 4242</code>.
             </p>
           </CardContent>
         </Card>
       </div>
 
       {/* Refund & Terms links */}
-      <div className="text-center py-6 text-sm text-muted-foreground">
+      <div className="text-center py-6 text-sm text-zinc-500">
         <a href="/refund-policy" className="hover:text-primary underline">Refund Policy</a>
         <span className="mx-2">·</span>
         <a href="/terms" className="hover:text-primary underline">Terms of Service</a>

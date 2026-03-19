@@ -149,7 +149,7 @@ export default function Contact() {
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-up">
             <div className="bg-amber-50/60 rounded-2xl p-6 border border-amber-100/50">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white flex-shrink-0">

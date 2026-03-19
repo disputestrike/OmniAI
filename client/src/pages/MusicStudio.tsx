@@ -93,7 +93,7 @@ function AudioPlayer({ url, title, loop = false, onDownload }: AudioPlayerProps)
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
   return (
-    <div className="bg-muted/30 rounded-lg p-3 space-y-2">
+    <div className="bg-zinc-900/50 rounded-lg p-3 space-y-2">
       <audio ref={audioRef} src={url} preload="metadata" />
       <div className="flex items-center gap-3">
         <Button size="icon" variant="default" className="h-9 w-9 shrink-0 rounded-full" onClick={togglePlay}>
@@ -102,7 +102,7 @@ function AudioPlayer({ url, title, loop = false, onDownload }: AudioPlayerProps)
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{title}</p>
           <div
-            className="mt-1 h-1.5 bg-muted rounded-full cursor-pointer"
+            className="mt-1 h-1.5 bg-zinc-800 rounded-full cursor-pointer"
             onClick={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               seek(((e.clientX - rect.left) / rect.width) * 100);
@@ -110,14 +110,14 @@ function AudioPlayer({ url, title, loop = false, onDownload }: AudioPlayerProps)
           >
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-0.5">
+          <div className="flex justify-between text-xs text-zinc-500 mt-0.5">
             <span>{audioRef.current ? fmt(audioRef.current.currentTime) : "0:00"}</span>
             <span>{duration ? fmt(duration) : "--:--"}</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {loop && <Repeat className="h-3.5 w-3.5 text-primary" aria-label="Looping" />}
-          <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+          <Volume2 className="h-3.5 w-3.5 text-zinc-500" />
           <div className="w-16">
             <Slider value={volume} onValueChange={setVolume} min={0} max={100} step={1} className="h-1" />
           </div>
@@ -194,7 +194,7 @@ export default function MusicStudio() {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Music className="h-6 w-6 text-primary" /> AI Music & Sound Studio
           </h1>
-          <p className="text-muted-foreground mt-1">Generate background music, browse sound effects, and create voiceovers for your videos</p>
+          <p className="text-zinc-500 mt-1">Generate background music, browse sound effects, and create voiceovers for your videos</p>
         </div>
         {providers && (
           <div className="flex gap-2 flex-wrap justify-end">
@@ -278,7 +278,7 @@ export default function MusicStudio() {
                   <div>
                     <Label className="text-sm">Duration: {duration[0]}s</Label>
                     <Slider value={duration} onValueChange={setDuration} min={15} max={120} step={5} className="mt-2" />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <div className="flex justify-between text-xs text-zinc-500 mt-1">
                       <span>15s (Short clip)</span>
                       <span>120s (Full track)</span>
                     </div>
@@ -361,7 +361,7 @@ export default function MusicStudio() {
                         onDownload={() => handleDownload(generatedTrack.audioUrl!, `${generatedTrack.title || "track"}.mp3`)}
                       />
                     ) : (
-                      <div className="text-center py-4 text-muted-foreground text-sm">
+                      <div className="text-center py-4 text-zinc-500 text-sm">
                         <Loader2 className="h-5 w-5 animate-spin mx-auto mb-2" />
                         Generation in progress — refresh in a moment
                       </div>
@@ -377,7 +377,7 @@ export default function MusicStudio() {
         <TabsContent value="library" className="space-y-5 mt-5">
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
               <Input placeholder="Search tracks..." value={musicSearch} onChange={e => setMusicSearch(e.target.value)} className="pl-9" />
             </div>
             <Select value={selectedGenre} onValueChange={setSelectedGenre}>
@@ -407,7 +407,7 @@ export default function MusicStudio() {
 
           <div className="grid grid-cols-1 gap-3">
             {filteredMusic.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">No tracks match your filters</div>
+              <div className="text-center py-12 text-zinc-500">No tracks match your filters</div>
             ) : filteredMusic.map((track: { id: string; title: string; genre?: string; mood?: string; tags: string[]; duration?: number; loop?: boolean; previewUrl?: string; downloadUrl?: string }) => (
               <Card key={track.id} className="hover:border-primary/30 transition-colors">
                 <CardContent className="p-4">
@@ -424,11 +424,11 @@ export default function MusicStudio() {
                       </div>
                       <div className="flex gap-1 mt-1 flex-wrap">
                         {track.tags.slice(0, 4).map((tag: string) => (
-                          <span key={tag} className="text-xs text-muted-foreground">#{tag}</span>
+                          <span key={tag} className="text-xs text-zinc-500">#{tag}</span>
                         ))}
                       </div>
                     </div>
-                    <span className="text-xs text-muted-foreground shrink-0">{track.duration}s</span>
+                    <span className="text-xs text-zinc-500 shrink-0">{track.duration}s</span>
                   </div>
                   <AudioPlayer
                     url={track.previewUrl ?? ""}
@@ -460,19 +460,19 @@ export default function MusicStudio() {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
             <Input placeholder="Search sound effects..." value={sfxSearch} onChange={e => setSfxSearch(e.target.value)} className="pl-9" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredSFX.length === 0 ? (
-              <div className="col-span-2 text-center py-12 text-muted-foreground">No sound effects match your search</div>
+              <div className="col-span-2 text-center py-12 text-zinc-500">No sound effects match your search</div>
             ) : filteredSFX.map((sfx: { id: string; name: string; category: string; duration: number; tags: string[]; previewUrl: string; downloadUrl: string }) => (
               <Card key={sfx.id} className="hover:border-primary/30 transition-colors">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="secondary" className="text-xs capitalize">{sfx.category}</Badge>
-                    <span className="text-xs text-muted-foreground ml-auto">{sfx.duration}s</span>
+                    <span className="text-xs text-zinc-500 ml-auto">{sfx.duration}s</span>
                   </div>
                   <AudioPlayer
                     url={sfx.previewUrl}
@@ -480,7 +480,7 @@ export default function MusicStudio() {
                     onDownload={() => handleDownload(sfx.downloadUrl, `${sfx.name}.wav`)}
                   />
                   <div className="flex gap-1 mt-2 flex-wrap">
-                    {sfx.tags.map((tag: string) => <span key={tag} className="text-xs text-muted-foreground">#{tag}</span>)}
+                    {sfx.tags.map((tag: string) => <span key={tag} className="text-xs text-zinc-500">#{tag}</span>)}
                   </div>
                 </CardContent>
               </Card>

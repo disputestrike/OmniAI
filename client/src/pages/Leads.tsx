@@ -62,11 +62,11 @@ export default function Leads() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Lead Manager</h1>
-          <p className="text-muted-foreground text-sm mt-1">Capture, score, and manage leads from all your campaigns and channels.</p>
+          <h1 className="page-title">Lead Manager</h1>
+          <p className="page-subtitle">Capture, score, and manage leads from all your campaigns and channels.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />Add Lead</Button></DialogTrigger>
@@ -91,7 +91,7 @@ export default function Leads() {
 
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
           <Input className="pl-9" placeholder="Search leads..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -117,18 +117,18 @@ export default function Leads() {
       {isLoading ? (
         <div className="space-y-2">{[1,2,3,4].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-4 h-16" /></Card>)}</div>
       ) : !filtered.length ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-12 text-center">
-            <Users className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <Users className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">{leads?.length ? "No matching leads" : "No leads yet"}</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Add leads manually or capture them automatically from your campaigns.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Add leads manually or capture them automatically from your campaigns.</p>
             {!leads?.length && <Button className="mt-4 rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Your First Lead</Button>}
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-2">
           {filtered.map(lead => (
-            <Card key={lead.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+            <Card key={lead.id} className="glass glass-hover rounded-2xl transition-all">
               <CardContent className="p-3">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
@@ -136,7 +136,7 @@ export default function Leads() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm">{lead.name}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                    <div className="flex items-center gap-3 text-xs text-zinc-500 mt-0.5">
                       {lead.email && <span className="flex items-center gap-1"><Mail className="h-3 w-3" />{lead.email}</span>}
                       {lead.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{lead.phone}</span>}
                     </div>

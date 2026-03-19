@@ -18,10 +18,10 @@ export default function CompetitorSpy() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold">Competitor Intelligence</h1>
-        <p className="text-muted-foreground">Analyze competitor websites, ads, and marketing strategies</p>
+        <p className="text-zinc-500">Analyze competitor websites, ads, and marketing strategies</p>
       </div>
 
       <Card>
@@ -39,7 +39,7 @@ export default function CompetitorSpy() {
         <Card><CardContent className="flex flex-col items-center py-12">
           <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
           <p className="font-medium">Analyzing competitor...</p>
-          <p className="text-sm text-muted-foreground mt-1">Scraping website, analyzing strategy, and generating insights</p>
+          <p className="text-sm text-zinc-500 mt-1">Scraping website, analyzing strategy, and generating insights</p>
         </CardContent></Card>
       )}
 
@@ -75,12 +75,12 @@ export default function CompetitorSpy() {
               <CardContent>
                 <div className="space-y-3">
                   {result.strategies.map((s: any, i: number) => (
-                    <div key={i} className="p-3 rounded-lg bg-muted/50">
+                    <div key={i} className="p-3 rounded-lg bg-zinc-900/40">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary">{s.category}</Badge>
                         <span className="font-medium text-sm">{s.name}</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">{s.description}</p>
+                      <p className="text-sm text-zinc-500">{s.description}</p>
                     </div>
                   ))}
                 </div>
@@ -119,9 +119,9 @@ export default function CompetitorSpy() {
 
       {!result && !analyzeMut.isPending && (
         <Card className="border-dashed"><CardContent className="flex flex-col items-center py-16">
-          <Search className="w-12 h-12 text-muted-foreground mb-4" />
+          <Search className="w-12 h-12 text-zinc-500 mb-4" />
           <h3 className="text-lg font-semibold">Enter a Competitor URL</h3>
-          <p className="text-muted-foreground text-center max-w-md mt-2">AI will analyze their website, identify marketing strategies, and provide actionable recommendations to outperform them.</p>
+          <p className="text-zinc-500 text-center max-w-md mt-2">AI will analyze their website, identify marketing strategies, and provide actionable recommendations to outperform them.</p>
         </CardContent></Card>
       )}
     </div>

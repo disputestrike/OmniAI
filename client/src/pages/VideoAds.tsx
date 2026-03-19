@@ -184,11 +184,11 @@ export default function VideoAds() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Video Ad Studio</h1>
-          <p className="text-muted-foreground mt-1">AI-powered video ad creation with AI actors, emotion control, multi-language support, and proven ad presets.</p>
+          <h1 className="page-title text-2xl">Video Ad Studio</h1>
+          <p className="text-zinc-500 mt-1">AI-powered video ad creation with AI actors, emotion control, multi-language support, and proven ad presets.</p>
         </div>
         <div className="flex gap-2">
           <Dialog open={avatarOpen} onOpenChange={setAvatarOpen}>
@@ -197,7 +197,7 @@ export default function VideoAds() {
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Create Custom AI Avatar</DialogTitle></DialogHeader>
-              <p className="text-sm text-muted-foreground">Design a unique AI avatar with full control over appearance, ethnicity, style, and more. The AI will generate a photorealistic portrait.</p>
+              <p className="text-sm text-zinc-500">Design a unique AI avatar with full control over appearance, ethnicity, style, and more. The AI will generate a photorealistic portrait.</p>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div><Label>Avatar Name</Label><Input value={avatarName} onChange={e => setAvatarName(e.target.value)} placeholder="e.g., Jessica, Amir, Yuki" /></div>
@@ -368,7 +368,7 @@ export default function VideoAds() {
                 <TabsContent value="basics" className="space-y-4">
                   <div className="space-y-2">
                     <Label>Platform(s) — select one or more</Label>
-                    <div className="flex flex-wrap gap-3 p-3 rounded-lg border bg-muted/30">
+                    <div className="flex flex-wrap gap-3 p-3 rounded-lg border bg-zinc-900/50">
                       {platformOptions.map(p => {
                         const checked = platforms.includes(p.value);
                         return (
@@ -388,7 +388,7 @@ export default function VideoAds() {
                         );
                       })}
                     </div>
-                    <p className="text-xs text-muted-foreground">Script will be optimized for all selected platforms.</p>
+                    <p className="text-xs text-zinc-500">Script will be optimized for all selected platforms.</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div><Label>Primary platform (for export)</Label>
@@ -404,9 +404,9 @@ export default function VideoAds() {
                     <div className="grid grid-cols-2 gap-2 mt-2">
                       {adPresets.map(p => (
                         <button key={p.value} onClick={() => setAdPreset(p.value)}
-                          className={`text-left p-3 rounded-lg border transition-all ${adPreset === p.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}>
+                          className={`text-left p-3 rounded-lg border transition-all ${adPreset === p.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-zinc-800/50"}`}>
                           <div className="text-sm font-medium">{p.label}</div>
-                          <div className="text-xs text-muted-foreground">{p.desc}</div>
+                          <div className="text-xs text-zinc-500">{p.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -424,20 +424,20 @@ export default function VideoAds() {
                   <Label>Select AI Actor</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <button onClick={() => setSelectedActor("")}
-                      className={`text-left p-3 rounded-lg border transition-all ${!selectedActor ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}>
+                      className={`text-left p-3 rounded-lg border transition-all ${!selectedActor ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-zinc-800/50"}`}>
                       <div className="text-sm font-medium">No Actor (Voiceover Only)</div>
-                      <div className="text-xs text-muted-foreground">Clean narration without avatar</div>
+                      <div className="text-xs text-zinc-500">Clean narration without avatar</div>
                     </button>
                     {actors.map(actor => (
                       <button key={actor.id} onClick={() => setSelectedActor(actor.id)}
-                        className={`text-left p-3 rounded-lg border transition-all ${selectedActor === actor.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}>
+                        className={`text-left p-3 rounded-lg border transition-all ${selectedActor === actor.id ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-zinc-800/50"}`}>
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback className="text-xs bg-primary/10">{actor.name[0]}</AvatarFallback>
                           </Avatar>
                           <div>
                             <div className="text-sm font-medium">{actor.name}</div>
-                            <div className="text-xs text-muted-foreground capitalize">{actor.style.replace("_", " ")} · {actor.gender}</div>
+                            <div className="text-xs text-zinc-500 capitalize">{actor.style.replace("_", " ")} · {actor.gender}</div>
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -454,7 +454,7 @@ export default function VideoAds() {
                     <div className="grid grid-cols-4 gap-2 mt-2">
                       {emotionOptions.map(e => (
                         <button key={e.value} onClick={() => setEmotion(e.value)}
-                          className={`p-3 rounded-lg border text-center transition-all ${emotion === e.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}>
+                          className={`p-3 rounded-lg border text-center transition-all ${emotion === e.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-zinc-800/50"}`}>
                           <div className="text-2xl mb-1">{e.emoji}</div>
                           <div className="text-xs font-medium">{e.label}</div>
                         </button>
@@ -473,11 +473,11 @@ export default function VideoAds() {
 
                 <TabsContent value="options" className="space-y-4">
                   <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div><div className="text-sm font-medium">Auto Subtitles / Captions</div><div className="text-xs text-muted-foreground">Add captions for accessibility and engagement</div></div>
+                    <div><div className="text-sm font-medium">Auto Subtitles / Captions</div><div className="text-xs text-zinc-500">Add captions for accessibility and engagement</div></div>
                     <Switch checked={includeSubtitles} onCheckedChange={setIncludeSubtitles} />
                   </div>
                   <div className="flex items-center justify-between p-3 rounded-lg border">
-                    <div><div className="text-sm font-medium">B-Roll Suggestions</div><div className="text-xs text-muted-foreground">Include B-roll visual suggestions in storyboard</div></div>
+                    <div><div className="text-sm font-medium">B-Roll Suggestions</div><div className="text-xs text-zinc-500">Include B-roll visual suggestions in storyboard</div></div>
                     <Switch checked={includeBroll} onCheckedChange={setIncludeBroll} />
                   </div>
                 </TabsContent>
@@ -517,7 +517,7 @@ export default function VideoAds() {
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-lg">{actor.name[0]}</AvatarFallback>
                   </Avatar>
                   <span className="text-xs font-medium">{actor.name}</span>
-                  <span className="text-[10px] text-muted-foreground capitalize">{actor.style.replace("_", " ")}</span>
+                  <span className="text-[10px] text-zinc-500 capitalize">{actor.style.replace("_", " ")}</span>
                 </div>
               ))}
             </div>
@@ -530,9 +530,9 @@ export default function VideoAds() {
       ) : !videoAds?.length ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Video className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <Video className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">No video ads yet</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Generate AI video ad scripts with AI actors, emotion control, storyboards, and multi-language support for any platform.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Generate AI video ad scripts with AI actors, emotion control, storyboards, and multi-language support for any platform.</p>
             <Button className="mt-4" onClick={() => setCreateOpen(true)}><Sparkles className="h-4 w-4 mr-2" />Create Your First Video Ad</Button>
           </CardContent>
         </Card>
@@ -564,7 +564,7 @@ export default function VideoAds() {
                         )}
                       </div>
                       {metadata?.hook && <p className="text-sm font-medium mt-1 line-clamp-2">"{metadata.hook}"</p>}
-                      {metadata?.cta && <p className="text-xs text-muted-foreground mt-1">CTA: {metadata.cta}</p>}
+                      {metadata?.cta && <p className="text-xs text-zinc-500 mt-1">CTA: {metadata.cta}</p>}
                     </div>
                   </div>
 
@@ -624,7 +624,7 @@ export default function VideoAds() {
                             <h4 className="text-sm font-medium flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" />Voiceover</h4>
                             <Button size="sm" variant="ghost" onClick={() => handleCopy(video.voiceoverText || "")}><Copy className="h-3.5 w-3.5" /></Button>
                           </div>
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">{video.voiceoverText}</p>
+                          <p className="text-sm text-zinc-500 whitespace-pre-wrap bg-zinc-800/50 p-3 rounded-lg">{video.voiceoverText}</p>
                         </div>
                       )}
                       {video.script && (
@@ -633,7 +633,7 @@ export default function VideoAds() {
                             <h4 className="text-sm font-medium flex items-center gap-2"><Film className="h-4 w-4 text-violet-500" />Full Script</h4>
                             <Button size="sm" variant="ghost" onClick={() => handleCopy(video.script || "")}><Copy className="h-3.5 w-3.5" /></Button>
                           </div>
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-lg">{video.script}</p>
+                          <p className="text-sm text-zinc-500 whitespace-pre-wrap bg-zinc-800/50 p-3 rounded-lg">{video.script}</p>
                         </div>
                       )}
                       {storyboard?.length > 0 && (
@@ -641,11 +641,11 @@ export default function VideoAds() {
                           <h4 className="text-sm font-medium flex items-center gap-2 mb-2"><Zap className="h-4 w-4 text-orange-500" />Storyboard ({storyboard.length} scenes)</h4>
                           <div className="space-y-2">
                             {storyboard.map((scene: any, i: number) => (
-                              <div key={i} className="flex gap-3 bg-muted/30 p-3 rounded-lg">
+                              <div key={i} className="flex gap-3 bg-zinc-900/50 p-3 rounded-lg">
                                 <div className="h-8 w-8 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">{i + 1}</div>
                                 <div className="min-w-0">
                                   <p className="text-sm">{scene.description}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{scene.duration}</p>
+                                  <p className="text-xs text-zinc-500 mt-1">{scene.duration}</p>
                                 </div>
                               </div>
                             ))}

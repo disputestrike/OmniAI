@@ -22,10 +22,10 @@ export default function Predictive() {
   const [objective, setObjective] = useState("");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-2"><TrendingUp className="h-6 w-6 text-primary" /> Predictive AI</h1>
-        <p className="text-muted-foreground">AI-powered performance forecasting, ad scoring, and budget optimization</p>
+        <p className="text-zinc-500">AI-powered performance forecasting, ad scoring, and budget optimization</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -76,10 +76,10 @@ export default function Predictive() {
           <CardHeader><CardTitle>Predictive Score Result</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="text-center"><p className="text-3xl font-bold text-primary">{scoreCampaign.data.overallScore}</p><p className="text-xs text-muted-foreground">Overall Score</p></div>
-              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.engagementScore}</p><p className="text-xs text-muted-foreground">Engagement</p></div>
-              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.conversionScore}</p><p className="text-xs text-muted-foreground">Conversion</p></div>
-              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.viralityScore}</p><p className="text-xs text-muted-foreground">Virality</p></div>
+              <div className="text-center"><p className="text-3xl font-bold text-primary">{scoreCampaign.data.overallScore}</p><p className="text-xs text-zinc-500">Overall Score</p></div>
+              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.engagementScore}</p><p className="text-xs text-zinc-500">Engagement</p></div>
+              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.conversionScore}</p><p className="text-xs text-zinc-500">Conversion</p></div>
+              <div className="text-center"><p className="text-3xl font-bold">{scoreCampaign.data.viralityScore}</p><p className="text-xs text-zinc-500">Virality</p></div>
             </div>
             {scoreCampaign.data.recommendations && <Streamdown>{scoreCampaign.data.recommendations}</Streamdown>}
           </CardContent>
@@ -95,8 +95,8 @@ export default function Predictive() {
               <div className="space-y-2 mb-4">
                 {optimizeBudget.data.allocations.map((a: any, i: number) => (
                   <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-white">
-                    <div><p className="font-medium">{a.channel}</p><p className="text-xs text-muted-foreground">{a.reasoning}</p></div>
-                    <div className="text-right"><p className="font-bold">${a.amount}</p><p className="text-xs text-muted-foreground">{a.percentage}%</p></div>
+                    <div><p className="font-medium">{a.channel}</p><p className="text-xs text-zinc-500">{a.reasoning}</p></div>
+                    <div className="text-right"><p className="font-bold">${a.amount}</p><p className="text-xs text-zinc-500">{a.percentage}%</p></div>
                   </div>
                 ))}
               </div>
@@ -109,7 +109,7 @@ export default function Predictive() {
 
       {/* Historical Scores */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
       ) : scores && scores.length > 0 ? (
         <div>
           <h2 className="text-lg font-semibold mb-3">Score History</h2>
@@ -122,11 +122,11 @@ export default function Predictive() {
                     <span className="text-2xl font-bold text-primary">{s.overallScore}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                    <div><p className="font-medium">{s.engagementScore}</p><p className="text-muted-foreground">Engage</p></div>
-                    <div><p className="font-medium">{s.conversionScore}</p><p className="text-muted-foreground">Convert</p></div>
-                    <div><p className="font-medium">{s.viralityScore}</p><p className="text-muted-foreground">Viral</p></div>
+                    <div><p className="font-medium">{s.engagementScore}</p><p className="text-zinc-500">Engage</p></div>
+                    <div><p className="font-medium">{s.conversionScore}</p><p className="text-zinc-500">Convert</p></div>
+                    <div><p className="font-medium">{s.viralityScore}</p><p className="text-zinc-500">Viral</p></div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">{new Date(s.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-zinc-500 mt-2">{new Date(s.createdAt).toLocaleDateString()}</p>
                 </CardContent>
               </Card>
             ))}
@@ -134,8 +134,8 @@ export default function Predictive() {
         </div>
       ) : (
         <Card className="border-dashed"><CardContent className="py-12 text-center">
-          <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No scores yet. Score a campaign or content piece to get AI-powered predictions.</p>
+          <TrendingUp className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+          <p className="text-zinc-500">No scores yet. Score a campaign or content piece to get AI-powered predictions.</p>
         </CardContent></Card>
       )}
     </div>

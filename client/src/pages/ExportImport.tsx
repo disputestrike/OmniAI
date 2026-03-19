@@ -97,10 +97,10 @@ export default function ExportImport() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Export / Import</h1>
-        <p className="text-muted-foreground text-sm mt-1">Bulk export campaign data, creative assets, and lead lists. Import existing data to get started quickly.</p>
+        <h1 className="page-title">Export / Import</h1>
+        <p className="page-subtitle">Bulk export campaign data, creative assets, and lead lists. Import existing data to get started quickly.</p>
       </div>
 
       <div>
@@ -111,7 +111,7 @@ export default function ExportImport() {
             const isExporting = exporting === opt.id;
             const isExported = exported.has(opt.id);
             return (
-              <Card key={opt.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+              <Card key={opt.id} className="glass glass-hover rounded-2xl transition-all">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
                     <div className={`h-10 w-10 rounded-xl ${opt.bg} flex items-center justify-center shrink-0`}>
@@ -123,7 +123,7 @@ export default function ExportImport() {
                         <Badge variant="secondary" className="text-xs">{count} items</Badge>
                         {isExported && <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">{opt.description}</p>
+                      <p className="text-xs text-zinc-500 mt-1">{opt.description}</p>
                       <div className="flex gap-2 mt-3">
                         <Button size="sm" variant="outline" className="rounded-lg text-xs h-7" disabled={!count || isExporting} onClick={() => handleExport(opt.id)}>
                           {isExporting ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Download className="h-3 w-3 mr-1" />}JSON
@@ -143,11 +143,11 @@ export default function ExportImport() {
 
       <div>
         <h2 className="text-base font-semibold mb-3 flex items-center gap-2"><Upload className="h-4 w-4 text-primary" />Import Data</h2>
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-6 text-center">
-            <Upload className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
+            <Upload className="h-10 w-10 mx-auto text-zinc-500/40 mb-3" />
             <h3 className="font-semibold">Import Products, Leads, or Campaigns</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-lg mx-auto">
+            <p className="text-sm text-zinc-500 mt-1 max-w-lg mx-auto">
               Drag and drop a CSV or JSON file to import products, leads, or campaign data. The importer will auto-detect the data type and map fields.
             </p>
             <div className="mt-4">

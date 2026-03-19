@@ -148,7 +148,7 @@ function BulkImportInner() {
             <Table className="h-6 w-6 text-primary" />
             Bulk Content Import
           </h1>
-          <p className="text-muted-foreground mt-1">Upload a CSV of products or ideas and auto-generate all content in one batch</p>
+          <p className="text-zinc-500 mt-1">Upload a CSV of products or ideas and auto-generate all content in one batch</p>
         </div>
 
         {/* Steps */}
@@ -166,11 +166,11 @@ function BulkImportInner() {
                   ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                   : parsed && step.id === "configure"
                   ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                  : "bg-muted text-muted-foreground"
+                  : "bg-zinc-800 text-zinc-500"
               }`}>
                 {step.label}
               </div>
-              {i < 2 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+              {i < 2 && <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />}
             </div>
           ))}
         </div>
@@ -181,7 +181,7 @@ function BulkImportInner() {
             <Card>
               <CardContent className="pt-6">
                 <div
-                  className="border-2 border-dashed border-border rounded-xl p-12 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                  className="border-2 border-dashed border-border rounded-xl p-12 text-center cursor-pointer hover:border-primary/50 hover:bg-zinc-900/50 transition-colors"
                   onDrop={handleDrop}
                   onDragOver={e => e.preventDefault()}
                   onClick={() => fileRef.current?.click()}
@@ -200,12 +200,12 @@ function BulkImportInner() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <Upload className="h-10 w-10 text-muted-foreground mx-auto" />
+                      <Upload className="h-10 w-10 text-zinc-500 mx-auto" />
                       <div>
                         <p className="font-medium">Drop your CSV file here</p>
-                        <p className="text-sm text-muted-foreground mt-1">or click to browse</p>
+                        <p className="text-sm text-zinc-500 mt-1">or click to browse</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">Supports .csv files up to 100 rows</p>
+                      <p className="text-xs text-zinc-500">Supports .csv files up to 100 rows</p>
                     </div>
                   )}
                 </div>
@@ -214,7 +214,7 @@ function BulkImportInner() {
 
             <div className="flex items-center gap-3">
               <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">or</span>
+              <span className="text-xs text-zinc-500">or</span>
               <Separator className="flex-1" />
             </div>
 
@@ -224,7 +224,7 @@ function BulkImportInner() {
             </Button>
 
             {/* CSV Format Guide */}
-            <Card className="bg-muted/30">
+            <Card className="bg-zinc-900/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-1.5">
                   <FileText className="h-4 w-4" />
@@ -232,7 +232,7 @@ function BulkImportInner() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <p className="text-xs text-muted-foreground">Include any columns — the AI will use all available data. Recommended columns:</p>
+                <p className="text-xs text-zinc-500">Include any columns — the AI will use all available data. Recommended columns:</p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {["product_name", "description", "target_audience", "price", "key_benefit", "brand_name", "tone", "platform"].map(col => (
                     <div key={col} className="flex items-center gap-1.5 text-xs">
@@ -267,7 +267,7 @@ function BulkImportInner() {
                     <thead>
                       <tr className="border-b">
                         {parsed.headers.map(h => (
-                          <th key={h} className="text-left py-1.5 px-2 text-muted-foreground font-medium">{h}</th>
+                          <th key={h} className="text-left py-1.5 px-2 text-zinc-500 font-medium">{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -282,7 +282,7 @@ function BulkImportInner() {
                     </tbody>
                   </table>
                   {parsed.rows.length > 3 && (
-                    <p className="text-xs text-muted-foreground mt-2 text-center">+{parsed.rows.length - 3} more rows</p>
+                    <p className="text-xs text-zinc-500 mt-2 text-center">+{parsed.rows.length - 3} more rows</p>
                   )}
                 </div>
               </CardContent>
@@ -296,7 +296,7 @@ function BulkImportInner() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Content Type</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Content Type</label>
                     <Select value={contentType} onValueChange={setContentType}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -307,7 +307,7 @@ function BulkImportInner() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Platform</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Platform</label>
                     <Select value={platform} onValueChange={setPlatform}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -318,7 +318,7 @@ function BulkImportInner() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Tone</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Tone</label>
                     <Select value={tone} onValueChange={setTone}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -330,7 +330,7 @@ function BulkImportInner() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Additional Instructions (optional)</label>
+                  <label className="text-xs font-medium text-zinc-500 mb-1 block">Additional Instructions (optional)</label>
                   <input
                     className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                     placeholder="e.g. Always mention free shipping, use emojis, include price..."
@@ -340,7 +340,7 @@ function BulkImportInner() {
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-zinc-500">
                     Will generate <strong>{parsed.rows.length}</strong> pieces of {contentType.replace(/_/g, " ")} content for {platform}
                   </div>
                   <Button
@@ -362,7 +362,7 @@ function BulkImportInner() {
                 {generateMutation.isPending && (
                   <div className="space-y-1.5">
                     <Progress value={undefined} className="h-1.5 animate-pulse" />
-                    <p className="text-xs text-muted-foreground text-center">Processing {parsed.rows.length} rows with AI...</p>
+                    <p className="text-xs text-zinc-500 text-center">Processing {parsed.rows.length} rows with AI...</p>
                   </div>
                 )}
               </CardContent>
@@ -378,19 +378,19 @@ function BulkImportInner() {
               <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
                 <CardContent className="pt-4 text-center">
                   <p className="text-2xl font-bold text-green-600 dark:text-green-400">{successCount}</p>
-                  <p className="text-xs text-muted-foreground">Generated</p>
+                  <p className="text-xs text-zinc-500">Generated</p>
                 </CardContent>
               </Card>
               <Card className={failCount > 0 ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800" : ""}>
                 <CardContent className="pt-4 text-center">
-                  <p className={`text-2xl font-bold ${failCount > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}>{failCount}</p>
-                  <p className="text-xs text-muted-foreground">Failed</p>
+                  <p className={`text-2xl font-bold ${failCount > 0 ? "text-red-600 dark:text-red-400" : "text-zinc-500"}`}>{failCount}</p>
+                  <p className="text-xs text-zinc-500">Failed</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="pt-4 text-center">
                   <p className="text-2xl font-bold text-primary">{Math.round(successCount / results.length * 100)}%</p>
-                  <p className="text-xs text-muted-foreground">Success Rate</p>
+                  <p className="text-xs text-zinc-500">Success Rate</p>
                 </CardContent>
               </Card>
             </div>
@@ -421,7 +421,7 @@ function BulkImportInner() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-muted-foreground">Row {result.rowNumber}</span>
+                          <span className="text-xs font-medium text-zinc-500">Row {result.rowNumber}</span>
                           {result.success && (
                             <Button
                               variant="ghost"
@@ -439,7 +439,7 @@ function BulkImportInner() {
                           <p className="text-xs text-red-500">{result.error}</p>
                         )}
                         {result.savedContentId && (
-                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                          <p className="text-xs text-zinc-500 mt-1 flex items-center gap-1">
                             <BarChart3 className="h-3 w-3" />
                             Saved to Content Library (ID: {result.savedContentId})
                           </p>

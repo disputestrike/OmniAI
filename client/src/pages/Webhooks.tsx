@@ -29,11 +29,11 @@ export default function Webhooks() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Webhooks & Integrations</h1>
-          <p className="text-muted-foreground">Connect to Zapier, Make, and custom workflows via webhooks</p>
+          <p className="text-zinc-500">Connect to Zapier, Make, and custom workflows via webhooks</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild><Button><Plus className="w-4 h-4 mr-2" /> Add Webhook</Button></DialogTrigger>
@@ -77,7 +77,7 @@ export default function Webhooks() {
             <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center"><Zap className="w-5 h-5 text-orange-500" /></div>
             <div>
               <p className="font-medium text-sm">Zapier</p>
-              <p className="text-xs text-muted-foreground">Connect 5,000+ apps</p>
+              <p className="text-xs text-zinc-500">Connect 5,000+ apps</p>
             </div>
           </CardContent>
         </Card>
@@ -86,7 +86,7 @@ export default function Webhooks() {
             <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center"><Webhook className="w-5 h-5 text-purple-500" /></div>
             <div>
               <p className="font-medium text-sm">Make</p>
-              <p className="text-xs text-muted-foreground">Visual automation builder</p>
+              <p className="text-xs text-zinc-500">Visual automation builder</p>
             </div>
           </CardContent>
         </Card>
@@ -95,7 +95,7 @@ export default function Webhooks() {
             <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center"><Webhook className="w-5 h-5 text-blue-500" /></div>
             <div>
               <p className="font-medium text-sm">Custom</p>
-              <p className="text-xs text-muted-foreground">Any HTTP endpoint</p>
+              <p className="text-xs text-zinc-500">Any HTTP endpoint</p>
             </div>
           </CardContent>
         </Card>
@@ -104,9 +104,9 @@ export default function Webhooks() {
       {/* Webhook List */}
       {!webhooks?.length ? (
         <Card className="border-dashed"><CardContent className="flex flex-col items-center py-12">
-          <Webhook className="w-12 h-12 text-muted-foreground mb-4" />
+          <Webhook className="w-12 h-12 text-zinc-500 mb-4" />
           <h3 className="text-lg font-semibold">No Webhooks Configured</h3>
-          <p className="text-muted-foreground mt-2 text-center max-w-md">Set up webhooks to connect OTOBI AI with your favorite tools and automate your workflow.</p>
+          <p className="text-zinc-500 mt-2 text-center max-w-md">Set up webhooks to connect OTOBI AI with your favorite tools and automate your workflow.</p>
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
@@ -115,10 +115,10 @@ export default function Webhooks() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Webhook className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <Webhook className="w-5 h-5 text-zinc-500 flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium text-sm">{wh.name || "Unnamed Webhook"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{wh.url}</p>
+                      <p className="text-xs text-zinc-500 truncate">{wh.url}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

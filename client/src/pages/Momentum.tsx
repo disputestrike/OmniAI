@@ -44,7 +44,7 @@ function HealthScoreRing({ score }: { score: number }) {
       </svg>
       <div className="absolute text-center">
         <span className="text-3xl font-bold" style={{ color }}>{score}</span>
-        <p className="text-[10px] text-muted-foreground">Health</p>
+        <p className="text-[10px] text-zinc-500">Health</p>
       </div>
     </div>
   );
@@ -68,7 +68,7 @@ function MomentumAnalysis({ campaignId }: { campaignId: number }) {
         <CardContent className="p-8 text-center">
           <TrendingUp className="h-12 w-12 mx-auto mb-4 text-primary/30" />
           <h3 className="text-lg font-semibold mb-2">Campaign Momentum Analysis</h3>
-          <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+          <p className="text-sm text-zinc-500 mb-4 max-w-md mx-auto">
             AI analyzes your campaign performance and recommends the next wave of content, optimizations, and scaling strategies to maintain momentum.
           </p>
           <Button
@@ -88,7 +88,7 @@ function MomentumAnalysis({ campaignId }: { campaignId: number }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Health Score + Summary */}
       <div className="grid md:grid-cols-3 gap-4">
         <Card className="md:col-span-1">
@@ -162,7 +162,7 @@ function MomentumAnalysis({ campaignId }: { campaignId: number }) {
         <CardContent>
           <div className="space-y-3">
             {analysis.nextContentPieces.map((piece: any, i: number) => (
-              <div key={i} className="flex items-start gap-4 p-3 bg-muted/30 rounded-lg">
+              <div key={i} className="flex items-start gap-4 p-3 bg-zinc-900/50 rounded-lg">
                 <div className={`h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm font-bold ${
                   piece.priority === "high" ? "bg-red-500" : piece.priority === "medium" ? "bg-amber-500" : "bg-blue-500"
                 }`}>
@@ -262,7 +262,7 @@ function MomentumAnalysis({ campaignId }: { campaignId: number }) {
                   <ul className="space-y-1.5 ml-4">
                     {week.actions.map((action: string, j: number) => (
                       <li key={j} className="text-sm flex items-start gap-2">
-                        <Clock className="h-3 w-3 text-muted-foreground mt-1 shrink-0" />
+                        <Clock className="h-3 w-3 text-zinc-500 mt-1 shrink-0" />
                         {action}
                       </li>
                     ))}
@@ -295,7 +295,7 @@ function ContentCalendar({ campaignId }: { campaignId: number }) {
         <CardContent className="p-8 text-center">
           <Calendar className="h-12 w-12 mx-auto mb-4 text-primary/30" />
           <h3 className="text-lg font-semibold mb-2">AI Content Calendar</h3>
-          <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+          <p className="text-sm text-zinc-500 mb-4 max-w-md mx-auto">
             Generate a detailed content calendar with optimal posting times, content types, and hashtag suggestions for every day.
           </p>
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -328,11 +328,11 @@ function ContentCalendar({ campaignId }: { campaignId: number }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Content Calendar</h3>
-          <p className="text-sm text-muted-foreground">{calendar.strategy}</p>
+          <p className="text-sm text-zinc-500">{calendar.strategy}</p>
         </div>
         <Button
           variant="outline"
@@ -362,12 +362,12 @@ function ContentCalendar({ campaignId }: { campaignId: number }) {
           <CardContent>
             <div className="space-y-2">
               {week.posts.map((post: any, i: number) => (
-                <div key={i} className="flex items-center gap-3 p-2.5 bg-muted/30 rounded-lg text-sm">
-                  <div className="w-16 text-xs font-medium text-muted-foreground">{post.day.slice(0, 3)}</div>
+                <div key={i} className="flex items-center gap-3 p-2.5 bg-zinc-900/50 rounded-lg text-sm">
+                  <div className="w-16 text-xs font-medium text-zinc-500">{post.day.slice(0, 3)}</div>
                   <Badge variant="outline" className="text-xs shrink-0">{post.platform}</Badge>
                   <Badge className="text-xs shrink-0 bg-primary/10 text-primary border-0">{post.contentType}</Badge>
                   <span className="flex-1 truncate">{post.topic}</span>
-                  <span className="text-xs text-muted-foreground shrink-0">{post.postingTime}</span>
+                  <span className="text-xs text-zinc-500 shrink-0">{post.postingTime}</span>
                 </div>
               ))}
             </div>
@@ -385,18 +385,18 @@ export default function Momentum() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="h-8 w-64 bg-muted animate-pulse rounded" />
-        <div className="h-64 bg-muted animate-pulse rounded-xl" />
+      <div className="space-y-6 animate-fade-up">
+        <div className="h-8 w-64 bg-zinc-800 animate-pulse rounded" />
+        <div className="h-64 bg-zinc-800 animate-pulse rounded-xl" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Campaign Momentum</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="page-title">Campaign Momentum</h1>
+        <p className="text-zinc-500 mt-1">
           Keep your campaigns growing. AI analyzes performance and recommends the next wave of content and optimizations.
         </p>
       </div>
@@ -447,9 +447,9 @@ export default function Momentum() {
       {!selectedCampaignId ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <Rocket className="h-16 w-16 mx-auto mb-4 text-muted-foreground/20" />
+            <Rocket className="h-16 w-16 mx-auto mb-4 text-zinc-500/20" />
             <h3 className="text-lg font-semibold mb-2">Select a Campaign</h3>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            <p className="text-sm text-zinc-500 max-w-md mx-auto">
               Choose a campaign above to analyze its momentum, get AI recommendations, and generate content calendars.
             </p>
             {(!campaigns || campaigns.length === 0) && (

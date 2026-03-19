@@ -18,10 +18,10 @@ export default function CompetitorIntelligenceHub() {
   }, [location]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold">Competitor Intelligence</h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="text-zinc-500 mt-1">
           Spy on ads, deep-dive with Intel, and monitor content to generate counter-campaigns — all in one place.
         </p>
       </div>

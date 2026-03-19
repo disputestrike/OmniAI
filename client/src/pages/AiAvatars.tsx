@@ -64,12 +64,12 @@ export default function AiAvatars() {
   });
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Users className="h-6 w-6 text-violet-500" />AI Avatars & UGC Videos
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Create AI-generated spokesperson videos, UGC-style content, and professional voiceovers.</p>
+        <p className="page-subtitle">Create AI-generated spokesperson videos, UGC-style content, and professional voiceovers.</p>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -82,7 +82,7 @@ export default function AiAvatars() {
         {/* AI Avatar Video Tab */}
         <TabsContent value="avatar" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader><CardTitle className="text-base">Create Avatar Video</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -147,7 +147,7 @@ export default function AiAvatars() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader><CardTitle className="text-base">Preview</CardTitle></CardHeader>
               <CardContent>
                 {generatedVideo ? (
@@ -157,12 +157,12 @@ export default function AiAvatars() {
                     ) : generatedVideo.thumbnailUrl ? (
                       <img src={generatedVideo.thumbnailUrl} alt="Avatar" className="w-full rounded-lg" />
                     ) : (
-                      <div className="aspect-[9/16] bg-muted rounded-lg flex items-center justify-center">
+                      <div className="aspect-[9/16] bg-zinc-800 rounded-lg flex items-center justify-center">
                         <div className="text-center p-4">
                           <Sparkles className="h-8 w-8 mx-auto text-violet-500 mb-2" />
                           <p className="text-sm font-medium">Video Processing</p>
-                          <p className="text-xs text-muted-foreground mt-1">Task ID: {generatedVideo.taskId}</p>
-                          <p className="text-xs text-muted-foreground">Status: {generatedVideo.status}</p>
+                          <p className="text-xs text-zinc-500 mt-1">Task ID: {generatedVideo.taskId}</p>
+                          <p className="text-xs text-zinc-500">Status: {generatedVideo.status}</p>
                         </div>
                       </div>
                     )}
@@ -173,11 +173,11 @@ export default function AiAvatars() {
                     )}
                   </div>
                 ) : (
-                  <div className="aspect-[9/16] bg-muted/50 rounded-lg flex items-center justify-center">
+                  <div className="aspect-[9/16] bg-zinc-900/40 rounded-lg flex items-center justify-center">
                     <div className="text-center p-6">
-                      <User className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">Your AI avatar video will appear here</p>
-                      <p className="text-xs text-muted-foreground mt-1">Powered by HeyGen AI</p>
+                      <User className="h-12 w-12 mx-auto text-zinc-500/30 mb-3" />
+                      <p className="text-sm text-zinc-500">Your AI avatar video will appear here</p>
+                      <p className="text-xs text-zinc-500 mt-1">Powered by HeyGen AI</p>
                     </div>
                   </div>
                 )}
@@ -189,7 +189,7 @@ export default function AiAvatars() {
         {/* AI Voiceover Tab */}
         <TabsContent value="voiceover" className="space-y-4 mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader><CardTitle className="text-base">Generate Voiceover</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -224,13 +224,13 @@ export default function AiAvatars() {
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-sm">
+            <Card className="glass rounded-2xl">
               <CardHeader><CardTitle className="text-base">Audio Preview</CardTitle></CardHeader>
               <CardContent>
                 {generatedVoiceover?.audioUrl ? (
                   <div className="space-y-4">
                     <audio src={generatedVoiceover.audioUrl} controls className="w-full" />
-                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-zinc-500">
                       <div>Duration: {generatedVoiceover.durationMs ? `${(generatedVoiceover.durationMs / 1000).toFixed(1)}s` : "N/A"}</div>
                       <div>Provider: {generatedVoiceover.provider || "ElevenLabs"}</div>
                     </div>
@@ -239,11 +239,11 @@ export default function AiAvatars() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="h-64 bg-muted/50 rounded-lg flex items-center justify-center">
+                  <div className="h-64 bg-zinc-900/40 rounded-lg flex items-center justify-center">
                     <div className="text-center p-6">
-                      <Mic className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                      <p className="text-sm text-muted-foreground">Your voiceover will appear here</p>
-                      <p className="text-xs text-muted-foreground mt-1">Powered by ElevenLabs / OpenAI TTS</p>
+                      <Mic className="h-12 w-12 mx-auto text-zinc-500/30 mb-3" />
+                      <p className="text-sm text-zinc-500">Your voiceover will appear here</p>
+                      <p className="text-xs text-zinc-500 mt-1">Powered by ElevenLabs / OpenAI TTS</p>
                     </div>
                   </div>
                 )}
@@ -254,26 +254,26 @@ export default function AiAvatars() {
 
         {/* UGC Style Tab */}
         <TabsContent value="ugc" className="space-y-4 mt-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-6 border rounded-xl hover:border-violet-300 transition-colors cursor-pointer"
                   onClick={() => { setTab("avatar"); setAvatarStyle("creator"); toast.info("Set to Content Creator style"); }}>
                   <Camera className="h-10 w-10 mx-auto text-violet-500 mb-3" />
                   <h3 className="font-semibold">Product Review</h3>
-                  <p className="text-xs text-muted-foreground mt-1">AI creator reviews your product naturally</p>
+                  <p className="text-xs text-zinc-500 mt-1">AI creator reviews your product naturally</p>
                 </div>
                 <div className="text-center p-6 border rounded-xl hover:border-violet-300 transition-colors cursor-pointer"
                   onClick={() => { setTab("avatar"); setAvatarStyle("casual"); toast.info("Set to Casual style"); }}>
                   <Users className="h-10 w-10 mx-auto text-pink-500 mb-3" />
                   <h3 className="font-semibold">Testimonial</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Authentic-feeling customer testimonial</p>
+                  <p className="text-xs text-zinc-500 mt-1">Authentic-feeling customer testimonial</p>
                 </div>
                 <div className="text-center p-6 border rounded-xl hover:border-violet-300 transition-colors cursor-pointer"
                   onClick={() => { setTab("avatar"); setAvatarStyle("spokesperson"); toast.info("Set to Spokesperson style"); }}>
                   <Video className="h-10 w-10 mx-auto text-blue-500 mb-3" />
                   <h3 className="font-semibold">How-To / Tutorial</h3>
-                  <p className="text-xs text-muted-foreground mt-1">Step-by-step guide with AI presenter</p>
+                  <p className="text-xs text-zinc-500 mt-1">Step-by-step guide with AI presenter</p>
                 </div>
               </div>
               <div className="mt-6 p-4 bg-violet-50 rounded-lg">

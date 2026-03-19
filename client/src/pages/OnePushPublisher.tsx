@@ -123,7 +123,7 @@ export default function OnePushPublisher() {
   const completedAds = queue?.filter((a: any) => ["completed", "paused", "failed"].includes(a.status)) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -131,7 +131,7 @@ export default function OnePushPublisher() {
             <Rocket className="w-6 h-6 text-orange-500" />
             One-Push Publisher
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="page-subtitle">
             Create, optimize with AI, and launch ads to Meta, Google, TikTok, and more — all from one place.
           </p>
         </div>
@@ -155,7 +155,7 @@ export default function OnePushPublisher() {
               <div className="space-y-4 mt-2">
                 {connectedPlatforms.length === 0 ? (
                   <div className="text-center py-6">
-                    <p className="text-sm text-muted-foreground">No connected ad accounts. Go to <strong>Ad Platforms</strong> to connect first.</p>
+                    <p className="text-sm text-zinc-500">No connected ad accounts. Go to <strong>Ad Platforms</strong> to connect first.</p>
                   </div>
                 ) : (
                   <>
@@ -285,7 +285,7 @@ export default function OnePushPublisher() {
                   </Button>
                 </div>
                 <p className="text-sm font-medium">{v.headline}</p>
-                <p className="text-xs text-muted-foreground mt-1">{v.body}</p>
+                <p className="text-xs text-zinc-500 mt-1">{v.body}</p>
                 <p className="text-xs text-violet-600 mt-1">CTA: {v.callToAction}</p>
                 <p className="text-xs text-gray-500 mt-1 italic">{v.rationale}</p>
               </div>
@@ -294,7 +294,7 @@ export default function OnePushPublisher() {
               <p className="text-xs font-medium text-violet-700 mb-1">Key Improvements:</p>
               <ul className="space-y-0.5">
                 {optimizeResult.keyImprovements.map((imp: string, i: number) => (
-                  <li key={i} className="text-xs text-muted-foreground flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />{imp}</li>
+                  <li key={i} className="text-xs text-zinc-500 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500 shrink-0" />{imp}</li>
                 ))}
               </ul>
             </div>
@@ -306,14 +306,14 @@ export default function OnePushPublisher() {
       {/* Queue Tabs */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
         </div>
       ) : (!queue || queue.length === 0) ? (
         <Card>
           <CardContent className="py-16 text-center">
-            <Rocket className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+            <Rocket className="w-12 h-12 text-zinc-500 mx-auto mb-3" />
             <h3 className="font-semibold text-lg mb-1">No ads yet</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+            <p className="text-sm text-zinc-500 max-w-sm mx-auto">
               Create your first ad draft, optimize the copy with AI, then push it live to your connected platforms.
             </p>
             <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-white" onClick={() => setCreateOpen(true)}>
@@ -331,7 +331,7 @@ export default function OnePushPublisher() {
 
           <TabsContent value="drafts" className="mt-4 space-y-3">
             {draftAds.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No drafts. Create an ad to get started.</p>
+              <p className="text-sm text-zinc-500 text-center py-6">No drafts. Create an ad to get started.</p>
             ) : draftAds.map((ad: any) => (
               <AdCard
                 key={ad.id}
@@ -349,7 +349,7 @@ export default function OnePushPublisher() {
 
           <TabsContent value="live" className="mt-4 space-y-3">
             {liveAds.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No live ads. Publish a draft to see it here.</p>
+              <p className="text-sm text-zinc-500 text-center py-6">No live ads. Publish a draft to see it here.</p>
             ) : liveAds.map((ad: any) => (
               <AdCard
                 key={ad.id}
@@ -363,7 +363,7 @@ export default function OnePushPublisher() {
 
           <TabsContent value="completed" className="mt-4 space-y-3">
             {completedAds.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No completed or paused ads.</p>
+              <p className="text-sm text-zinc-500 text-center py-6">No completed or paused ads.</p>
             ) : completedAds.map((ad: any) => (
               <AdCard
                 key={ad.id}
@@ -411,8 +411,8 @@ function AdCard({ ad, selected, onToggleSelect, onPublish, onPause, onResume, on
               <Badge variant="outline" className="text-xs">{ad.adType}</Badge>
             </div>
             {ad.headline && <p className="text-sm font-medium text-gray-700 truncate">{ad.headline}</p>}
-            {ad.body && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{ad.body}</p>}
-            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+            {ad.body && <p className="text-xs text-zinc-500 mt-0.5 line-clamp-2">{ad.body}</p>}
+            <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
               {ad.budget && <span className="flex items-center gap-1"><DollarSign className="w-3 h-3" />{ad.budget}/{ad.budgetType}</span>}
               {ad.callToAction && <span className="flex items-center gap-1"><Target className="w-3 h-3" />{ad.callToAction}</span>}
               {ad.publishedAt && <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-green-500" />Published {new Date(ad.publishedAt).toLocaleDateString()}</span>}

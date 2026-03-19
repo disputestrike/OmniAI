@@ -248,11 +248,11 @@ export default function ContentIngest() {
   const isProcessing = processUrlMut.isPending || processFileMut.isPending;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Content Ingest</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="page-title">Content Ingest</h1>
+        <p className="text-zinc-500 mt-1">
           Paste any URL, upload any file — AI extracts, analyzes, and lets you remix, caption, clip, and repost instantly.
         </p>
       </div>
@@ -320,13 +320,13 @@ export default function ContentIngest() {
                   <div className="space-y-3">
                     <Loader2 className="h-12 w-12 mx-auto animate-spin text-primary" />
                     <p className="text-lg font-medium">Processing your file...</p>
-                    <p className="text-sm text-muted-foreground">AI is analyzing the content</p>
+                    <p className="text-sm text-zinc-500">AI is analyzing the content</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <Upload className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                    <Upload className="h-12 w-12 mx-auto text-zinc-500/50" />
                     <p className="text-lg font-medium">Drop any file here or click to browse</p>
-                    <p className="text-sm text-muted-foreground">Videos, images, PDFs, documents — up to 50MB</p>
+                    <p className="text-sm text-zinc-500">Videos, images, PDFs, documents — up to 50MB</p>
                     <div className="flex flex-wrap gap-2 justify-center mt-3">
                       {[
                         { icon: Video, label: "Videos", desc: "MP4, WebM, MOV" },
@@ -335,7 +335,7 @@ export default function ContentIngest() {
                         { icon: FileText, label: "Documents", desc: "PDF, DOCX, TXT" },
                       ].map(t => (
                         <Badge key={t.label} variant="outline" className="text-xs gap-1 py-1.5 px-3">
-                          <t.icon className="h-3 w-3" />{t.label} <span className="text-muted-foreground">({t.desc})</span>
+                          <t.icon className="h-3 w-3" />{t.label} <span className="text-zinc-500">({t.desc})</span>
                         </Badge>
                       ))}
                     </div>
@@ -415,9 +415,9 @@ export default function ContentIngest() {
                     <img src={result.scraped.ogImage} alt="" className="w-full rounded-lg max-h-48 object-cover" />
                   )}
                   <h3 className="font-semibold">{result.analysis.title || result.scraped?.title}</h3>
-                  <p className="text-sm text-muted-foreground">{result.analysis.summary}</p>
+                  <p className="text-sm text-zinc-500">{result.analysis.summary}</p>
                   {result.scraped?.author && (
-                    <p className="text-xs text-muted-foreground">By: {result.scraped.author}</p>
+                    <p className="text-xs text-zinc-500">By: {result.scraped.author}</p>
                   )}
                   {result.analysis.tone && (
                     <div className="flex gap-2">
@@ -446,7 +446,7 @@ export default function ContentIngest() {
                     ))}
                     {result.analysis.keyPoints?.length > 0 && (
                       <div className="pt-2 border-t">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Key Takeaways:</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-2">Key Takeaways:</p>
                         {result.analysis.keyPoints.map((kp: string, i: number) => (
                           <div key={i} className="flex items-start gap-2 text-sm">
                             <ArrowRight className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
@@ -472,7 +472,7 @@ export default function ContentIngest() {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {result.analysis.captionSuggestions.map((cap: string, i: number) => (
-                          <div key={i} className="p-3 rounded-lg bg-muted/50 border text-sm relative group">
+                          <div key={i} className="p-3 rounded-lg bg-zinc-900/40 border text-sm relative group">
                             <p className="pr-8">{cap}</p>
                             <Button size="sm" variant="ghost" className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={() => handleCopy(`cap-${i}`, cap)}>
@@ -506,7 +506,7 @@ export default function ContentIngest() {
                               setRemixResult(null);
                             }}>
                             <p className="font-medium text-sm capitalize">{(remix.format || "").replace(/_/g, " ")}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{remix.description}</p>
+                            <p className="text-xs text-zinc-500 mt-1">{remix.description}</p>
                           </button>
                         ))}
                       </div>
@@ -526,7 +526,7 @@ export default function ContentIngest() {
                   <CardContent>
                     <div className="space-y-2">
                       {result.analysis.bestMoments.map((moment: string, i: number) => (
-                        <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 border text-sm">
+                        <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-zinc-900/40 border text-sm">
                           <Badge variant="outline" className="shrink-0">Clip {i + 1}</Badge>
                           <span className="flex-1">{moment}</span>
                           <Button size="sm" variant="ghost" className="h-7 shrink-0" onClick={() => {
@@ -607,13 +607,13 @@ export default function ContentIngest() {
                     <p className="text-sm">{result.imageAnalysis.description}</p>
                     {result.imageAnalysis.mood && <Badge variant="secondary">Mood: {result.imageAnalysis.mood}</Badge>}
                     {result.imageAnalysis.textInImage && (
-                      <div className="p-2 bg-muted/50 rounded text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Text in image:</span>
+                      <div className="p-2 bg-zinc-900/40 rounded text-sm">
+                        <span className="text-xs font-medium text-zinc-500">Text in image:</span>
                         <p>{result.imageAnalysis.textInImage}</p>
                       </div>
                     )}
                     {result.imageAnalysis.marketingPotential && (
-                      <p className="text-sm text-muted-foreground">{result.imageAnalysis.marketingPotential}</p>
+                      <p className="text-sm text-zinc-500">{result.imageAnalysis.marketingPotential}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -630,7 +630,7 @@ export default function ContentIngest() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {result.imageAnalysis.suggestedCaptions.map((cap: string, i: number) => (
-                        <div key={i} className="p-3 rounded-lg bg-muted/50 border text-sm relative group">
+                        <div key={i} className="p-3 rounded-lg bg-zinc-900/40 border text-sm relative group">
                           <p className="pr-8">{cap}</p>
                           <Button size="sm" variant="ghost" className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => handleCopy(`imgcap-${i}`, cap)}>
@@ -698,14 +698,14 @@ export default function ContentIngest() {
                   </CardHeader>
                   <CardContent>
                     {result.transcript.language && <Badge variant="outline" className="mb-2">Language: {result.transcript.language}</Badge>}
-                    <div className="p-3 bg-muted/50 rounded-lg text-sm max-h-64 overflow-y-auto whitespace-pre-wrap">
+                    <div className="p-3 bg-zinc-900/40 rounded-lg text-sm max-h-64 overflow-y-auto whitespace-pre-wrap">
                       {result.transcript.text}
                     </div>
                     {result.transcript.segments?.length > 0 && (
                       <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                         {result.transcript.segments.map((seg: any, i: number) => (
                           <div key={i} className="flex gap-2 text-xs">
-                            <span className="text-muted-foreground shrink-0 w-20">
+                            <span className="text-zinc-500 shrink-0 w-20">
                               {Math.floor(seg.start / 60)}:{String(Math.floor(seg.start % 60)).padStart(2, "0")} - {Math.floor(seg.end / 60)}:{String(Math.floor(seg.end % 60)).padStart(2, "0")}
                             </span>
                             <span>{seg.text}</span>
@@ -730,7 +730,7 @@ export default function ContentIngest() {
                     {result.imageAnalysis.summary && <p className="text-sm">{result.imageAnalysis.summary}</p>}
                     {result.imageAnalysis.keyPoints?.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Key Points:</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-2">Key Points:</p>
                         {result.imageAnalysis.keyPoints.map((kp: string, i: number) => (
                           <div key={i} className="flex items-start gap-2 text-sm mb-1">
                             <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
@@ -741,7 +741,7 @@ export default function ContentIngest() {
                     )}
                     {result.imageAnalysis.quotes?.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Notable Quotes:</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-2">Notable Quotes:</p>
                         {result.imageAnalysis.quotes.map((q: string, i: number) => (
                           <blockquote key={i} className="border-l-2 border-primary/30 pl-3 text-sm italic mb-2">{q}</blockquote>
                         ))}
@@ -749,7 +749,7 @@ export default function ContentIngest() {
                     )}
                     {result.imageAnalysis.suggestedContent?.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Content Ideas:</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-2">Content Ideas:</p>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                           {result.imageAnalysis.suggestedContent.map((sc: any, i: number) => (
                             <button key={i} className="p-2.5 rounded-lg border text-left text-sm hover:border-primary/40 transition-all"
@@ -760,7 +760,7 @@ export default function ContentIngest() {
                                 setRemixResult(null);
                               }}>
                               <p className="font-medium text-xs capitalize">{(sc.type || "").replace(/_/g, " ")}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{sc.idea}</p>
+                              <p className="text-xs text-zinc-500 mt-0.5">{sc.idea}</p>
                             </button>
                           ))}
                         </div>
@@ -832,7 +832,7 @@ export default function ContentIngest() {
               {quickRemixMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Remixing...</> : <><RefreshCw className="h-4 w-4 mr-2" />Remix Now</>}
             </Button>
             {remixResult && (
-              <div className="p-4 bg-muted/50 rounded-lg border">
+              <div className="p-4 bg-zinc-900/40 rounded-lg border">
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="default">Remixed!</Badge>
                   <Button size="sm" variant="ghost" onClick={() => handleCopy("remix", remixResult.body)}>
@@ -853,7 +853,7 @@ export default function ContentIngest() {
             <DialogTitle className="flex items-center gap-2"><Wand2 className="h-5 w-5" />Batch Remix — One to Many</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Select all formats you want. AI will create a unique version for each.</p>
+            <p className="text-sm text-zinc-500">Select all formats you want. AI will create a unique version for each.</p>
             <div className="grid grid-cols-2 gap-2">
               {REMIX_FORMATS.map(f => (
                 <button key={f.value} onClick={() => toggleBatchFormat(f.value)}
@@ -914,7 +914,7 @@ export default function ContentIngest() {
               <div className="space-y-4">
                 {captionResult.hooks?.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Attention-Grabbing Hooks:</p>
+                    <p className="text-xs font-medium text-zinc-500 mb-2">Attention-Grabbing Hooks:</p>
                     {captionResult.hooks.map((h: string, i: number) => (
                       <div key={i} className="p-2 bg-amber-500/10 rounded text-sm mb-1 flex items-center justify-between">
                         <span>{h}</span>
@@ -942,7 +942,7 @@ export default function ContentIngest() {
                 ))}
                 {captionResult.ctas?.length > 0 && (
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Call-to-Action Suggestions:</p>
+                    <p className="text-xs font-medium text-zinc-500 mb-2">Call-to-Action Suggestions:</p>
                     <div className="flex flex-wrap gap-2">
                       {captionResult.ctas.map((cta: string, i: number) => (
                         <Badge key={i} variant="outline" className="cursor-pointer hover:bg-primary/5" onClick={() => handleCopy(`cta-${i}`, cta)}>
@@ -967,13 +967,13 @@ export default function ContentIngest() {
           {clipResult && (
             <div className="space-y-4">
               {clipResult.overallAnalysis && (
-                <div className="p-3 bg-muted/50 rounded-lg">
+                <div className="p-3 bg-zinc-900/40 rounded-lg">
                   <div className="flex flex-wrap gap-2 mb-2">
                     <Badge>Style: {clipResult.overallAnalysis.contentStyle}</Badge>
                     <Badge variant="secondary">Viral Score: {clipResult.overallAnalysis.viralPotential}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground">{clipResult.overallAnalysis.bestMoment}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Audience: {clipResult.overallAnalysis.audienceAppeal}</p>
+                  <p className="text-sm text-zinc-500">{clipResult.overallAnalysis.bestMoment}</p>
+                  <p className="text-xs text-zinc-500 mt-1">Audience: {clipResult.overallAnalysis.audienceAppeal}</p>
                 </div>
               )}
               {clipResult.clips?.map((clip: any, i: number) => (
@@ -991,8 +991,8 @@ export default function ContentIngest() {
                       </div>
                     </div>
                     {clip.hook && <p className="text-sm font-medium text-primary mt-2">Hook: "{clip.hook}"</p>}
-                    <p className="text-sm text-muted-foreground mt-1">{clip.reason}</p>
-                    {clip.transcript && <p className="text-xs bg-muted/50 p-2 rounded mt-2 italic">"{clip.transcript}"</p>}
+                    <p className="text-sm text-zinc-500 mt-1">{clip.reason}</p>
+                    {clip.transcript && <p className="text-xs bg-zinc-900/40 p-2 rounded mt-2 italic">"{clip.transcript}"</p>}
                     <div className="flex gap-2 mt-3">
                       {clip.bestFor?.map((p: string) => <Badge key={p} variant="outline" className="text-xs capitalize">{p}</Badge>)}
                       <div className="flex-1" />

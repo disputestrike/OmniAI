@@ -39,9 +39,9 @@ export default function LandingPagePublicView() {
       .finally(() => setLoading(false));
   }, [slug]);
 
-  if (!slug) return <div className="min-h-screen flex items-center justify-center p-6"><p className="text-muted-foreground">Invalid page URL.</p></div>;
-  if (loading) return <div className="min-h-screen flex items-center justify-center p-6"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
-  if (error || !page) return <div className="min-h-screen flex items-center justify-center p-6"><p className="text-muted-foreground">{error || "Page not found"}.</p></div>;
+  if (!slug) return <div className="min-h-screen flex items-center justify-center p-6"><p className="text-zinc-500">Invalid page URL.</p></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center p-6"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>;
+  if (error || !page) return <div className="min-h-screen flex items-center justify-center p-6"><p className="text-zinc-500">{error || "Page not found"}.</p></div>;
 
   const components = [...page.components].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -75,7 +75,7 @@ export default function LandingPagePublicView() {
           return (
             <section key={idx} className="py-16 px-4 text-center border-b" style={{ background: (p.backgroundImage as string) ? `url(${p.backgroundImage}) center/cover` : undefined }}>
               <h1 className="text-4xl font-bold tracking-tight">{String(p.headline ?? "Welcome")}</h1>
-              <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">{String(p.subheadline ?? "")}</p>
+              <p className="mt-4 text-lg text-zinc-500 max-w-2xl mx-auto">{String(p.subheadline ?? "")}</p>
               {(p.ctaText as string) && (
                 <a href={(p.ctaLink as string) || "#"} className="inline-block mt-6">
                   <Button>{(p.ctaText as string)}</Button>
@@ -93,7 +93,7 @@ export default function LandingPagePublicView() {
                 {features.map((f, i) => (
                   <div key={i} className="text-center">
                     <h3 className="font-medium">{f.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{f.description}</p>
+                    <p className="text-sm text-zinc-500 mt-1">{f.description}</p>
                   </div>
                 ))}
               </div>
@@ -134,7 +134,7 @@ export default function LandingPagePublicView() {
         }
         if (comp.type === "footer") {
           return (
-            <footer key={idx} className="py-8 px-4 border-t text-center text-sm text-muted-foreground">
+            <footer key={idx} className="py-8 px-4 border-t text-center text-sm text-zinc-500">
               {String(p.text ?? "© All rights reserved.")}
             </footer>
           );
@@ -156,7 +156,7 @@ export default function LandingPagePublicView() {
               <h2 className="text-2xl font-semibold text-center mb-8">{String(p.title ?? "Testimonials")}</h2>
               <div className="grid gap-6 sm:grid-cols-2">
                 {items.map((t, i) => (
-                  <blockquote key={i} className="border-l-4 pl-4 italic text-muted-foreground">
+                  <blockquote key={i} className="border-l-4 pl-4 italic text-zinc-500">
                     "{t.quote}" — {t.author}
                   </blockquote>
                 ))}

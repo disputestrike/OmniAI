@@ -56,11 +56,11 @@ export default function AdPlatforms() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Share2 className="h-6 w-6 text-primary" /> Ad Platforms</h1>
-          <p className="text-muted-foreground">Connect your ad accounts to launch and manage campaigns directly</p>
+          <p className="text-zinc-500">Connect your ad accounts to launch and manage campaigns directly</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" /> Connect Platform</Button></DialogTrigger>
@@ -76,7 +76,7 @@ export default function AdPlatforms() {
               <div><Label>Account Name</Label><Input value={accountName} onChange={e => setAccountName(e.target.value)} placeholder="My Business Account" /></div>
               <div><Label>Account ID (optional)</Label><Input value={accountId} onChange={e => setAccountId(e.target.value)} placeholder="act_123456789" /></div>
               <div><Label>API Access Token</Label><Input value={accessToken} onChange={e => setAccessToken(e.target.value)} placeholder="Your platform API token..." type="password" /></div>
-              <p className="text-xs text-muted-foreground">Your tokens are encrypted and stored securely. You can find your API tokens in each platform's developer settings.</p>
+              <p className="text-xs text-zinc-500">Your tokens are encrypted and stored securely. You can find your API tokens in each platform's developer settings.</p>
               <Button className="w-full" onClick={handleConnect} disabled={connect.isPending}>{connect.isPending ? "Connecting..." : "Connect Platform"}</Button>
             </div>
           </DialogContent>
@@ -105,7 +105,7 @@ export default function AdPlatforms() {
 
       {/* Connected Platforms */}
       {isLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
       ) : connections && connections.length > 0 ? (
         <div>
           <h2 className="text-lg font-semibold mb-3">Connected Accounts</h2>
@@ -120,7 +120,7 @@ export default function AdPlatforms() {
                         <span className="text-2xl">{platformInfo?.icon || "📡"}</span>
                         <div>
                           <h3 className="font-semibold">{conn.accountName || platformInfo?.label || conn.platform}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 text-sm text-zinc-500">
                             <Badge className={conn.status === "connected" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>{conn.status}</Badge>
                             {conn.accountId && <span>ID: {conn.accountId}</span>}
                             <span>Added {new Date(conn.createdAt).toLocaleDateString()}</span>
@@ -147,8 +147,8 @@ export default function AdPlatforms() {
         </div>
       ) : (
         <Card className="border-dashed"><CardContent className="py-12 text-center">
-          <Share2 className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No platforms connected yet. Connect your first ad platform to start launching campaigns directly.</p>
+          <Share2 className="h-12 w-12 mx-auto text-zinc-500/30 mb-4" />
+          <p className="text-zinc-500">No platforms connected yet. Connect your first ad platform to start launching campaigns directly.</p>
         </CardContent></Card>
       )}
 

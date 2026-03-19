@@ -66,11 +66,11 @@ export default function Products() {
   }, [products]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Product Hub</h1>
-          <p className="text-muted-foreground text-sm mt-1">Import from Shopify/WooCommerce, analyze with AI, and generate marketing assets.</p>
+          <h1 className="page-title">Product Hub</h1>
+          <p className="page-subtitle">Import from Shopify/WooCommerce, analyze with AI, and generate marketing assets.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="rounded-xl" onClick={() => setSyncOpen(true)}>
@@ -99,28 +99,28 @@ export default function Products() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold">{stats.total}</p>
-          <p className="text-xs text-muted-foreground">Total Products</p>
+          <p className="text-xs text-zinc-500">Total Products</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold text-emerald-600">{stats.analyzed}</p>
-          <p className="text-xs text-muted-foreground">AI Analyzed</p>
+          <p className="text-xs text-zinc-500">AI Analyzed</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
-          <p className="text-xs text-muted-foreground">Pending Analysis</p>
+          <p className="text-xs text-zinc-500">Pending Analysis</p>
         </CardContent></Card>
       </div>
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{[1,2,3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-6 h-40" /></Card>)}</div>
       ) : !products?.length ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-12 text-center">
-            <Package className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <Package className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">No products yet</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Add products manually or import from Shopify/WooCommerce. AI will analyze each for marketing insights.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Add products manually or import from Shopify/WooCommerce. AI will analyze each for marketing insights.</p>
             <div className="flex gap-3 justify-center mt-4">
               <Button className="rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Add Manually</Button>
               <Button variant="outline" className="rounded-xl" onClick={() => setSyncOpen(true)}><Store className="h-4 w-4 mr-2" />Import from Store</Button>
@@ -133,7 +133,7 @@ export default function Products() {
             const isExpanded = expandedId === product.id;
             const analysis = product.rawAnalysis as any;
             return (
-              <Card key={product.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+              <Card key={product.id} className="glass glass-hover rounded-2xl transition-all">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 min-w-0">
@@ -159,7 +159,7 @@ export default function Products() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {product.description && <p className="text-sm text-muted-foreground line-clamp-2">{product.description}</p>}
+                  {product.description && <p className="text-sm text-zinc-500 line-clamp-2">{product.description}</p>}
                   
                   <div className="flex flex-wrap gap-2">
                     {product.analysisStatus !== "completed" && product.analysisStatus !== "analyzing" && (
@@ -200,7 +200,7 @@ export default function Products() {
                   {isExpanded && analysis && (
                     <div className="mt-4 space-y-4 border-t pt-4">
                       {analysis.positioning && (
-                        <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><Target className="h-4 w-4 text-primary" />Positioning</div><p className="text-sm text-muted-foreground">{analysis.positioning}</p></div>
+                        <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><Target className="h-4 w-4 text-primary" />Positioning</div><p className="text-sm text-zinc-500">{analysis.positioning}</p></div>
                       )}
                       {analysis.features?.length > 0 && (
                         <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><Lightbulb className="h-4 w-4 text-amber-500" />Key Features</div><div className="flex flex-wrap gap-1">{analysis.features.map((f: string, i: number) => <Badge key={i} variant="secondary" className="text-xs">{f}</Badge>)}</div></div>
@@ -212,7 +212,7 @@ export default function Products() {
                         <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><Tag className="h-4 w-4 text-emerald-500" />SEO Keywords</div><div className="flex flex-wrap gap-1">{analysis.keywords.map((k: string, i: number) => <Badge key={i} variant="secondary" className="text-xs bg-emerald-50 text-emerald-700">{k}</Badge>)}</div></div>
                       )}
                       {analysis.tone && (
-                        <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><MessageSquare className="h-4 w-4 text-blue-500" />Recommended Tone</div><p className="text-sm text-muted-foreground">{analysis.tone}</p></div>
+                        <div><div className="flex items-center gap-2 text-sm font-medium mb-1"><MessageSquare className="h-4 w-4 text-blue-500" />Recommended Tone</div><p className="text-sm text-zinc-500">{analysis.tone}</p></div>
                       )}
                     </div>
                   )}
@@ -233,7 +233,7 @@ export default function Products() {
               <TabsTrigger value="woocommerce"><Store className="h-4 w-4 mr-2" />WooCommerce</TabsTrigger>
             </TabsList>
             <TabsContent value="shopify" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground">Connect your Shopify store to automatically import all products. Requires Shopify API credentials in Settings &gt; Secrets.</p>
+              <p className="text-sm text-zinc-500">Connect your Shopify store to automatically import all products. Requires Shopify API credentials in Settings &gt; Secrets.</p>
               <div>
                 <Label>Store Domain</Label>
                 <Input value={shopifyDomain} onChange={e => setShopifyDomain(e.target.value)} placeholder="your-store.myshopify.com" />
@@ -242,7 +242,7 @@ export default function Products() {
                 onClick={() => syncProductsMut.mutate({ platform: "shopify", storeUrl: `https://${shopifyDomain}`, accessToken: "from-settings" })}>
                 {syncProductsMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Syncing...</> : <><Download className="h-4 w-4 mr-2" />Import from Shopify</>}
               </Button>
-              <div className="text-xs text-muted-foreground space-y-1">
+              <div className="text-xs text-zinc-500 space-y-1">
                 <p><strong>Required secrets:</strong></p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>SHOPIFY_ACCESS_TOKEN — Admin API access token</li>
@@ -251,7 +251,7 @@ export default function Products() {
               </div>
             </TabsContent>
             <TabsContent value="woocommerce" className="space-y-4 mt-4">
-              <p className="text-sm text-muted-foreground">Connect your WooCommerce store to import products. Requires WooCommerce REST API credentials in Settings &gt; Secrets.</p>
+              <p className="text-sm text-zinc-500">Connect your WooCommerce store to import products. Requires WooCommerce REST API credentials in Settings &gt; Secrets.</p>
               <div>
                 <Label>Store URL</Label>
                 <Input value={wooUrl} onChange={e => setWooUrl(e.target.value)} placeholder="https://your-store.com" />
@@ -260,7 +260,7 @@ export default function Products() {
                 onClick={() => syncProductsMut.mutate({ platform: "woocommerce", storeUrl: wooUrl, accessToken: "from-settings" })}>
                 {syncProductsMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Syncing...</> : <><Download className="h-4 w-4 mr-2" />Import from WooCommerce</>}
               </Button>
-              <div className="text-xs text-muted-foreground space-y-1">
+              <div className="text-xs text-zinc-500 space-y-1">
                 <p><strong>Required secrets:</strong></p>
                 <ul className="list-disc list-inside space-y-0.5">
                   <li>WOOCOMMERCE_URL — Your store URL</li>

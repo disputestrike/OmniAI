@@ -124,11 +124,11 @@ export default function Creatives() {
   }, [urlSearch, products]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Creative Engine</h1>
-          <p className="text-muted-foreground text-sm mt-1">Generate AI-powered ad images, product photoshoots, social graphics, and more.</p>
+          <h1 className="page-title">Creative Engine</h1>
+          <p className="page-subtitle">AI-powered ad images, product photoshoots, social graphics, and video frames.</p>
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export default function Creatives() {
 
         {/* Quick Generate Tab */}
         <TabsContent value="generate" className="space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-6 space-y-4">
               <h3 className="font-semibold">Quick Generate Creative</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -179,13 +179,13 @@ export default function Creatives() {
 
         {/* Ad Engine Tab - Real API */}
         <TabsContent value="ad-engine" className="space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold">AI Ad Creative Engine</h3>
                 <Badge variant="secondary" className="text-xs">Real Image Generation</Badge>
               </div>
-              <p className="text-sm text-muted-foreground">Generate professional ad creatives with real AI image generation. Provide your product details and we'll create stunning visuals with copy.</p>
+              <p className="text-sm text-zinc-500">Generate professional ad creatives with real AI image generation. Provide your product details and we'll create stunning visuals with copy.</p>
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>Product Name *</Label>
                   <Input value={adProductName} onChange={e => setAdProductName(e.target.value)} placeholder="e.g. AirPods Pro 2" />
@@ -205,7 +205,7 @@ export default function Creatives() {
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>Visual Style</Label>
                   <Select value={adStyle} onValueChange={setAdStyle}><SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{adStyles.map(s => <SelectItem key={s.value} value={s.value}><span className="font-medium">{s.label}</span> — <span className="text-muted-foreground">{s.desc}</span></SelectItem>)}</SelectContent>
+                    <SelectContent>{adStyles.map(s => <SelectItem key={s.value} value={s.value}><span className="font-medium">{s.label}</span> — <span className="text-zinc-500">{s.desc}</span></SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div><Label>Ad Type</Label>
@@ -242,8 +242,8 @@ export default function Creatives() {
                     <img src={generatedAd.imageUrl} alt="Generated ad" className="w-full" />
                   </div>
                   <div className="flex items-center gap-4 text-sm">
-                    <div><span className="text-muted-foreground">Headline:</span> <strong>{generatedAd.headline}</strong></div>
-                    <div><span className="text-muted-foreground">CTA:</span> <strong>{generatedAd.cta}</strong></div>
+                    <div><span className="text-zinc-500">Headline:</span> <strong>{generatedAd.headline}</strong></div>
+                    <div><span className="text-zinc-500">CTA:</span> <strong>{generatedAd.cta}</strong></div>
                   </div>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => window.open(generatedAd.imageUrl, "_blank")}><Download className="h-3.5 w-3.5 mr-1" />Download</Button>
@@ -257,13 +257,13 @@ export default function Creatives() {
 
         {/* Product Photoshoot Tab */}
         <TabsContent value="photoshoot" className="space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold">AI Product Photoshoot</h3>
                 <Badge variant="secondary" className="text-xs">Virtual Studio</Badge>
               </div>
-              <p className="text-sm text-muted-foreground">Generate professional product photography in multiple scenes — studio, lifestyle, outdoor, flat lay. No photographer needed.</p>
+              <p className="text-sm text-zinc-500">Generate professional product photography in multiple scenes — studio, lifestyle, outdoor, flat lay. No photographer needed.</p>
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>Product Name *</Label>
                   <Input value={shootProductName} onChange={e => setShootProductName(e.target.value)} placeholder="e.g. Wireless Earbuds Pro" />
@@ -304,11 +304,11 @@ export default function Creatives() {
                             </div>
                           </div>
                         ) : (
-                          <div className="rounded-xl border bg-muted aspect-square flex items-center justify-center">
-                            <p className="text-xs text-muted-foreground">Failed</p>
+                          <div className="rounded-xl border bg-zinc-800 aspect-square flex items-center justify-center">
+                            <p className="text-xs text-zinc-500">Failed</p>
                           </div>
                         )}
-                        <p className="text-xs text-muted-foreground">{photo.scene}</p>
+                        <p className="text-xs text-zinc-500">{photo.scene}</p>
                       </div>
                     ))}
                   </div>
@@ -323,21 +323,16 @@ export default function Creatives() {
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">{[1,2,3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-0 aspect-square" /></Card>)}</div>
           ) : !creatives?.length ? (
-            <Card className="border-0 shadow-sm">
-              <CardContent className="p-12 text-center">
-                <Image className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-                <h3 className="font-semibold text-lg">No creatives yet</h3>
-                <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Generate your first AI-powered visual — ad images, product photoshoots, social graphics, and more.</p>
-                <Button className="mt-4 rounded-xl" onClick={() => setActiveTab("generate")}><Sparkles className="h-4 w-4 mr-2" />Generate Your First Creative</Button>
-              </CardContent>
+            <Card className="glass rounded-2xl">
+              <CardContent className="p-0"><div className="empty-state"><div className="empty-icon"><Image className="h-5 w-5" /></div><p className="empty-title">No creatives yet</p><p className="empty-desc">Generate your first AI-powered visual — ad images, product photoshoots, and more.</p></div></CardContent>
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {creatives.map(creative => (
-                <Card key={creative.id} className="border-0 shadow-sm hover:shadow-md transition-all overflow-hidden group">
+                <Card key={creative.id} className="creative-card">
                   <CardContent className="p-0">
                     {creative.imageUrl ? (
-                      <div className="relative aspect-square bg-muted">
+                      <div className="relative aspect-square bg-zinc-800">
                         <img src={creative.imageUrl} alt={creative.type} className="w-full h-full object-cover" />
                         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
                           <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => { setPushCreativeId(creative.id); setPushAdName(`Ad ${(creative as { title?: string }).title || creative.id}`); setPushToAdsOpen(true); }}>
@@ -361,15 +356,15 @@ export default function Creatives() {
                         </div>
                       </div>
                     ) : (
-                      <div className="aspect-square bg-muted flex items-center justify-center">
-                        {creative.status === "generating" ? <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /> : <Image className="h-8 w-8 text-muted-foreground/40" />}
+                      <div className="aspect-square bg-zinc-800 flex items-center justify-center">
+                        {creative.status === "generating" ? <Loader2 className="h-8 w-8 animate-spin text-zinc-500" /> : <Image className="h-8 w-8 text-zinc-500/40" />}
                       </div>
                     )}
                     <div className="p-3">
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">{creativeTypes.find(t => t.value === creative.type)?.label?.split(" (")[0] || creative.type}</Badge>
                         {creative.platform && <Badge variant="outline" className="text-xs">{creative.platform}</Badge>}
-                        {creative.dimensions && <span className="text-xs text-muted-foreground">{creative.dimensions}</span>}
+                        {creative.dimensions && <span className="text-xs text-zinc-500">{creative.dimensions}</span>}
                       </div>
                     </div>
                   </CardContent>

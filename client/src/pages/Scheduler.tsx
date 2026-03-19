@@ -49,11 +49,11 @@ export default function Scheduler() {
   }, [schedules]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Scheduler</h1>
-          <p className="text-muted-foreground text-sm mt-1">Schedule and auto-post content across all platforms with optimal timing recommendations.</p>
+          <h1 className="page-title">Scheduler</h1>
+          <p className="page-subtitle">Schedule and auto-post content across all platforms with optimal timing recommendations.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />Schedule Post</Button></DialogTrigger>
@@ -92,25 +92,25 @@ export default function Scheduler() {
       {isLoading ? (
         <div className="space-y-3">{[1,2,3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-6 h-20" /></Card>)}</div>
       ) : !schedules?.length ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-12 text-center">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <Calendar className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">No scheduled posts</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Schedule content across all your platforms. AI will recommend optimal posting times for maximum engagement.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Schedule content across all your platforms. AI will recommend optimal posting times for maximum engagement.</p>
             <Button className="mt-4 rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Schedule Your First Post</Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 animate-fade-up">
           {Object.entries(grouped).map(([date, items]) => (
             <div key={date}>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2">{date}</h3>
+              <h3 className="text-sm font-semibold text-zinc-500 mb-2">{date}</h3>
               <div className="space-y-2">
                 {items.map(item => {
                   const statusInfo = statusColors[item.status] || statusColors.scheduled;
                   const StatusIcon = statusInfo.icon;
                   return (
-                    <Card key={item.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+                    <Card key={item.id} className="glass glass-hover rounded-2xl transition-all">
                       <CardContent className="p-3">
                         <div className="flex items-center gap-3">
                           <div className="text-center shrink-0 w-14">
@@ -122,7 +122,7 @@ export default function Scheduler() {
                               <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
                               <Badge className={`text-xs border-0 ${statusInfo.bg}`}><StatusIcon className="h-3 w-3 mr-1" />{item.status}</Badge>
                             </div>
-                            {(item.metadata as any)?.caption && <p className="text-sm text-muted-foreground mt-1 truncate">{(item.metadata as any).caption}</p>}
+                            {(item.metadata as any)?.caption && <p className="text-sm text-zinc-500 mt-1 truncate">{(item.metadata as any).caption}</p>}
                           </div>
                           <div className="flex items-center gap-1 shrink-0">
                             {item.status === "scheduled" && (

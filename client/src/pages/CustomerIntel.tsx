@@ -47,11 +47,11 @@ export default function CustomerIntel() {
   const trackMut = trpc.customerIntel.addInteraction.useMutation({ onSuccess: () => { refetch(); toast.success("Interaction tracked"); } });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Customer Intelligence</h1>
-          <p className="text-muted-foreground">Deep customer profiles, behavior analysis, segmentation, and intimacy scoring</p>
+          <p className="text-zinc-500">Deep customer profiles, behavior analysis, segmentation, and intimacy scoring</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setSegmentOpen(true)}><Tag className="w-4 h-4 mr-2" /> New Segment</Button>
@@ -61,11 +61,11 @@ export default function CustomerIntel() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card><CardContent className="p-4 text-center"><Users className="w-5 h-5 mx-auto mb-1 text-blue-600" /><p className="text-2xl font-bold">{stats?.totalCustomers || 0}</p><p className="text-xs text-muted-foreground">Total Customers</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><Activity className="w-5 h-5 mx-auto mb-1 text-green-600" /><p className="text-2xl font-bold">{stats?.temperature?.hot || 0}</p><p className="text-xs text-muted-foreground">Hot Leads</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><DollarSign className="w-5 h-5 mx-auto mb-1 text-purple-600" /><p className="text-2xl font-bold">${((stats?.totalPredictedCLV || 0) / 100).toLocaleString()}</p><p className="text-xs text-muted-foreground">Total CLV</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><Heart className="w-5 h-5 mx-auto mb-1 text-red-600" /><p className="text-2xl font-bold">{stats?.avgSentiment || "N/A"}</p><p className="text-xs text-muted-foreground">Avg Sentiment</p></CardContent></Card>
-        <Card><CardContent className="p-4 text-center"><Tag className="w-5 h-5 mx-auto mb-1 text-orange-600" /><p className="text-2xl font-bold">{stats?.activeSegments || 0}</p><p className="text-xs text-muted-foreground">Segments</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Users className="w-5 h-5 mx-auto mb-1 text-blue-600" /><p className="text-2xl font-bold">{stats?.totalCustomers || 0}</p><p className="text-xs text-zinc-500">Total Customers</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Activity className="w-5 h-5 mx-auto mb-1 text-green-600" /><p className="text-2xl font-bold">{stats?.temperature?.hot || 0}</p><p className="text-xs text-zinc-500">Hot Leads</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><DollarSign className="w-5 h-5 mx-auto mb-1 text-purple-600" /><p className="text-2xl font-bold">${((stats?.totalPredictedCLV || 0) / 100).toLocaleString()}</p><p className="text-xs text-zinc-500">Total CLV</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Heart className="w-5 h-5 mx-auto mb-1 text-red-600" /><p className="text-2xl font-bold">{stats?.avgSentiment || "N/A"}</p><p className="text-xs text-zinc-500">Avg Sentiment</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><Tag className="w-5 h-5 mx-auto mb-1 text-orange-600" /><p className="text-2xl font-bold">{stats?.activeSegments || 0}</p><p className="text-xs text-zinc-500">Segments</p></CardContent></Card>
       </div>
 
       <Tabs value={tab} onValueChange={setTab}>
@@ -78,7 +78,7 @@ export default function CustomerIntel() {
 
         <TabsContent value="dashboard" className="space-y-4">
           {!customers?.length ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Users className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No customer profiles yet. Add your first customer to start building intelligence.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Users className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No customer profiles yet. Add your first customer to start building intelligence.</p></CardContent></Card>
           ) : (
             <div className="space-y-3">
               {customers.map((c: any) => {
@@ -92,7 +92,7 @@ export default function CustomerIntel() {
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{c.name.charAt(0).toUpperCase()}</div>
                             <div>
                               <h3 className="font-medium">{c.name}</h3>
-                              <p className="text-xs text-muted-foreground">{c.email} {c.company && `- ${c.company}`}</p>
+                              <p className="text-xs text-zinc-500">{c.email} {c.company && `- ${c.company}`}</p>
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2 mb-2">
@@ -127,7 +127,7 @@ export default function CustomerIntel() {
 
         <TabsContent value="segments" className="space-y-4">
           {!segments?.length ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Tag className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No segments yet. Create segments to group customers by behavior, value, or demographics.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Tag className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>No segments yet. Create segments to group customers by behavior, value, or demographics.</p></CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {segments.map(s => {
@@ -147,7 +147,7 @@ export default function CustomerIntel() {
                         <Badge variant={s.isActive ? "default" : "secondary"}>{s.isActive ? "Active" : "Inactive"}</Badge>
                       </div>
                       {criteria && (
-                        <div className="text-xs text-muted-foreground space-y-1">
+                        <div className="text-xs text-zinc-500 space-y-1">
                           {criteria.engagement && <p>Engagement: {criteria.engagement}</p>}
                           {criteria.sentiment && <p>Sentiment: {criteria.sentiment}</p>}
                           {criteria.clvRange && <p>CLV: ${criteria.clvRange.min?.toLocaleString()} - ${criteria.clvRange.max?.toLocaleString()}</p>}
@@ -164,7 +164,7 @@ export default function CustomerIntel() {
 
         <TabsContent value="journey" className="space-y-4">
           {!journeyData ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>Select a customer and click "Journey" to map their customer journey.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>Select a customer and click "Journey" to map their customer journey.</p></CardContent></Card>
           ) : (
             <>
               <Card>
@@ -182,7 +182,7 @@ export default function CustomerIntel() {
                             <h3 className="font-medium">{stage.name}</h3>
                             <Badge variant={stage.status === "completed" ? "default" : stage.status === "current" ? "secondary" : "outline"}>{stage.status}</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">{stage.description}</p>
+                          <p className="text-sm text-zinc-500 mt-1">{stage.description}</p>
                           {stage.touchpoints?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">{stage.touchpoints.map((t: string, j: number) => <Badge key={j} variant="outline" className="text-xs">{t}</Badge>)}</div>
                           )}
@@ -207,7 +207,7 @@ export default function CustomerIntel() {
 
         <TabsContent value="intimacy" className="space-y-4">
           {!intimacyData ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground"><Heart className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>Select a customer and click "Intimacy" to calculate their intimacy score.</p></CardContent></Card>
+            <Card><CardContent className="py-12 text-center text-zinc-500"><Heart className="w-12 h-12 mx-auto mb-3 opacity-50" /><p>Select a customer and click "Intimacy" to calculate their intimacy score.</p></CardContent></Card>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -217,7 +217,7 @@ export default function CustomerIntel() {
                       {intimacyData.overallScore}
                     </div>
                     <p className="font-medium text-lg">Intimacy Score</p>
-                    <p className="text-sm text-muted-foreground">{intimacyData.level}</p>
+                    <p className="text-sm text-zinc-500">{intimacyData.level}</p>
                   </CardContent>
                 </Card>
                 <Card className="md:col-span-2">
@@ -229,10 +229,10 @@ export default function CustomerIntel() {
                           <span>{d.name}</span>
                           <span className="font-medium">{d.score}/100</span>
                         </div>
-                        <div className="w-full bg-muted rounded-full h-2">
+                        <div className="w-full bg-zinc-800 rounded-full h-2">
                           <div className={`h-2 rounded-full ${d.score >= 70 ? "bg-green-600" : d.score >= 40 ? "bg-yellow-600" : "bg-red-600"}`} style={{ width: `${d.score}%` }} />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{d.insight}</p>
+                        <p className="text-xs text-zinc-500 mt-0.5">{d.insight}</p>
                       </div>
                     ))}
                   </CardContent>
@@ -244,7 +244,7 @@ export default function CustomerIntel() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {intimacyData.recommendations.map((r: string, i: number) => (
-                        <div key={i} className="flex items-start gap-2 p-3 bg-muted rounded-lg">
+                        <div key={i} className="flex items-start gap-2 p-3 bg-zinc-800 rounded-lg">
                           <Star className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                           <p className="text-sm">{r}</p>
                         </div>

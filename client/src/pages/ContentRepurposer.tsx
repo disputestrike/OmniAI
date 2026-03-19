@@ -150,8 +150,8 @@ export default function ContentRepurposer() {
   return (
     <div className="space-y-8 p-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Content Repurposer</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="page-title">Content Repurposer</h1>
+        <p className="text-zinc-500 mt-1">
           One input → all formats. Upload a video/audio (we transcribe it), or paste a transcript. Then we generate blog posts, LinkedIn articles, social captions, emails, and 22+ formats in your voice.
         </p>
       </div>
@@ -218,7 +218,7 @@ export default function ContentRepurposer() {
               {uploadFile && uploadFile.size > MAX_UPLOAD_BYTES && (
                 <p className="text-xs text-amber-600 dark:text-amber-400">File is {(uploadFile.size / 1024 / 1024).toFixed(1)}MB. Max 16MB — use a shorter clip or paste a transcript.</p>
               )}
-              <p className="text-xs text-muted-foreground">We’ll transcribe it with AI, then generate all 22 formats. Max 16MB.</p>
+              <p className="text-xs text-zinc-500">We’ll transcribe it with AI, then generate all 22 formats. Max 16MB.</p>
             </div>
           )}
 
@@ -236,7 +236,7 @@ export default function ContentRepurposer() {
                 <FileArchive className="h-4 w-4" />
                 {zipFile ? zipFile.name : "Choose .zip file"}
               </Button>
-              <p className="text-xs text-muted-foreground">We’ll create one repurposing project per video/audio inside (max 10 per zip). Supports .mp4, .webm, .mp3, .wav, .m4a.</p>
+              <p className="text-xs text-zinc-500">We’ll create one repurposing project per video/audio inside (max 10 per zip). Supports .mp4, .webm, .mp3, .wav, .m4a.</p>
               <Button type="button" onClick={processZip} disabled={!zipFile || zipBusy} className="gap-2">
                 {zipBusy && <Loader2 className="h-4 w-4 animate-spin" />}
                 Process zip & create projects
@@ -264,7 +264,7 @@ export default function ContentRepurposer() {
           ))}
         </div>
         {listProjects.data?.length === 0 && (
-          <p className="text-muted-foreground text-sm">No projects yet. Create one above.</p>
+          <p className="text-zinc-500 text-sm">No projects yet. Create one above.</p>
         )}
       </div>
 
@@ -325,7 +325,7 @@ function ProjectCard({ projectId, title, status, createdAt }: { projectId: numbe
             ))}
           </ul>
         ) : (
-          <p className="text-muted-foreground text-sm">No generated content yet.</p>
+          <p className="text-zinc-500 text-sm">No generated content yet.</p>
         )}
       </CardContent>
     </Card>
@@ -358,7 +358,7 @@ function PublishSection() {
       <CardContent className="space-y-4">
         <div className="flex flex-wrap gap-2 mb-2">
           {credentials.data?.map((c) => (
-            <span key={c.id} className="inline-flex items-center rounded-md bg-muted px-2 py-1 text-xs font-medium">
+            <span key={c.id} className="inline-flex items-center rounded-md bg-zinc-800 px-2 py-1 text-xs font-medium">
               {c.platform}{c.siteUrl ? ` · ${c.siteUrl.replace(/^https?:\/\//, "").split("/")[0]}` : ""}
             </span>
           ))}

@@ -69,7 +69,7 @@ export default function CompetitorMonitor() {
             <Eye className="h-6 w-6 text-primary" />
             Competitor Monitor
           </h1>
-          <p className="text-muted-foreground mt-1">Analyze competitor content strategies and generate counter-content that outperforms them</p>
+          <p className="text-zinc-500 mt-1">Analyze competitor content strategies and generate counter-content that outperforms them</p>
         </div>
 
         {/* Tabs */}
@@ -104,7 +104,7 @@ export default function CompetitorMonitor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Competitor URL *</label>
+                  <label className="text-xs font-medium text-zinc-500 mb-1 block">Competitor URL *</label>
                   <input
                     className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                     placeholder="https://competitor.com"
@@ -114,7 +114,7 @@ export default function CompetitorMonitor() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Competitor Name</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Competitor Name</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. Nike"
@@ -123,7 +123,7 @@ export default function CompetitorMonitor() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Your Niche</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Your Niche</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. fitness apparel"
@@ -146,10 +146,10 @@ export default function CompetitorMonitor() {
                 </Button>
 
                 {/* What you get */}
-                <div className="bg-muted/30 rounded-lg p-3 space-y-1.5">
+                <div className="bg-zinc-900/50 rounded-lg p-3 space-y-1.5">
                   <p className="text-xs font-medium">What you'll get:</p>
                   {["Content themes & posting frequency", "Top performing formats", "Their weaknesses & your opportunities", "Ready-to-use remix ideas", "Keywords to monitor"].map(item => (
-                    <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div key={item} className="flex items-center gap-1.5 text-xs text-zinc-500">
                       <ChevronRight className="h-3 w-3 text-primary shrink-0" />
                       {item}
                     </div>
@@ -170,7 +170,7 @@ export default function CompetitorMonitor() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Content Themes</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-1">Content Themes</p>
                         <div className="flex flex-wrap gap-1">
                           {analysisResult.analysis.contentThemes?.map((t: string) => (
                             <Badge key={t} variant="secondary" className="text-xs">{t}</Badge>
@@ -178,7 +178,7 @@ export default function CompetitorMonitor() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Top Formats</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-1">Top Formats</p>
                         <div className="flex flex-wrap gap-1">
                           {analysisResult.analysis.topPerformingFormats?.map((f: string) => (
                             <Badge key={f} variant="outline" className="text-xs">{f}</Badge>
@@ -196,7 +196,7 @@ export default function CompetitorMonitor() {
                         </p>
                         <ul className="space-y-1">
                           {analysisResult.analysis.weaknesses?.map((w: string, i: number) => (
-                            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
+                            <li key={i} className="text-xs text-zinc-500 flex items-start gap-1">
                               <span className="text-red-400 mt-0.5">•</span> {w}
                             </li>
                           ))}
@@ -208,7 +208,7 @@ export default function CompetitorMonitor() {
                         </p>
                         <ul className="space-y-1">
                           {analysisResult.analysis.opportunities?.map((o: string, i: number) => (
-                            <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
+                            <li key={i} className="text-xs text-zinc-500 flex items-start gap-1">
                               <span className="text-green-400 mt-0.5">•</span> {o}
                             </li>
                           ))}
@@ -236,7 +236,7 @@ export default function CompetitorMonitor() {
                             <Badge variant="secondary" className="text-xs">{idea.format?.replace(/_/g, " ")}</Badge>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">{idea.description}</p>
+                        <p className="text-xs text-zinc-500">{idea.description}</p>
                         <p className="text-xs text-primary font-medium">Angle: {idea.angle}</p>
                         <Button
                           variant="outline"
@@ -263,7 +263,7 @@ export default function CompetitorMonitor() {
                     <Eye className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="font-semibold">Competitor Intelligence</h3>
-                  <p className="text-sm text-muted-foreground max-w-xs">
+                  <p className="text-sm text-zinc-500 max-w-xs">
                     Enter any competitor URL to get their content strategy, weaknesses, and ready-to-use remix ideas.
                   </p>
                 </div>
@@ -282,7 +282,7 @@ export default function CompetitorMonitor() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Competitor's Post *</label>
+                  <label className="text-xs font-medium text-zinc-500 mb-1 block">Competitor's Post *</label>
                   <Textarea
                     placeholder="Paste the competitor's post, ad, or content here..."
                     value={competitorContent}
@@ -292,7 +292,7 @@ export default function CompetitorMonitor() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Competitor Name</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Competitor Name</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. Nike"
@@ -301,7 +301,7 @@ export default function CompetitorMonitor() {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Your Brand</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Your Brand</label>
                     <input
                       className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                       placeholder="e.g. My Brand"
@@ -311,7 +311,7 @@ export default function CompetitorMonitor() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Your Product/Service</label>
+                  <label className="text-xs font-medium text-zinc-500 mb-1 block">Your Product/Service</label>
                   <input
                     className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
                     placeholder="e.g. Air Max 2025"
@@ -321,7 +321,7 @@ export default function CompetitorMonitor() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Platform</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Platform</label>
                     <Select value={platform} onValueChange={setPlatform}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -332,7 +332,7 @@ export default function CompetitorMonitor() {
                     </Select>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground mb-1 block">Counter Angle</label>
+                    <label className="text-xs font-medium text-zinc-500 mb-1 block">Counter Angle</label>
                     <Select value={angle} onValueChange={(v) => setAngle(v as typeof angle)}>
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -381,24 +381,24 @@ export default function CompetitorMonitor() {
 
                     <div className="space-y-3">
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Strategy</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-1">Strategy</p>
                         <p className="text-xs">{counterResult.strategy}</p>
                       </div>
                       {counterResult.hook && (
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Hook</p>
+                          <p className="text-xs font-medium text-zinc-500 mb-1">Hook</p>
                           <p className="text-xs font-medium text-primary">"{counterResult.hook}"</p>
                         </div>
                       )}
                       {counterResult.callToAction && (
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">CTA</p>
+                          <p className="text-xs font-medium text-zinc-500 mb-1">CTA</p>
                           <p className="text-xs">{counterResult.callToAction}</p>
                         </div>
                       )}
                       {counterResult.hashtags?.length > 0 && (
                         <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-1">Hashtags</p>
+                          <p className="text-xs font-medium text-zinc-500 mb-1">Hashtags</p>
                           <div className="flex flex-wrap gap-1">
                             {counterResult.hashtags.map((h: string) => (
                               <Badge key={h} variant="secondary" className="text-xs">{h}</Badge>
@@ -411,7 +411,7 @@ export default function CompetitorMonitor() {
                           <p className="text-xs font-medium text-green-700 dark:text-green-400 mb-1 flex items-center gap-1">
                             <Target className="h-3 w-3" /> Why This Works
                           </p>
-                          <p className="text-xs text-muted-foreground">{counterResult.whyItWorks}</p>
+                          <p className="text-xs text-zinc-500">{counterResult.whyItWorks}</p>
                         </div>
                       )}
                     </div>
@@ -425,7 +425,7 @@ export default function CompetitorMonitor() {
                     <Shield className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="font-semibold">Counter Their Content</h3>
-                  <p className="text-sm text-muted-foreground max-w-xs">
+                  <p className="text-sm text-zinc-500 max-w-xs">
                     Paste any competitor post and get counter-content that positions your brand favorably without being negative.
                   </p>
                 </div>

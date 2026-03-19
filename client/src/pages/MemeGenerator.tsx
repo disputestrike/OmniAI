@@ -56,18 +56,18 @@ export default function MemeGenerator() {
   });
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
           <Smile className="h-6 w-6 text-amber-500" />Meme Generator
         </h1>
-        <p className="text-muted-foreground text-sm mt-1">Create viral-worthy memes with AI. Generate images, captions, and share across platforms.</p>
+        <p className="page-subtitle">Create viral-worthy memes with AI. Generate images, captions, and share across platforms.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controls */}
         <div className="space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardHeader><CardTitle className="text-base">Create Your Meme</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -76,7 +76,7 @@ export default function MemeGenerator() {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <p className="text-xs text-muted-foreground w-full">Quick topics:</p>
+                <p className="text-xs text-zinc-500 w-full">Quick topics:</p>
                 {MEME_TOPICS.map(t => (
                   <Badge key={t} variant="outline" className="cursor-pointer hover:bg-accent text-xs" onClick={() => setTopic(t)}>{t}</Badge>
                 ))}
@@ -121,7 +121,7 @@ export default function MemeGenerator() {
 
         {/* Preview */}
         <div className="space-y-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardHeader><CardTitle className="text-base">Preview</CardTitle></CardHeader>
             <CardContent>
               {generatedMeme?.imageUrl ? (
@@ -156,11 +156,11 @@ export default function MemeGenerator() {
                   </div>
                 </div>
               ) : (
-                <div className="aspect-square bg-muted/50 rounded-lg flex items-center justify-center">
+                <div className="aspect-square bg-zinc-900/40 rounded-lg flex items-center justify-center">
                   <div className="text-center p-6">
-                    <Smile className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-                    <p className="text-sm text-muted-foreground">Your meme will appear here</p>
-                    <p className="text-xs text-muted-foreground mt-1">AI-generated image + text overlay</p>
+                    <Smile className="h-12 w-12 mx-auto text-zinc-500/30 mb-3" />
+                    <p className="text-sm text-zinc-500">Your meme will appear here</p>
+                    <p className="text-xs text-zinc-500 mt-1">AI-generated image + text overlay</p>
                   </div>
                 </div>
               )}
@@ -171,7 +171,7 @@ export default function MemeGenerator() {
 
       {/* History */}
       {history.length > 0 && (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardHeader><CardTitle className="text-base">Recent Memes</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
@@ -180,8 +180,8 @@ export default function MemeGenerator() {
                   {meme.imageUrl ? (
                     <img src={meme.imageUrl} alt={`Meme ${i}`} className="w-full aspect-square object-cover rounded-lg" />
                   ) : (
-                    <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
-                      <Smile className="h-6 w-6 text-muted-foreground/30" />
+                    <div className="w-full aspect-square bg-zinc-800 rounded-lg flex items-center justify-center">
+                      <Smile className="h-6 w-6 text-zinc-500/30" />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">

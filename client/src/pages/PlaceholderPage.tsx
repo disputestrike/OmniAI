@@ -8,8 +8,8 @@ export default function PlaceholderPage({
 }) {
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-      <p className="text-muted-foreground">{description}</p>
+      <h1 className="page-title">{title}</h1>
+      <p className="text-zinc-500">{description}</p>
     </div>
   );
 }

@@ -70,11 +70,11 @@ export default function EmailMarketing() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Email Marketing</h1>
-          <p className="text-muted-foreground">Create, manage, and send email campaigns</p>
+          <p className="text-zinc-500">Create, manage, and send email campaigns</p>
         </div>
       </div>
 
@@ -134,9 +134,9 @@ export default function EmailMarketing() {
 
           {!campaigns?.length ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-12">
-              <Mail className="w-12 h-12 text-muted-foreground mb-4" />
+              <Mail className="w-12 h-12 text-zinc-500 mb-4" />
               <h3 className="text-lg font-semibold">No Campaigns Yet</h3>
-              <p className="text-muted-foreground mt-2">Create your first email campaign to start reaching your audience.</p>
+              <p className="text-zinc-500 mt-2">Create your first email campaign to start reaching your audience.</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-3">
@@ -148,8 +148,8 @@ export default function EmailMarketing() {
                         <span className="font-medium">{c.name}</span>
                         <Badge variant={c.status === "sent" ? "default" : c.status === "sending" ? "secondary" : "outline"}>{c.status}</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">Subject: {c.subject}</p>
-                      {c.delivered !== null && <p className="text-xs text-muted-foreground">Delivered: {c.delivered} | Opened: {c.opened || 0} | Clicked: {c.clicked || 0}</p>}
+                      <p className="text-sm text-zinc-500 mt-1">Subject: {c.subject}</p>
+                      {c.delivered !== null && <p className="text-xs text-zinc-500">Delivered: {c.delivered} | Opened: {c.opened || 0} | Clicked: {c.clicked || 0}</p>}
                     </div>
                     <div className="flex gap-2">
                       {c.status === "draft" && (
@@ -181,9 +181,9 @@ export default function EmailMarketing() {
 
           {!lists?.length ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-12">
-              <Users className="w-12 h-12 text-muted-foreground mb-4" />
+              <Users className="w-12 h-12 text-zinc-500 mb-4" />
               <h3 className="text-lg font-semibold">No Lists Yet</h3>
-              <p className="text-muted-foreground mt-2">Create a list to organize your contacts.</p>
+              <p className="text-zinc-500 mt-2">Create a list to organize your contacts.</p>
             </CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -192,7 +192,7 @@ export default function EmailMarketing() {
                   <CardContent className="p-4 flex items-center justify-between">
                     <div>
                       <span className="font-medium">{l.name}</span>
-                      <p className="text-xs text-muted-foreground">{l.description || "No description"}</p>
+                      <p className="text-xs text-zinc-500">{l.description || "No description"}</p>
                     </div>
                     <Button variant="destructive" size="sm" onClick={e => { e.stopPropagation(); deleteList.mutate({ id: l.id }); }}><Trash2 className="w-4 h-4" /></Button>
                   </CardContent>
@@ -205,8 +205,8 @@ export default function EmailMarketing() {
         <TabsContent value="contacts" className="space-y-4">
           {!selectedListId ? (
             <Card className="border-dashed"><CardContent className="flex flex-col items-center py-12">
-              <Users className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Select a list from the Lists tab to view contacts</p>
+              <Users className="w-12 h-12 text-zinc-500 mb-4" />
+              <p className="text-zinc-500">Select a list from the Lists tab to view contacts</p>
             </CardContent></Card>
           ) : (
             <>
@@ -227,7 +227,7 @@ export default function EmailMarketing() {
                   <DialogContent>
                     <DialogHeader><DialogTitle>Bulk Import Contacts</DialogTitle></DialogHeader>
                     <div className="space-y-3 mt-4">
-                      <p className="text-sm text-muted-foreground">Paste CSV data (email,name per line):</p>
+                      <p className="text-sm text-zinc-500">Paste CSV data (email,name per line):</p>
                       <Textarea value={bulkCsv} onChange={e => setBulkCsv(e.target.value)} placeholder="john@example.com,John Doe&#10;jane@example.com,Jane Smith" rows={6} />
                       <Button onClick={() => {
                         const contacts = bulkCsv.split("\n").filter(l => l.trim()).map(line => {
@@ -245,12 +245,12 @@ export default function EmailMarketing() {
 
               {!contacts?.length ? (
                 <Card className="border-dashed"><CardContent className="flex flex-col items-center py-8">
-                  <p className="text-muted-foreground">No contacts in this list yet</p>
+                  <p className="text-zinc-500">No contacts in this list yet</p>
                 </CardContent></Card>
               ) : (
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
-                    <thead className="bg-muted/50"><tr>
+                    <thead className="bg-zinc-900/40"><tr>
                       <th className="text-left p-3 font-medium">Email</th>
                       <th className="text-left p-3 font-medium">Name</th>
                       <th className="text-left p-3 font-medium">Status</th>

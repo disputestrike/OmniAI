@@ -42,7 +42,7 @@ export default function AdminPanel() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <AlertTriangle className="h-16 w-16 text-amber-500 mb-4" />
         <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-        <p className="text-muted-foreground max-w-md">
+        <p className="text-zinc-500 max-w-md">
           You need admin privileges to access this panel. Contact your account administrator to request access.
         </p>
       </div>
@@ -67,14 +67,14 @@ export default function AdminPanel() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Shield className="h-6 w-6 text-primary" /> Admin Panel
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="page-subtitle">
             Manage users, roles, subscriptions, and platform analytics
           </p>
         </div>
@@ -85,38 +85,38 @@ export default function AdminPanel() {
 
       {/* Stats Cards */}
       {statsLoading ? (
-        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+        <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <Users className="h-5 w-5 text-blue-500" />
                 <TrendingUp className="h-4 w-4 text-green-500" />
               </div>
               <p className="text-3xl font-bold">{adminStats?.totalUsers ?? 0}</p>
-              <p className="text-sm text-muted-foreground">Total Users</p>
+              <p className="text-sm text-zinc-500">Total Users</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <UserCog className="h-5 w-5 text-purple-500" />
               </div>
               <p className="text-3xl font-bold">{adminStats?.totalTeamMembers ?? 0}</p>
-              <p className="text-sm text-muted-foreground">Team Members</p>
+              <p className="text-sm text-zinc-500">Team Members</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <CreditCard className="h-5 w-5 text-green-500" />
               </div>
               <p className="text-3xl font-bold">{adminStats?.activeSubscriptions ?? 0}</p>
-              <p className="text-sm text-muted-foreground">Active Subscriptions</p>
+              <p className="text-sm text-zinc-500">Active Subscriptions</p>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-sm">
+          <Card className="glass rounded-2xl">
             <CardContent className="p-5">
               <div className="flex items-center justify-between mb-3">
                 <BarChart3 className="h-5 w-5 text-amber-500" />
@@ -129,14 +129,14 @@ export default function AdminPanel() {
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">Plan Breakdown</p>
+              <p className="text-sm text-zinc-500 mt-1">Plan Breakdown</p>
             </CardContent>
           </Card>
         </div>
       )}
 
       {/* User Management */}
-      <Card className="border-0 shadow-sm">
+      <Card className="glass rounded-2xl">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">User Management</CardTitle>
@@ -144,7 +144,7 @@ export default function AdminPanel() {
           </div>
           <div className="flex flex-wrap gap-3 mt-3">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
               <Input
                 placeholder="Search by name or email..."
                 value={searchQuery}
@@ -175,13 +175,13 @@ export default function AdminPanel() {
         </CardHeader>
         <CardContent>
           {usersLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+            <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-zinc-500" /></div>
           ) : filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No users found matching your filters.</div>
+            <div className="text-center py-8 text-zinc-500">No users found matching your filters.</div>
           ) : (
             <div className="space-y-2">
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                 <div className="col-span-4">User</div>
                 <div className="col-span-2">Role</div>
                 <div className="col-span-2">Plan</div>
@@ -189,7 +189,7 @@ export default function AdminPanel() {
                 <div className="col-span-2 text-right">Actions</div>
               </div>
               {filteredUsers.map((u: any) => (
-                <div key={u.id} className="grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-lg hover:bg-muted/40 transition-colors">
+                <div key={u.id} className="grid grid-cols-12 gap-4 items-center px-4 py-3 rounded-lg hover:bg-zinc-800/40 transition-colors">
                   <div className="col-span-4 flex items-center gap-3">
                     <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <span className="text-sm font-bold text-primary">
@@ -198,7 +198,7 @@ export default function AdminPanel() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium truncate">{u.name || "—"}</p>
-                      <p className="text-xs text-muted-foreground truncate">{u.email || "—"}</p>
+                      <p className="text-xs text-zinc-500 truncate">{u.email || "—"}</p>
                     </div>
                   </div>
                   <div className="col-span-2">
@@ -212,7 +212,7 @@ export default function AdminPanel() {
                       {u.subscriptionPlan || "free"}
                     </Badge>
                   </div>
-                  <div className="col-span-2 text-sm text-muted-foreground">
+                  <div className="col-span-2 text-sm text-zinc-500">
                     {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "—"}
                   </div>
                   <div className="col-span-2 flex justify-end gap-2">
@@ -226,7 +226,7 @@ export default function AdminPanel() {
                       <DialogContent>
                         <DialogHeader><DialogTitle>Change Role for {u.name || u.email}</DialogTitle></DialogHeader>
                         <div className="space-y-4 pt-2">
-                          <p className="text-sm text-muted-foreground">Current role: <Badge>{u.role}</Badge></p>
+                          <p className="text-sm text-zinc-500">Current role: <Badge>{u.role}</Badge></p>
                           <div className="flex gap-3">
                             <DialogClose asChild>
                               <Button
@@ -262,7 +262,7 @@ export default function AdminPanel() {
                       <DialogContent>
                         <DialogHeader><DialogTitle>Change Plan for {u.name || u.email}</DialogTitle></DialogHeader>
                         <div className="space-y-4 pt-2">
-                          <p className="text-sm text-muted-foreground">Current plan: <Badge className={planColors[u.subscriptionPlan || "free"]}>{u.subscriptionPlan || "free"}</Badge></p>
+                          <p className="text-sm text-zinc-500">Current plan: <Badge className={planColors[u.subscriptionPlan || "free"]}>{u.subscriptionPlan || "free"}</Badge></p>
                           <div className="grid grid-cols-2 gap-2">
                             {["free", "starter", "professional", "business", "enterprise"].map(plan => (
                               <DialogClose key={plan} asChild>

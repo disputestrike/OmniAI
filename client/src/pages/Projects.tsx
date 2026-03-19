@@ -61,11 +61,11 @@ export default function Projects() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Projects</h1>
-          <p className="text-muted-foreground mt-1">Organize your campaigns, conversations, and content into project folders</p>
+          <p className="text-zinc-500 mt-1">Organize your campaigns, conversations, and content into project folders</p>
         </div>
         <Dialog open={showCreate} onOpenChange={setShowCreate}>
           <DialogTrigger asChild>
@@ -87,12 +87,12 @@ export default function Projects() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Project List */}
         <div className="lg:col-span-1 space-y-3">
-          <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Your Projects</h2>
+          <h2 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">Your Projects</h2>
           {projectsQ.isLoading ? (
-            <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />)}</div>
+            <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-20 bg-zinc-800 animate-pulse rounded-lg" />)}</div>
           ) : !projectsQ.data?.length ? (
             <Card className="border-dashed">
-              <CardContent className="py-8 text-center text-muted-foreground">
+              <CardContent className="py-8 text-center text-zinc-500">
                 <Folder className="w-10 h-10 mx-auto mb-3 opacity-40" />
                 <p className="font-medium">No projects yet</p>
                 <p className="text-sm mt-1">Create your first project to organize your marketing campaigns</p>
@@ -108,15 +108,15 @@ export default function Projects() {
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
-                      {selectedProject === p.id ? <FolderOpen className="w-5 h-5 text-primary mt-0.5" /> : <Folder className="w-5 h-5 text-muted-foreground mt-0.5" />}
+                      {selectedProject === p.id ? <FolderOpen className="w-5 h-5 text-primary mt-0.5" /> : <Folder className="w-5 h-5 text-zinc-500 mt-0.5" />}
                       <div>
                         <h3 className="font-medium">{p.name}</h3>
-                        {p.description && <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{p.description}</p>}
+                        {p.description && <p className="text-sm text-zinc-500 mt-0.5 line-clamp-2">{p.description}</p>}
                         <div className="flex items-center gap-2 mt-2">
                           <Badge variant="outline" className={`text-xs ${statusColor(p.status)}`}>
                             {statusIcon(p.status)} <span className="ml-1">{p.status}</span>
                           </Badge>
-                          <span className="text-xs text-muted-foreground">{new Date(p.createdAt).toLocaleDateString()}</span>
+                          <span className="text-xs text-zinc-500">{new Date(p.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -156,7 +156,7 @@ export default function Projects() {
           {selectedProject ? (
             <>
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                <h2 className="text-sm font-medium text-zinc-500 uppercase tracking-wider">
                   Conversations in {projectsQ.data?.find((p: any) => p.id === selectedProject)?.name}
                 </h2>
                 <Button size="sm" onClick={() => navigate(`/ai-agents?projectId=${selectedProject}`)}>
@@ -164,10 +164,10 @@ export default function Projects() {
                 </Button>
               </div>
               {conversationsQ.isLoading ? (
-                <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-muted animate-pulse rounded-lg" />)}</div>
+                <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="h-16 bg-zinc-800 animate-pulse rounded-lg" />)}</div>
               ) : !conversationsQ.data?.length ? (
                 <Card className="border-dashed">
-                  <CardContent className="py-8 text-center text-muted-foreground">
+                  <CardContent className="py-8 text-center text-zinc-500">
                     <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-40" />
                     <p className="font-medium">No conversations yet</p>
                     <p className="text-sm mt-1">Start a new AI chat within this project to keep everything organized</p>
@@ -183,13 +183,13 @@ export default function Projects() {
                       <CardContent className="py-3">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate(`/ai-agents?conversationId=${c.id}`)}>
-                            <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                            <MessageSquare className="w-4 h-4 text-zinc-500" />
                             <div>
                               <h3 className="font-medium text-sm">{c.title || "Untitled Conversation"}</h3>
                               <div className="flex items-center gap-2 mt-0.5">
                                 {c.agentMode && <Badge variant="secondary" className="text-xs">{c.agentMode}</Badge>}
-                                <span className="text-xs text-muted-foreground">{new Date(c.updatedAt).toLocaleString()}</span>
-                                <span className="text-xs text-muted-foreground">{Array.isArray(c.messages) ? `${c.messages.length} messages` : ""}</span>
+                                <span className="text-xs text-zinc-500">{new Date(c.updatedAt).toLocaleString()}</span>
+                                <span className="text-xs text-zinc-500">{Array.isArray(c.messages) ? `${c.messages.length} messages` : ""}</span>
                               </div>
                             </div>
                           </div>
@@ -205,7 +205,7 @@ export default function Projects() {
             </>
           ) : (
             <Card className="border-dashed">
-              <CardContent className="py-16 text-center text-muted-foreground">
+              <CardContent className="py-16 text-center text-zinc-500">
                 <FolderOpen className="w-12 h-12 mx-auto mb-4 opacity-30" />
                 <h3 className="text-lg font-medium">Select a project</h3>
                 <p className="text-sm mt-1">Choose a project from the left to see its conversations, content, and history</p>

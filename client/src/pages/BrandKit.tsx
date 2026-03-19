@@ -168,13 +168,13 @@ export default function BrandKit() {
   const isSaving = createMut.isPending || updateMut.isPending;
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Palette className="h-6 w-6 text-primary" /> Brand Kit
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="page-subtitle">
             Define your brand identity — logo, colors, fonts, and voice. Applied automatically to all generated content.
           </p>
         </div>
@@ -204,7 +204,7 @@ export default function BrandKit() {
                 <span className="font-semibold text-sm">AI Brand Generator</span>
                 <Badge variant="secondary" className="text-xs">Optional</Badge>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">Describe your business and AI will generate colors, fonts, tone, tagline, and more.</p>
+              <p className="text-xs text-zinc-500 mb-3">Describe your business and AI will generate colors, fonts, tone, tagline, and more.</p>
               <div className="grid grid-cols-2 gap-3 mb-3">
                 <Textarea value={aiDesc} onChange={e => setAiDesc(e.target.value)} placeholder="e.g. A premium fitness coaching brand for busy professionals who want to transform their body in 90 days..." rows={2} className="col-span-2" />
                 <Input value={aiIndustry} onChange={e => setAiIndustry(e.target.value)} placeholder="Industry (e.g. fitness, SaaS, fashion)" />
@@ -232,7 +232,7 @@ export default function BrandKit() {
               <Label className="flex items-center gap-2 mb-2"><Upload className="h-4 w-4" />Logo</Label>
               <div className="flex items-start gap-4">
                 <div
-                  className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-all shrink-0"
+                  className="w-24 h-24 rounded-xl border-2 border-dashed flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-zinc-900/50 transition-all shrink-0"
                   onClick={() => logoRef.current?.click()}
                   onDragOver={e => e.preventDefault()}
                   onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleLogoUpload(f); }}
@@ -241,13 +241,13 @@ export default function BrandKit() {
                     <img src={logoPreview} alt="Logo" className="w-full h-full object-contain p-2 rounded-xl" />
                   ) : (
                     <div className="text-center">
-                      <Upload className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-                      <p className="text-[10px] text-muted-foreground">Upload</p>
+                      <Upload className="h-5 w-5 mx-auto text-zinc-500 mb-1" />
+                      <p className="text-[10px] text-zinc-500">Upload</p>
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground mb-2">Or paste a URL:</p>
+                  <p className="text-xs text-zinc-500 mb-2">Or paste a URL:</p>
                   <Input value={logoUrl.startsWith("data:") ? "" : logoUrl} onChange={e => { setLogoUrl(e.target.value); setLogoPreview(e.target.value); }} placeholder="https://example.com/logo.png" />
                   {logoPreview && !logoPreview.startsWith("data:") && (
                     <img src={logoPreview} alt="Logo preview" className="mt-2 h-12 object-contain rounded" onError={() => setLogoPreview("")} />
@@ -267,7 +267,7 @@ export default function BrandKit() {
                   { label: "Accent", value: accentColor, set: setAccentColor },
                 ].map(({ label, value, set }) => (
                   <div key={label}>
-                    <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                    <p className="text-xs text-zinc-500 mb-1">{label}</p>
                     <div className="flex items-center gap-2">
                       <div className="relative">
                         <div className="w-10 h-10 rounded-lg border cursor-pointer shadow-sm" style={{ backgroundColor: value }} onClick={() => document.getElementById(`color-${label}`)?.click()} />
@@ -295,7 +295,7 @@ export default function BrandKit() {
               <Label className="flex items-center gap-2 mb-3"><Type className="h-4 w-4" />Typography</Label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Heading Font</p>
+                  <p className="text-xs text-zinc-500 mb-1">Heading Font</p>
                   <Select value={fontHeading} onValueChange={setFontHeading}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{FONT_OPTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
@@ -303,7 +303,7 @@ export default function BrandKit() {
                   <p className="mt-2 text-2xl font-bold" style={{ fontFamily: fontHeading }}>{fontHeading}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Body Font</p>
+                  <p className="text-xs text-zinc-500 mb-1">Body Font</p>
                   <Select value={fontBody} onValueChange={setFontBody}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{FONT_OPTIONS.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}</SelectContent>
@@ -319,9 +319,9 @@ export default function BrandKit() {
               <div className="grid grid-cols-4 gap-2 mb-3">
                 {TONE_OPTIONS.map(t => (
                   <button key={t.value} onClick={() => setToneOfVoice(t.value)}
-                    className={`p-2.5 rounded-xl text-left border transition-all ${toneOfVoice === t.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-muted/50"}`}>
+                    className={`p-2.5 rounded-xl text-left border transition-all ${toneOfVoice === t.value ? "border-primary bg-primary/5 ring-1 ring-primary" : "hover:bg-zinc-900/40"}`}>
                     <p className="text-xs font-semibold">{t.label}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{t.desc}</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">{t.desc}</p>
                   </button>
                 ))}
               </div>
@@ -334,7 +334,7 @@ export default function BrandKit() {
               <div className="flex flex-wrap gap-2">
                 {PERSONALITY_OPTIONS.map(p => (
                   <button key={p} onClick={() => togglePersonality(p)}
-                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${personality.includes(p) ? "bg-primary text-primary-foreground border-primary" : "hover:bg-muted"}`}>
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all ${personality.includes(p) ? "bg-primary text-primary-foreground border-primary" : "hover:bg-zinc-800"}`}>
                     {personality.includes(p) && <Check className="h-3 w-3 inline mr-1" />}{p}
                   </button>
                 ))}
@@ -376,13 +376,13 @@ export default function BrandKit() {
             </div>
 
             {/* Default toggle */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-900/40">
               <button onClick={() => setIsDefault(!isDefault)} className={`w-10 h-5 rounded-full transition-all ${isDefault ? "bg-primary" : "bg-muted-foreground/30"} relative`}>
                 <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${isDefault ? "left-5" : "left-0.5"}`} />
               </button>
               <div>
                 <p className="text-sm font-medium">Set as Default Brand Kit</p>
-                <p className="text-xs text-muted-foreground">Applied automatically to all AI-generated content</p>
+                <p className="text-xs text-zinc-500">Applied automatically to all AI-generated content</p>
               </div>
             </div>
 
@@ -404,9 +404,9 @@ export default function BrandKit() {
       ) : !kits?.length ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Palette className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <Palette className="h-12 w-12 text-zinc-500/30 mb-4" />
             <p className="font-semibold">No Brand Kits Yet</p>
-            <p className="text-sm text-muted-foreground mt-1 text-center max-w-xs">Create your first brand kit to ensure consistent identity across all generated content.</p>
+            <p className="text-sm text-zinc-500 mt-1 text-center max-w-xs">Create your first brand kit to ensure consistent identity across all generated content.</p>
             <Button className="mt-4" onClick={() => { resetForm(); setEditingId(null); setShowCreate(true); }}>
               <Plus className="h-4 w-4 mr-2" />Create Brand Kit
             </Button>
@@ -445,7 +445,7 @@ export default function BrandKit() {
                   <div className="flex-1 h-6 rounded-full" style={{ background: `linear-gradient(90deg, ${kit.primaryColor || "#6366f1"}, ${kit.secondaryColor || "#8b5cf6"})` }} />
                 </div>
 
-                {kit.tagline && <p className="text-xs italic text-muted-foreground mb-2">"{kit.tagline}"</p>}
+                {kit.tagline && <p className="text-xs italic text-zinc-500 mb-2">"{kit.tagline}"</p>}
 
                 <div className="flex flex-wrap gap-1 mb-2">
                   {kit.toneOfVoice && <Badge variant="outline" className="text-[10px]">{kit.toneOfVoice}</Badge>}
@@ -457,7 +457,7 @@ export default function BrandKit() {
                     {kit.brandPersonality.slice(0, 3).map(p => (
                       <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-muted">{p}</span>
                     ))}
-                    {kit.brandPersonality.length > 3 && <span className="text-[10px] text-muted-foreground">+{kit.brandPersonality.length - 3}</span>}
+                    {kit.brandPersonality.length > 3 && <span className="text-[10px] text-zinc-500">+{kit.brandPersonality.length - 3}</span>}
                   </div>
                 )}
               </CardContent>

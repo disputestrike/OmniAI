@@ -109,7 +109,7 @@ export default function SocialPublish() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">Social Publishing Hub</h1>
-          <p className="text-muted-foreground text-sm">Connect accounts, create posts, schedule across all platforms, and track performance.</p>
+          <p className="text-zinc-500 text-sm">Connect accounts, create posts, schedule across all platforms, and track performance.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setShowConnect(true)}><Plug className="w-4 h-4 mr-2" />Connect Accounts</Button>
@@ -128,7 +128,7 @@ export default function SocialPublish() {
                           selectedPlatforms.includes(p.id)
                             ? "border-primary bg-primary/10 ring-1 ring-primary"
                             : connectedPlatforms.includes(p.id)
-                            ? "hover:bg-muted/50"
+                            ? "hover:bg-zinc-900/40"
                             : "opacity-40 cursor-not-allowed"
                         }`}
                         disabled={!connectedPlatforms.includes(p.id) && connectedPlatforms.length > 0}
@@ -150,7 +150,7 @@ export default function SocialPublish() {
                   <div className="flex gap-2 mt-1">
                     {["text", "image", "video", "carousel"].map(t => (
                       <button key={t} onClick={() => setPostType(t)}
-                        className={`px-3 py-1.5 rounded-lg border text-xs capitalize transition-all ${postType === t ? "border-primary bg-primary/10" : "hover:bg-muted/50"}`}>
+                        className={`px-3 py-1.5 rounded-lg border text-xs capitalize transition-all ${postType === t ? "border-primary bg-primary/10" : "hover:bg-zinc-900/40"}`}>
                         {t === "image" && <ImageIcon className="h-3 w-3 inline mr-1" />}
                         {t === "video" && <Video className="h-3 w-3 inline mr-1" />}
                         {t}
@@ -164,8 +164,8 @@ export default function SocialPublish() {
                   <Label>Content *</Label>
                   <Textarea value={postContent} onChange={(e) => setPostContent(e.target.value)} placeholder="Write your post content... Use #hashtags and @mentions" rows={4} />
                   <div className="flex justify-between mt-1">
-                    <p className="text-xs text-muted-foreground">{postContent.length} characters</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-zinc-500">{postContent.length} characters</p>
+                    <p className="text-xs text-zinc-500">
                       {postContent.length > 280 && selectedPlatforms.includes("twitter") && <span className="text-amber-500">Twitter limit: 280</span>}
                     </p>
                   </div>
@@ -197,21 +197,21 @@ export default function SocialPublish() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-4 gap-3">
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold">{connectedPlatforms.length}</p>
-          <p className="text-xs text-muted-foreground">Connected</p>
+          <p className="text-xs text-zinc-500">Connected</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold text-green-600">{queueStats.published}</p>
-          <p className="text-xs text-muted-foreground">Published</p>
+          <p className="text-xs text-zinc-500">Published</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold text-amber-600">{queueStats.queued}</p>
-          <p className="text-xs text-muted-foreground">Queued</p>
+          <p className="text-xs text-zinc-500">Queued</p>
         </CardContent></Card>
-        <Card className="border-0 shadow-sm"><CardContent className="p-4 text-center">
+        <Card className="glass rounded-2xl"><CardContent className="p-4 text-center">
           <p className="text-2xl font-bold text-red-600">{queueStats.failed}</p>
-          <p className="text-xs text-muted-foreground">Failed</p>
+          <p className="text-xs text-zinc-500">Failed</p>
         </CardContent></Card>
       </div>
 
@@ -223,16 +223,16 @@ export default function SocialPublish() {
 
         <TabsContent value="queue" className="space-y-3">
           {!queue?.length ? (
-            <Card className="border-0 shadow-sm"><CardContent className="flex flex-col items-center py-12">
-              <Share2 className="w-12 h-12 text-muted-foreground/40 mb-4" />
+            <Card className="glass rounded-2xl"><CardContent className="flex flex-col items-center py-12">
+              <Share2 className="w-12 h-12 text-zinc-500/40 mb-4" />
               <h3 className="text-lg font-semibold">Publishing Queue Empty</h3>
-              <p className="text-muted-foreground mt-2 text-sm">Create a post to start publishing across your connected platforms.</p>
+              <p className="text-zinc-500 mt-2 text-sm">Create a post to start publishing across your connected platforms.</p>
               <Button className="mt-4" onClick={() => setShowSchedule(true)}><Plus className="w-4 h-4 mr-2" />Create First Post</Button>
             </CardContent></Card>
           ) : (
             <div className="space-y-2">
               {queue.map((item: any) => (
-                <Card key={item.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+                <Card key={item.id} className="glass glass-hover rounded-2xl transition-all">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
@@ -250,8 +250,8 @@ export default function SocialPublish() {
                             {item.status}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">{item.postContent}</p>
-                        {item.scheduledFor && <p className="text-xs text-muted-foreground mt-1"><Clock className="w-3 h-3 inline mr-1" />{new Date(item.scheduledFor).toLocaleString()}</p>}
+                        <p className="text-sm text-zinc-500 line-clamp-2">{item.postContent}</p>
+                        {item.scheduledFor && <p className="text-xs text-zinc-500 mt-1"><Clock className="w-3 h-3 inline mr-1" />{new Date(item.scheduledFor).toLocaleString()}</p>}
                         {item.errorMessage && <p className="text-xs text-red-500 mt-1"><AlertCircle className="h-3 w-3 inline mr-1" />{item.errorMessage}</p>}
                         {item.externalPostUrl && <a href={item.externalPostUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline mt-1 inline-flex items-center gap-1"><ExternalLink className="h-3 w-3" />View post</a>}
                       </div>
@@ -289,7 +289,7 @@ export default function SocialPublish() {
                           {isConnected ? (
                             <p className="text-xs text-green-600 flex items-center gap-1"><CheckCircle2 className="h-3 w-3" />Connected{connection.accountName ? ` · ${connection.accountName}` : ""}</p>
                           ) : (
-                            <p className="text-xs text-muted-foreground">Not connected</p>
+                            <p className="text-xs text-zinc-500">Not connected</p>
                           )}
                         </div>
                       </div>
@@ -317,16 +317,16 @@ export default function SocialPublish() {
               );
             })}
           </div>
-          <Card className="border-0 shadow-sm bg-muted/30">
+          <Card className="border-0 shadow-sm bg-zinc-900/50">
             <CardContent className="p-4">
               <p className="text-sm font-medium">How to connect accounts</p>
-              <ol className="text-xs text-muted-foreground mt-2 space-y-1 list-decimal list-inside">
+              <ol className="text-xs text-zinc-500 mt-2 space-y-1 list-decimal list-inside">
                 <li>Click "Connect" on the platform you want to add</li>
                 <li>You'll be redirected to authorize OTOBI AI to post on your behalf</li>
                 <li>Once authorized, the platform will show as "Connected"</li>
                 <li>You can then publish directly from the queue or schedule posts</li>
               </ol>
-              <p className="text-xs text-muted-foreground mt-2">API keys required: Add your platform API credentials in Settings &gt; Secrets for each platform you want to connect.</p>
+              <p className="text-xs text-zinc-500 mt-2">API keys required: Add your platform API credentials in Settings &gt; Secrets for each platform you want to connect.</p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -336,7 +336,7 @@ export default function SocialPublish() {
       <Dialog open={showConnect} onOpenChange={setShowConnect}>
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Connect Social Accounts</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground">Connect your social media accounts to enable direct publishing. Each platform requires OAuth authorization.</p>
+          <p className="text-sm text-zinc-500">Connect your social media accounts to enable direct publishing. Each platform requires OAuth authorization.</p>
           <div className="space-y-2 mt-2">
             {PLATFORMS.map(p => {
               const isConnected = connectedPlatforms.includes(p.id);

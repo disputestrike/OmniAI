@@ -29,11 +29,11 @@ export default function AbTesting() {
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">A/B Testing</h1>
-          <p className="text-muted-foreground text-sm mt-1">Generate multiple creative variations, compare performance, and identify winners with AI.</p>
+          <h1 className="page-title">A/B Testing</h1>
+          <p className="page-subtitle">Generate multiple creative variations, compare performance, and identify winners with AI.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild><Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />New Test</Button></DialogTrigger>
@@ -52,11 +52,11 @@ export default function AbTesting() {
       {isLoading ? (
         <div className="space-y-3">{[1,2].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-6 h-32" /></Card>)}</div>
       ) : !tests?.length ? (
-        <Card className="border-0 shadow-sm">
+        <Card className="glass rounded-2xl">
           <CardContent className="p-12 text-center">
-            <FlaskConical className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
+            <FlaskConical className="h-12 w-12 mx-auto text-zinc-500/40 mb-4" />
             <h3 className="font-semibold text-lg">No A/B tests yet</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Create a test, then generate AI variations to compare different angles — emotional, logical, urgency, social proof, and more.</p>
+            <p className="text-sm text-zinc-500 mt-1 max-w-md mx-auto">Create a test, then generate AI variations to compare different angles — emotional, logical, urgency, social proof, and more.</p>
             <Button className="mt-4 rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Create Your First Test</Button>
           </CardContent>
         </Card>
@@ -66,7 +66,7 @@ export default function AbTesting() {
             const isExpanded = expandedId === test.id;
             const statusColors: Record<string, string> = { draft: "bg-gray-100 text-gray-700", running: "bg-emerald-50 text-emerald-700", completed: "bg-blue-50 text-blue-700", cancelled: "bg-red-50 text-red-700" };
             return (
-              <Card key={test.id} className="border-0 shadow-sm hover:shadow-md transition-all">
+              <Card key={test.id} className="glass glass-hover rounded-2xl transition-all">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3">
@@ -93,7 +93,7 @@ export default function AbTesting() {
                   {isExpanded && (
                     <div className="mt-4 border-t pt-4 space-y-4">
                       {test.status === "draft" && (
-                        <div className="bg-muted/30 p-4 rounded-xl space-y-3">
+                        <div className="bg-zinc-900/50 p-4 rounded-xl space-y-3">
                           <p className="text-sm font-medium flex items-center gap-2"><Sparkles className="h-4 w-4 text-primary" />Generate AI Variations</p>
                           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
@@ -150,15 +150,15 @@ export default function AbTesting() {
 function VariantsList({ testId }: { testId: number }) {
   const { data } = trpc.abTest.get.useQuery({ id: testId });
   const variants = (data as any)?.variants ?? [];
-  if (!variants.length) return <p className="text-sm text-muted-foreground">No variants yet. Generate some above.</p>;
+  if (!variants.length) return <p className="text-sm text-zinc-500">No variants yet. Generate some above.</p>;
   return (
     <div className="space-y-2">
       <p className="text-sm font-medium flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" />Variants</p>
       {variants.map((v: any) => (
-        <div key={v.id} className="flex items-center gap-3 bg-muted/20 p-3 rounded-lg">
+        <div key={v.id} className="flex items-center gap-3 bg-zinc-900/20 p-3 rounded-lg">
           <Badge variant="outline" className="shrink-0">{v.name}</Badge>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4 text-xs text-zinc-500">
               <span>Impressions: {v.impressions ?? 0}</span>
               <span>Clicks: {v.clicks ?? 0}</span>
               <span>CTR: {v.ctr ?? "0"}%</span>

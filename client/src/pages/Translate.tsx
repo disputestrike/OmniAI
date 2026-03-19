@@ -39,10 +39,10 @@ export default function Translate() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-up">
       <div>
         <h1 className="text-2xl font-bold">Multi-Language Translation</h1>
-        <p className="text-muted-foreground">Translate and adapt marketing content for global audiences</p>
+        <p className="text-zinc-500">Translate and adapt marketing content for global audiences</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -61,7 +61,7 @@ export default function Translate() {
           </CardHeader>
           <CardContent>
             <Textarea value={sourceText} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)} placeholder="Enter your marketing content to translate..." rows={8} />
-            <p className="text-xs text-muted-foreground mt-2">{sourceText.length} characters</p>
+            <p className="text-xs text-zinc-500 mt-2">{sourceText.length} characters</p>
 
             <div className="flex items-center gap-3 mt-4">
               <label className="flex items-center gap-2 text-sm">
@@ -112,14 +112,14 @@ export default function Translate() {
             {(translateMut.isPending || bulkTranslateMut.isPending) ? (
               <div className="flex flex-col items-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
-                <p className="text-muted-foreground text-sm">Translating and adapting content...</p>
+                <p className="text-zinc-500 text-sm">Translating and adapting content...</p>
               </div>
             ) : result ? (
-              <div className="whitespace-pre-wrap text-sm bg-muted/30 p-4 rounded-lg min-h-[200px]">{result}</div>
+              <div className="whitespace-pre-wrap text-sm bg-zinc-900/50 p-4 rounded-lg min-h-[200px]">{result}</div>
             ) : (
               <div className="flex flex-col items-center py-12">
-                <Languages className="w-10 h-10 text-muted-foreground mb-3" />
-                <p className="text-muted-foreground text-sm">Translated content will appear here</p>
+                <Languages className="w-10 h-10 text-zinc-500 mb-3" />
+                <p className="text-zinc-500 text-sm">Translated content will appear here</p>
               </div>
             )}
           </CardContent>
