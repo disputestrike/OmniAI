@@ -1,43 +1,37 @@
 import { trpc } from "@/lib/trpc";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Megaphone, Plus, Loader2, Sparkles, Trash2, Play, Pause, CheckCircle } from "lucide-react";
+import { Megaphone, Plus, Loader2, Sparkles, Trash2, Play, Pause } from "lucide-react";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Streamdown } from "streamdown";
 import { WhatsNextCard } from "@/components/WhatsNextCard";
 import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
-const objectives = [
-  { value: "awareness", label: "Brand Awareness" },
-  { value: "traffic", label: "Website Traffic" },
-  { value: "engagement", label: "Engagement" },
-  { value: "leads", label: "Lead Generation" },
-  { value: "sales", label: "Sales / Conversions" },
-  { value: "app_installs", label: "App Installs" },
+const OBJECTIVES = [
+  { value: "awareness", label: "Brand Awareness" }, { value: "traffic", label: "Website Traffic" },
+  { value: "engagement", label: "Engagement" }, { value: "leads", label: "Lead Generation" },
+  { value: "sales", label: "Sales / Conversions" }, { value: "app_installs", label: "App Installs" },
 ];
+const PLATFORMS = ["Instagram","TikTok","YouTube","Facebook","LinkedIn","Twitter/X","Google Ads","Amazon","eBay","WhatsApp","Email","SMS","Pinterest","Snapchat","Reddit","Threads","Podcast","TV","Radio","Print","Blog/SEO"];
 
-const allPlatforms = [
-  "Instagram", "TikTok", "YouTube", "Facebook", "LinkedIn", "Twitter/X",
-  "Google Ads", "Amazon", "eBay", "WhatsApp", "Email", "SMS",
-  "Pinterest", "Snapchat", "Reddit", "Threads",
-  "Podcast", "TV", "Radio", "Print", "Blog/SEO",
-];
+const STATUS_STYLES: Record<string, { pill: string; badge: string }> = {
+  draft:     { pill: "idle",    badge: "badge-neutral" },
+  active:    { pill: "done",    badge: "badge-success" },
+  paused:    { pill: "warning", badge: "badge-warning" },
+  completed: { pill: "done",    badge: "badge-cyan" },
+  archived:  { pill: "idle",    badge: "badge-neutral" },
+};
 
 export default function Campaigns() {
   const utils = trpc.useUtils();
   const { data: campaigns, isLoading } = trpc.campaign.list.useQuery();
   const { data: products } = trpc.product.list.useQuery();
-  const createMut = trpc.campaign.create.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); setOpen(false); toast.success("Campaign created"); } });
+  const createMut = trpc.campaign.create.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); setOpen(false); resetForm(); toast.success("Campaign created"); } });
   const updateMut = trpc.campaign.update.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); toast.success("Updated"); } });
   const deleteMut = trpc.campaign.delete.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); toast.success("Deleted"); } });
-  const strategyMut = trpc.campaign.generateStrategy.useMutation({ onError: (e) => toast.error(e.message) });
+  const strategyMut = trpc.campaign.generateStrategy.useMutation({ onError: e => toast.error(e.message) });
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -48,140 +42,160 @@ export default function Campaigns() {
   const [budget, setBudget] = useState("");
   const [strategyId, setStrategyId] = useState<number | null>(null);
 
+  const resetForm = () => { setName(""); setDescription(""); setObjective("awareness"); setSelectedPlatforms([]); setProductId(""); setBudget(""); };
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
-
-  const togglePlatform = (p: string) => {
-    setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
-  };
-
-  const statusColors: Record<string, string> = {
-    draft: "bg-gray-100 text-gray-700",
-    active: "bg-emerald-50 text-emerald-700",
-    paused: "bg-amber-50 text-amber-700",
-    completed: "bg-blue-50 text-blue-700",
-    archived: "bg-gray-50 text-gray-500",
-  };
+  const togglePlatform = (p: string) => setSelectedPlatforms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
 
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-6xl animate-fade-up">
+      <div className="page-header">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Campaigns</h1>
-          <p className="text-muted-foreground text-sm mt-1">Build and manage multi-platform marketing campaigns across all channels — social, search, email, SMS, and more.</p>
+          <h1 className="page-title">Campaigns</h1>
+          <p className="page-subtitle">Multi-platform campaigns across social, search, email, SMS, and more.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="rounded-xl"><Plus className="h-4 w-4 mr-2" />New Campaign</Button>
+            <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white transition-all" style={{ background: "rgba(124,58,237,0.8)" }}>
+              <Plus className="h-4 w-4" /> New Campaign
+            </button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Create Campaign</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle className="text-white">Create Campaign</DialogTitle></DialogHeader>
             <div className="space-y-4">
-              <div><Label>Campaign Name *</Label><Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Summer Launch 2026" /></div>
-              <div><Label>Description</Label><Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Campaign goals and notes..." rows={2} /></div>
-              <div><Label>Objective</Label>
-                <Select value={objective} onValueChange={setObjective}><SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{objectives.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Campaign Name *</Label>
+                <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Summer Launch 2026" className="w-full h-9 px-3 rounded-lg text-sm input-dark" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Description</Label>
+                <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Campaign goals and notes..." rows={2} className="w-full px-3 py-2 rounded-lg text-sm input-dark resize-none" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Objective</Label>
+                <Select value={objective} onValueChange={setObjective}>
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>{OBJECTIVES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div>
-                <Label>Platforms</Label>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {allPlatforms.map(p => (
-                    <Badge key={p} variant={selectedPlatforms.includes(p) ? "default" : "outline"} className="cursor-pointer transition-all" onClick={() => togglePlatform(p)}>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Platforms</Label>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {PLATFORMS.map(p => (
+                    <button key={p} onClick={() => togglePlatform(p)}
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full transition-all"
+                      style={selectedPlatforms.includes(p)
+                        ? { background: "rgba(124,58,237,0.2)", border: "1px solid rgba(124,58,237,0.4)", color: "#a78bfa" }
+                        : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#71717a" }}>
                       {p}
-                    </Badge>
+                    </button>
                   ))}
                 </div>
               </div>
               {analyzedProducts.length > 0 && (
-                <div><Label>Product (optional)</Label>
-                  <Select value={productId} onValueChange={setProductId}><SelectTrigger><SelectValue placeholder="Select product" /></SelectTrigger>
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Product (optional)</Label>
+                  <Select value={productId} onValueChange={setProductId}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Select product" /></SelectTrigger>
                     <SelectContent>{analyzedProducts.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               )}
-              <div><Label>Budget (optional)</Label><Input value={budget} onChange={e => setBudget(e.target.value)} placeholder="e.g. $5,000" /></div>
-              <Button className="w-full rounded-xl" disabled={!name || selectedPlatforms.length === 0 || createMut.isPending} onClick={() => createMut.mutate({ name, description, objective: objective as any, platforms: selectedPlatforms, productId: productId ? Number(productId) : undefined, budget: budget || undefined })}>
-                {createMut.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Budget (optional)</Label>
+                <input value={budget} onChange={e => setBudget(e.target.value)} placeholder="e.g. $5,000" className="w-full h-9 px-3 rounded-lg text-sm input-dark" />
+              </div>
+              <button
+                className="w-full h-10 rounded-xl text-sm font-bold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+                style={{ background: "rgba(124,58,237,0.8)" }}
+                disabled={!name || selectedPlatforms.length === 0 || createMut.isPending}
+                onClick={() => createMut.mutate({ name, description, objective: objective as any, platforms: selectedPlatforms, productId: productId ? Number(productId) : undefined, budget: budget || undefined })}>
+                {createMut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 Create Campaign
-              </Button>
+              </button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
 
       {isLoading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <Card key={i} className="border-0 shadow-sm animate-pulse"><CardContent className="p-6 h-28" /></Card>)}</div>
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="skeleton h-24 rounded-2xl" />)}</div>
       ) : !campaigns?.length ? (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-12 text-center">
-            <Megaphone className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
-            <h3 className="font-semibold text-lg">No campaigns yet</h3>
-            <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">Create your first multi-platform campaign and let AI help you with strategy, content, and scheduling.</p>
-            <Button className="mt-4 rounded-xl" onClick={() => setOpen(true)}><Plus className="h-4 w-4 mr-2" />Create Your First Campaign</Button>
-          </CardContent>
-        </Card>
+        <div className="glass rounded-2xl">
+          <div className="empty-state">
+            <div className="empty-icon"><Megaphone className="h-5 w-5" /></div>
+            <p className="empty-title">No campaigns yet</p>
+            <p className="empty-desc">Create your first multi-platform campaign and let AI build the strategy, content, and schedule.</p>
+            <button onClick={() => setOpen(true)} className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white mt-2" style={{ background: "rgba(124,58,237,0.8)" }}>
+              <Plus className="h-4 w-4" /> Create first campaign
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-3">
-          {campaigns.map(campaign => {
+          {(campaigns as any[]).map(campaign => {
             const platforms = campaign.platforms as string[];
+            const style = STATUS_STYLES[campaign.status] ?? STATUS_STYLES.draft;
             return (
-              <Card key={campaign.id} className="border-0 shadow-sm hover:shadow-md transition-all">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 min-w-0 flex-1">
-                      <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0">
-                        <Megaphone className="h-5 w-5 text-violet-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-sm">{campaign.name}</p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge className={`text-xs border-0 ${statusColors[campaign.status] || ""}`}>{campaign.status}</Badge>
-                          <Badge variant="outline" className="text-xs">{objectives.find(o => o.value === campaign.objective)?.label}</Badge>
-                          {campaign.budget && <span className="text-xs text-muted-foreground">{campaign.budget}</span>}
-                        </div>
-                        {platforms?.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {platforms.map(p => <Badge key={p} variant="secondary" className="text-xs">{p}</Badge>)}
-                          </div>
-                        )}
-                      </div>
+              <div key={campaign.id} className="glass glass-hover rounded-2xl p-4 transition-all">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                    <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.12)" }}>
+                      <Megaphone className="h-5 w-5 text-violet-400" />
                     </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      {campaign.status === "draft" && (
-                        <Button size="sm" variant="outline" className="rounded-lg" onClick={() => updateMut.mutate({ id: campaign.id, status: "active" })}>
-                          <Play className="h-3.5 w-3.5 mr-1" />Launch
-                        </Button>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-sm text-zinc-200">{campaign.name}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={`agent-pill ${style.pill}`}><span className="dot" />{campaign.status}</span>
+                        <span className="text-[10px] text-zinc-600">{OBJECTIVES.find(o => o.value === campaign.objective)?.label}</span>
+                        {campaign.budget && <span className="text-[10px] text-zinc-600">{campaign.budget}</span>}
+                      </div>
+                      {platforms?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {platforms.slice(0, 6).map(p => <span key={p} className="platform-tag">{p}</span>)}
+                          {platforms.length > 6 && <span className="platform-tag">+{platforms.length - 6}</span>}
+                        </div>
                       )}
-                      {campaign.status === "active" && (
-                        <Button size="sm" variant="outline" className="rounded-lg" onClick={() => updateMut.mutate({ id: campaign.id, status: "paused" })}>
-                          <Pause className="h-3.5 w-3.5 mr-1" />Pause
-                        </Button>
-                      )}
-                      <Button size="sm" variant="outline" className="rounded-lg" onClick={() => { setStrategyId(strategyId === campaign.id ? null : campaign.id); if (strategyId !== campaign.id) strategyMut.mutate({ campaignId: campaign.id }); }}>
-                        <Sparkles className="h-3.5 w-3.5 mr-1" />Strategy
-                      </Button>
-                      <Button size="sm" variant="ghost" className="rounded-lg text-destructive hover:text-destructive" onClick={() => deleteMut.mutate({ id: campaign.id })}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
                     </div>
                   </div>
-                  {strategyId === campaign.id && (
-                    <div className="mt-4 border-t pt-4">
-                      {strategyMut.isPending ? (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Generating AI strategy...</div>
-                      ) : strategyMut.data?.strategy ? (
-                        <div className="prose prose-sm max-w-none text-foreground"><Streamdown>{strategyMut.data.strategy}</Streamdown></div>
-                      ) : null}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {campaign.status === "draft" && (
+                      <button onClick={() => updateMut.mutate({ id: campaign.id, status: "active" })}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-400 transition-colors"
+                        style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                        <Play className="h-3 w-3" /> Launch
+                      </button>
+                    )}
+                    {campaign.status === "active" && (
+                      <button onClick={() => updateMut.mutate({ id: campaign.id, status: "paused" })}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 transition-colors"
+                        style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                        <Pause className="h-3 w-3" /> Pause
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setStrategyId(strategyId === campaign.id ? null : campaign.id); if (strategyId !== campaign.id) strategyMut.mutate({ campaignId: campaign.id }); }}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-violet-400 transition-colors"
+                      style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.18)" }}>
+                      <Sparkles className="h-3 w-3" /> Strategy
+                    </button>
+                    <button onClick={() => deleteMut.mutate({ id: campaign.id })}
+                      className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+                {strategyId === campaign.id && (
+                  <div className="mt-4 pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                    {strategyMut.isPending
+                      ? <div className="flex items-center gap-2 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin text-violet-400" />Generating AI strategy...</div>
+                      : strategyMut.data?.strategy && <div className="prose-dark text-sm"><Streamdown content={strategyMut.data.strategy} /></div>}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
       )}
-
       <WhatsNextCard steps={NEXT_STEPS_BY_PAGE["/campaigns"] ?? []} maxSteps={3} />
     </div>
   );
