@@ -1,100 +1,146 @@
-# Railway Deployment — OmniAI
+# OmniAI — Railway Setup Checklist
 
-## Healthcheck
-
-- **Use path:** `/health` (not `/api/trpc/auth.me`).
-- `/health` returns `200` as soon as the server is up (no DB or auth).
-- This avoids deploy failures while the app or DB is still starting.
-
-In Railway: **Settings → Healthcheck Path** → set to `/health`.
+## Your live URL
+https://omniai-production-778d.up.railway.app
 
 ---
 
-## Environment Variables (OmniAI service)
+## Step 1 — Set these variables in Railway → OmniAI service → Variables
 
-Add these in **Railway → OmniAI service → Variables**.
+### MUST HAVE (app broken without these)
 
-### Required for app to start and DB tables to be created
+| Variable | How to get |
+|---|---|
+| `DATABASE_URL` | Railway MySQL service → Variables → copy `MYSQL_URL` |
+| `JWT_SECRET` | Run: `openssl rand -hex 32` |
+| `GOOGLE_CLIENT_ID` | console.cloud.google.com → APIs → Credentials → OAuth 2.0 Client |
+| `GOOGLE_CLIENT_SECRET` | Same OAuth client |
+| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys — **powers ALL AI features** |
+| `BUILT_IN_FORGE_API_URL` | `https://api.openai.com/v1` (or your image API URL) |
+| `BUILT_IN_FORGE_API_KEY` | Your OpenAI API key (for image generation) |
+| `STRIPE_SECRET_KEY` | dashboard.stripe.com → API Keys (`sk_test_` for testing) |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Same dashboard (`pk_test_` for testing) |
+| `STRIPE_WEBHOOK_SECRET` | Stripe → Webhooks → Add endpoint (see below) → signing secret |
+| `RESEND_API_KEY` | resend.com → free tier (100/day) → for welcome + usage emails |
+| `PUBLIC_URL` | `https://omniai-production-778d.up.railway.app` |
 
-| Variable | Description | Where to get |
-|----------|-------------|--------------|
-| `DATABASE_URL` or `MYSQL_URL` | MySQL connection URL for the app | From your **MySQL** service (see below) |
-| `JWT_SECRET` | Secret for signing session cookies (any long random string) | Generate one, e.g. `openssl rand -base64 32` |
+### For payments to work — create Stripe Price IDs
 
-### Required for AI (Content Studio, AI Agent, product analysis, campaign wizard)
+In Stripe Dashboard → Products → create these products/prices:
 
-| Variable | Purpose |
-|----------|--------|
-| `ANTHROPIC_API_KEY` | Claude Haiku — **required** for all text AI. We do not use OpenAI/Forge. |
+| Variable | Description |
+|---|---|
+| `STRIPE_PRICE_STARTER_MONTHLY` | $49/mo recurring |
+| `STRIPE_PRICE_STARTER_ANNUAL` | $41/mo annual |
+| `STRIPE_PRICE_PRO_MONTHLY` | $97/mo recurring |
+| `STRIPE_PRICE_PRO_ANNUAL` | $81/mo annual |
+| `STRIPE_PRICE_BIZ_MONTHLY` | $197/mo recurring |
+| `STRIPE_PRICE_BIZ_ANNUAL` | $163/mo annual |
+| `STRIPE_PRICE_AGENCY_MONTHLY` | $497/mo recurring |
+| `STRIPE_PRICE_AGENCY_ANNUAL` | $413/mo annual |
+| `STRIPE_PRICE_CREDITS_50` | $9 one-time (50 credits) |
+| `STRIPE_PRICE_CREDITS_150` | $19 one-time (150 credits) |
+| `STRIPE_PRICE_CREDITS_400` | $39 one-time (400 credits) |
 
-### Optional (features work without these; add as needed)
+### For video generation (need at least one)
 
-| Variable | Purpose |
-|----------|--------|
-| `UPLOAD_DIR` | Dir for file uploads (default `./uploads`). On Railway, ephemeral unless you add a volume. |
-| `PUBLIC_BASE_URL` | Full app URL (e.g. `https://yourapp.railway.app`) so attachment links work. |
-| `BUILT_IN_FORGE_API_KEY`, `BUILT_IN_FORGE_API_URL` | Only for **image generation** if you have an image service. |
-| `VITE_APP_ID`, `OAUTH_SERVER_URL` | Manus OAuth (primary login) |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google Sign-In (see **Google OAuth redirect URIs** below) |
+| Variable | Provider |
+|---|---|
+| `RUNWAY_API_KEY` | app.runwayml.com → Settings → API Keys |
+| `LUMA_API_KEY` | lumalabs.ai/api |
+| `KLING_API_KEY` | klingai.com/developer |
 
-### Google OAuth — redirect URIs to add in Google Cloud Console
+### For voiceover
 
-In **Google Cloud Console** → your project → **APIs & Services** → **Credentials** → open your **OAuth 2.0 Client ID** (Web application) → **Authorized redirect URIs**, add **exactly**:
+| Variable | Provider |
+|---|---|
+| `ELEVENLABS_API_KEY` | elevenlabs.io → Profile → API Key |
+| `OPENAI_API_KEY` | platform.openai.com/api-keys (TTS fallback) |
 
-| Environment | Redirect URI |
-|-------------|--------------|
-| **Production (Railway)** | `https://omniai-production-778d.up.railway.app/api/auth/google/callback` |
-| **Local dev** | `http://localhost:5000/api/auth/google/callback` |
+### For social media posting
 
-- Use **HTTPS** for Railway (the app uses `X-Forwarded-Proto` so the callback URL is built with `https` when behind the proxy).
-- If your Railway app has a **custom domain**, add: `https://<your-domain>/api/auth/google/callback`.
-- No trailing slash. Path is exactly: `/api/auth/google/callback`.
-- **If redirect still fails:** set **`PUBLIC_URL`** (or **`BASE_URL`**) on Railway to your full app URL, e.g. `https://omniai-production-778d.up.railway.app`. The app will use it to build the callback URL.
-- In the same OAuth client, under **Authorized JavaScript origins**, add: `https://omniai-production-778d.up.railway.app` and (for local) `http://localhost:5000`.
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `VITE_STRIPE_PUBLISHABLE_KEY` | Billing |
-| `VITE_FRONTEND_FORGE_API_KEY` | Frontend AI usage (if split from backend key) |
+| Variable | Provider |
+|---|---|
+| `META_APP_ID` + `META_APP_SECRET` | developers.facebook.com |
+| `TWITTER_API_KEY` + `TWITTER_API_SECRET` | developer.twitter.com |
+| `LINKEDIN_CLIENT_ID` + `LINKEDIN_CLIENT_SECRET` | developer.linkedin.com |
+| `TIKTOK_CLIENT_KEY` + `TIKTOK_CLIENT_SECRET` | developers.tiktok.com |
 
-### Linking MySQL (Railway MySQL service)
-
-If you added a **MySQL** plugin/service, Railway often exposes:
-
-- `MYSQL_URL` or `MYSQL_PUBLIC_URL` (or similar) on the MySQL service.
-
-**Option A — Reference from OmniAI service**
-
-In the **OmniAI** service variables, add:
-
-- `DATABASE_URL` = copy the value of `MYSQL_PUBLIC_URL` (or `MYSQL_URL`) from the **MySQL** service.
-
-**Option B — Railway “variable reference”**
-
-If your plan supports it, you can reference the MySQL service URL, e.g.:
-
-- `DATABASE_URL` = `${{MySQL.MYSQL_PUBLIC_URL}}` (replace `MySQL` with your MySQL service name if different).
-
-The app reads **either** `DATABASE_URL` or `MYSQL_URL` (or `MYSQL_PUBLIC_URL`). Set one of them so the app can connect. **Google sign-in creates users in the `users` table** — if the database is not connected or the `users` table is missing, sign-in will fail (you’ll be redirected to the dashboard with an error). Check deploy logs for `[Google OAuth]` and `[Database]` to debug.
-
----
-
-## Tables (automatic)
-
-- Tables are **created automatically** when OmniAI starts **and** has `DATABASE_URL` (or `MYSQL_URL`) set on the OmniAI service.
-- On startup the app runs **migrations** from `drizzle/apply-all-migrations.sql` (using `DATABASE_URL` / `MYSQL_URL`).
-- No manual SQL or “trigger” is required; **No tables?** Set `DATABASE_URL` on **OmniAI** to the MySQL URL (from MySQL service Variables), redeploy, and check deploy logs for `[migrate]`. Or run `drizzle/apply-all-migrations.sql` in MySQL Data/Query. Otherwise ensure the app has the correct `DATABASE_URL`/`MYSQL_URL` and can reach MySQL.
+### For AI avatars
+| `HEYGEN_API_KEY` | app.heygen.com → Settings → API |
 
 ---
 
-## Build and start
+## Step 2 — Google OAuth redirect URI
 
-- **Build:** `pnpm build` (Vite builds the client to `dist/public`, then the server is bundled to `dist/index.js`).
-- **Start:** `node dist/index.js` (with `NODE_ENV=production` set in the Dockerfile).
-- The production server **does not** use or import `vite`; only the dev server does.
+In Google Cloud Console → your OAuth client → Authorized redirect URIs, add:
+```
+https://omniai-production-778d.up.railway.app/api/auth/google/callback
+```
 
 ---
 
-## Checklist
+## Step 3 — Stripe webhook endpoint
 
-1. **OmniAI service** has at least `DATABASE_URL` (or `MYSQL_URL`) and `JWT_SECRET`.
-2. **Healthcheck path** is set to `/health`.
-3. **MySQL service** is running and its URL is set as `DATABASE_URL` (or `MYSQL_URL`) on OmniAI.
-4. After the first successful deploy, check the MySQL database; tables should appear once migrations have run.
+In Stripe Dashboard → Developers → Webhooks → Add endpoint:
+- URL: `https://omniai-production-778d.up.railway.app/api/stripe/webhook`
+- Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`
+- Copy signing secret → `STRIPE_WEBHOOK_SECRET`
+
+---
+
+## Step 4 — Railway healthcheck
+
+Railway → OmniAI service → Settings → Healthcheck Path: `/health`
+
+---
+
+## Step 5 — Get your admin ID
+
+1. Deploy and log in with Google
+2. Go to Railway → MySQL → Data → run: `SELECT openId FROM users ORDER BY id LIMIT 1;`
+3. Copy the value (looks like `google_123456789`)
+4. Set `OWNER_OPEN_ID=google_123456789` in Railway variables
+5. Redeploy → /admin unlocked
+
+---
+
+## How the system works
+
+```
+USER TYPES PROMPT
+       ↓
+AI Agent (/ai-agents)
+       ↓
+Anthropic Claude Haiku fires tools in parallel:
+  ├─ analyzeProduct     → saves to products table
+  ├─ createCampaign     → saves to campaigns table  
+  ├─ generateLandingPage → saves to landing_pages table
+  ├─ generateEmailSequence → saves to email_campaigns table
+  ├─ generateSocialPosts → saves to contents table
+  ├─ generateVideoScript → saves to video_ads table
+  └─ generateAdCreative  → saves to contents table
+       ↓
+EVERYTHING VISIBLE IN DASHBOARD:
+  /content         → all generated text content
+  /creatives       → all generated images
+  /video-ads       → all video scripts + storyboards
+  /campaigns       → all campaigns
+  /email-marketing → all email sequences
+  /landing-pages   → all landing pages
+  /leads           → all captured leads
+  /deals           → CRM pipeline
+  /analytics       → performance data
+  /scheduler       → scheduled posts queue
+  /social-publish  → published posts history
+```
+
+---
+
+## Test the deployment
+
+Run on server (after setting env vars):
+```
+npx ts-node server/integration.test.ts
+```
+
