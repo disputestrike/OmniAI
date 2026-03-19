@@ -1,173 +1,106 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+  LayoutDashboard, Megaphone, BarChart3, Library, CheckCircle, Share2, CreditCard,
+  Rocket, Bot, Package, PenTool, Shuffle, Image, Video, Film, Scissors, Mic,
+  Languages, UserCircle, Smile, BookDown, LayoutTemplate, Gauge, Upload, Palette,
+  Music, Mic2, FileQuestion, Target, GitBranch, FlaskConical, Calendar, Users,
+  Handshake, BarChart2, Flame, Send, Mail, CalendarDays, Activity, CalendarCheck,
+  Globe, Star, Layers, Search, TrendingUp, Zap, Eye, UsersRound, ArrowUpDown,
+  Webhook, FileCode, Workflow, FolderKanban, User, HelpCircle, Shield, LogOut,
+  CreditCard as CreditCardIcon, ChevronRight, ChevronDown, Wrench, PanelLeft, Sun, Moon, Sparkles,
+} from "lucide-react";
+import { useLocation } from "wouter";
+import { useState, useRef, useEffect, type CSSProperties } from "react";
 import { getLoginPageUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  LogOut,
-  PanelLeft,
-  Package,
-  PenTool,
-  Image,
-  Video,
-  Megaphone,
-  FlaskConical,
-  Calendar,
-  Users,
-  BarChart3,
-  ArrowUpDown,
-  Zap,
-  Bot,
-  UsersRound,
-  CreditCard,
-  Globe,
-  Handshake,
-  Search,
-  Share2,
-  CheckCircle,
-  TrendingUp,
-  Layers,
-  Flame,
-  Shield,
-  Send,
-  Film,
-  Scissors,
-  Eye,
-  Webhook,
-  Languages,
-  Mic,
-  Mail,
-  FileCode,
-  Workflow,
-  Shuffle,
-  Smile,
-  UserCircle,
-  BookDown,
-  Library,
-  LayoutTemplate,
-  Gauge,
-  Upload,
-  Palette,
-  Music,
-  Mic2,
-  BarChart2,
-  Rocket,
-  CalendarDays,
-  Activity,
-  CalendarCheck,
-  Monitor,
-  FolderKanban,
-  User,
-  GitBranch,
-  FileQuestion,
-  Star,
-  HelpCircle,
-  Target,
-  Lock,
-  ChevronDown,
-  ChevronRight,
-  Wrench,
-} from "lucide-react";
-import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation, useSearch } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
-import { Button } from "./ui/button";
-import { TrialCountdownBanner } from "./TrialCountdownBanner";
-import { setCrispUser } from "@/lib/crisp";
+  Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInset,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar,
+} from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { TrialCountdownBanner } from "@/components/TrialCountdownBanner";
+import DashboardLayoutSkeleton from "@/components/DashboardLayoutSkeleton";
+import { setCrispUser } from "@/lib/crisp";
 
-// Audit: 6–8 items max on first view. Rest in collapsible "Tools".
+/* ─── Navigation data ─────────────────────────────────── */
 const mainNavItems = [
-  { icon: LayoutDashboard, label: "Home", path: "/dashboard" },
-  { icon: Megaphone, label: "Active Campaigns", path: "/campaigns" },
-  { icon: BarChart3, label: "Results", path: "/analytics" },
-  { icon: Library, label: "Library", path: "/content" },
-  { icon: CheckCircle, label: "Approvals", path: "/approvals" },
-  { icon: Share2, label: "Integrations", path: "/ad-platforms" },
-  { icon: CreditCard, label: "Account", path: "/pricing" },
+  { icon: LayoutDashboard, label: "Home",             path: "/dashboard" },
+  { icon: Megaphone,       label: "Campaigns",        path: "/campaigns" },
+  { icon: BarChart3,       label: "Analytics",        path: "/analytics" },
+  { icon: Library,         label: "Library",          path: "/content" },
+  { icon: CheckCircle,     label: "Approvals",        path: "/approvals" },
+  { icon: Share2,          label: "Integrations",     path: "/ad-platforms" },
+  { icon: CreditCard,      label: "Account",          path: "/pricing" },
 ];
 
 const toolsNavSections = [
   { label: "Create", items: [
-    { icon: Rocket, label: "Campaign Wizard", path: "/campaign-wizard" },
-    { icon: Bot, label: "AI Agents", path: "/ai-agents" },
-    { icon: Package, label: "Product Analyzer", path: "/products" },
-    { icon: PenTool, label: "Content Studio", path: "/content" },
-    { icon: Shuffle, label: "Content Repurposer", path: "/content-repurposer" },
-    { icon: Image, label: "Creative Engine", path: "/creatives" },
-    { icon: Video, label: "Video Ads", path: "/video-ads" },
-    { icon: Film, label: "Video Render", path: "/video-render" },
-    { icon: Video, label: "Video Studio", path: "/video-studio" },
-    { icon: Scissors, label: "Image Editor", path: "/image-editor" },
-    { icon: Mic, label: "Brand Voice", path: "/brand-voice" },
-    { icon: Languages, label: "Translate", path: "/translate" },
-    { icon: UserCircle, label: "AI Avatars", path: "/ai-avatars" },
-    { icon: Smile, label: "Meme Generator", path: "/meme-generator" },
-    { icon: BookDown, label: "Content Ingest", path: "/content-ingest" },
-    { icon: Library, label: "Content Library", path: "/content-library" },
-    { icon: LayoutTemplate, label: "Templates", path: "/content-templates" },
-    { icon: Gauge, label: "Content Scorer", path: "/content-scorer" },
-    { icon: Upload, label: "Bulk Import", path: "/bulk-import" },
-    { icon: Palette, label: "Brand Kit", path: "/brand-kit" },
-    { icon: Music, label: "Music Studio", path: "/music-studio" },
-    { icon: Mic2, label: "Voiceover Studio", path: "/voiceover-studio" },
-    { icon: FileQuestion, label: "Forms", path: "/forms" },
+    { icon: Bot,           label: "AI Agents",          path: "/ai-agents" },
+    { icon: Rocket,        label: "Campaign Wizard",    path: "/campaign-wizard" },
+    { icon: Package,       label: "Product Analyzer",   path: "/products" },
+    { icon: PenTool,       label: "Content Studio",     path: "/content" },
+    { icon: Shuffle,       label: "Repurposer",         path: "/content-repurposer" },
+    { icon: Palette,       label: "Creative Engine",    path: "/creatives" },
+    { icon: Video,         label: "Video Ads",          path: "/video-ads" },
+    { icon: Film,          label: "Video Render",       path: "/video-render" },
+    { icon: Video,         label: "Video Studio",       path: "/video-studio" },
+    { icon: Scissors,      label: "Image Editor",       path: "/image-editor" },
+    { icon: Mic,           label: "Brand Voice",        path: "/brand-voice" },
+    { icon: Languages,     label: "Translate",          path: "/translate" },
+    { icon: UserCircle,    label: "AI Avatars",         path: "/ai-avatars" },
+    { icon: Smile,         label: "Meme Generator",     path: "/meme-generator" },
+    { icon: BookDown,      label: "Content Ingest",     path: "/content-ingest" },
+    { icon: Library,       label: "Content Library",    path: "/content-library" },
+    { icon: LayoutTemplate,label: "Templates",          path: "/content-templates" },
+    { icon: Gauge,         label: "Content Scorer",     path: "/content-scorer" },
+    { icon: Upload,        label: "Bulk Import",        path: "/bulk-import" },
+    { icon: Palette,       label: "Brand Kit",          path: "/brand-kit" },
+    { icon: Music,         label: "Music Studio",       path: "/music-studio" },
+    { icon: Mic2,          label: "Voiceover Studio",   path: "/voiceover-studio" },
+    { icon: FileQuestion,  label: "Forms",              path: "/forms" },
   ]},
   { label: "Manage", items: [
-    { icon: Target, label: "Programmatic Ads", path: "/programmatic-ads" },
-    { icon: GitBranch, label: "Funnels", path: "/funnels" },
-    { icon: FlaskConical, label: "A/B Testing", path: "/ab-testing" },
-    { icon: Calendar, label: "Scheduler", path: "/scheduler" },
-    { icon: Users, label: "Lead Manager", path: "/leads" },
-    { icon: Handshake, label: "CRM Deals", path: "/deals" },
-    { icon: BarChart2, label: "Ad Performance", path: "/ad-performance" },
-    { icon: Rocket, label: "One-Push Publisher", path: "/one-push-publisher" },
-    { icon: Flame, label: "Momentum", path: "/momentum" },
-    { icon: Send, label: "Social Publish", path: "/social-publish" },
-    { icon: Mail, label: "Email Marketing", path: "/email-marketing" },
-    { icon: CalendarDays, label: "Content Calendar", path: "/content-calendar" },
-    { icon: Activity, label: "Performance", path: "/performance" },
-    { icon: CalendarCheck, label: "Social Planner", path: "/social-planner" },
+    { icon: Target,        label: "Programmatic Ads",   path: "/programmatic-ads" },
+    { icon: GitBranch,     label: "Funnels",            path: "/funnels" },
+    { icon: FlaskConical,  label: "A/B Testing",        path: "/ab-testing" },
+    { icon: Calendar,      label: "Scheduler",          path: "/scheduler" },
+    { icon: Users,         label: "Lead Manager",       path: "/leads" },
+    { icon: Handshake,     label: "CRM Deals",          path: "/deals" },
+    { icon: BarChart2,     label: "Ad Performance",     path: "/ad-performance" },
+    { icon: Rocket,        label: "One-Push Publisher", path: "/one-push-publisher" },
+    { icon: Flame,         label: "Momentum",           path: "/momentum" },
+    { icon: Send,          label: "Social Publish",     path: "/social-publish" },
+    { icon: Mail,          label: "Email Marketing",    path: "/email-marketing" },
+    { icon: CalendarDays,  label: "Content Calendar",   path: "/content-calendar" },
+    { icon: Activity,      label: "Performance",        path: "/performance" },
+    { icon: CalendarCheck, label: "Social Planner",     path: "/social-planner" },
   ]},
   { label: "Intelligence", items: [
-    { icon: Globe, label: "Website Intel", path: "/intelligence" },
-    { icon: Star, label: "Reviews", path: "/reviews" },
-    { icon: Layers, label: "Platform Intel", path: "/platform-intel" },
-    { icon: Search, label: "SEO Audits", path: "/seo-audits" },
-    { icon: TrendingUp, label: "Predictive AI", path: "/predictive" },
-    { icon: Zap, label: "Growth & Learning", path: "/growth-learning" },
-    { icon: Eye, label: "Competitor Intelligence", path: "/competitor-intelligence" },
-    { icon: Users, label: "Customer Intel", path: "/customer-intel" },
+    { icon: Globe,         label: "Website Intel",      path: "/intelligence" },
+    { icon: Star,          label: "Reviews",            path: "/reviews" },
+    { icon: Layers,        label: "Platform Intel",     path: "/platform-intel" },
+    { icon: Search,        label: "SEO Audits",         path: "/seo-audits" },
+    { icon: TrendingUp,    label: "Predictive AI",      path: "/predictive" },
+    { icon: Zap,           label: "Growth & Learning",  path: "/growth-learning" },
+    { icon: Eye,           label: "Competitor Intel",   path: "/competitor-intelligence" },
+    { icon: Users,         label: "Customer Intel",     path: "/customer-intel" },
   ]},
   { label: "Workspace", items: [
-    { icon: UsersRound, label: "Collaboration", path: "/collaboration" },
-    { icon: ArrowUpDown, label: "Export / Import", path: "/export-import" },
-    { icon: Webhook, label: "Webhooks", path: "/webhooks" },
-    { icon: FileCode, label: "Landing Pages", path: "/landing-pages" },
-    { icon: Workflow, label: "Automations", path: "/automations" },
-    { icon: FolderKanban, label: "Projects", path: "/projects" },
-    { icon: User, label: "Creator Profile", path: "/creator-profile" },
-    { icon: HelpCircle, label: "Help & Docs", path: "/help" },
+    { icon: UsersRound,    label: "Collaboration",      path: "/collaboration" },
+    { icon: ArrowUpDown,   label: "Export / Import",    path: "/export-import" },
+    { icon: Webhook,       label: "Webhooks",           path: "/webhooks" },
+    { icon: FileCode,      label: "Landing Pages",      path: "/landing-pages" },
+    { icon: Workflow,      label: "Automations",        path: "/automations" },
+    { icon: FolderKanban,  label: "Projects",           path: "/projects" },
+    { icon: User,          label: "Creator Profile",    path: "/creator-profile" },
+    { icon: HelpCircle,    label: "Help & Docs",        path: "/help" },
   ]},
 ];
 
@@ -177,34 +110,29 @@ const allMenuItems = [
   { icon: Shield, label: "Admin Panel", path: "/admin" },
 ];
 
-const SIDEBAR_WIDTH_KEY = "sidebar-width";
-const DEFAULT_WIDTH = 250;
+const SIDEBAR_WIDTH_KEY = "omni-sidebar-width";
+const DEFAULT_WIDTH = 240;
 const MIN_WIDTH = 200;
-const MAX_WIDTH = 480;
+const MAX_WIDTH = 320;
 
+/* ─── Root layout ─────────────────────────────────────── */
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
-    const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
+    const saved = typeof window !== "undefined" ? localStorage.getItem(SIDEBAR_WIDTH_KEY) : null;
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
   const { loading, user } = useAuth();
-  const search = useSearch();
-  const params = typeof window !== "undefined" ? new URLSearchParams(search) : new URLSearchParams();
-  const hasError = params.get("error");
-  const hintDb = params.get("hint") === "database";
-  const hintJwtSecret = params.get("hint") === "jwt_secret";
   const reloadAttempted = useRef(false);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
   }, [sidebarWidth]);
 
-  // One-time reload when we have no user after login redirect (cookie may not have been sent on first request)
-  const shouldRetryReload = typeof window !== "undefined" && !loading && !user && !sessionStorage.getItem("otobi_dashboard_reload");
+  const shouldRetryReload = typeof window !== "undefined" && !loading && !user && !sessionStorage.getItem("omni_dashboard_reload");
   useEffect(() => {
     if (!shouldRetryReload || reloadAttempted.current) return;
     reloadAttempted.current = true;
-    sessionStorage.setItem("otobi_dashboard_reload", "1");
+    sessionStorage.setItem("omni_dashboard_reload", "1");
     window.location.reload();
   }, [shouldRetryReload]);
 
@@ -212,43 +140,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
-          {hasError && (
-            <div className="text-sm text-center space-y-1">
-              <p className="font-medium text-destructive">
-                Sign-in did not complete. Please try again.
-              </p>
-              {hintDb && (
-                <p className="text-muted-foreground max-w-sm">
-                  The app could not reach the database. In Railway, set <strong>DATABASE_URL</strong> (or <strong>MYSQL_URL</strong>) on the <strong>OmniAI</strong> service to your MySQL connection string from the MySQL service.
-                </p>
-              )}
-              {hintJwtSecret && (
-                <p className="text-muted-foreground max-w-sm">
-                  Session could not be created. Add <strong>JWT_SECRET</strong> in Railway → OmniAI service → Variables (e.g. run <code className="text-xs bg-muted px-1 rounded">openssl rand -base64 32</code> and paste the result).
-                </p>
-              )}
-            </div>
-          )}
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                <Zap className="h-6 w-6 text-primary" />
-              </div>
-              <span className="text-2xl font-bold tracking-tight">OTOBI AI</span>
-            </div>
-            <p className="text-sm text-muted-foreground text-center max-w-sm">
-              The ultimate AI marketing suite. Create campaigns, generate content, manage leads, and grow your business — all in one place.
-            </p>
+      <div className="flex items-center justify-center min-h-screen mesh-bg">
+        <div className="flex flex-col items-center gap-6 p-8 max-w-sm w-full text-center">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-violet-500/25">
+            <Sparkles className="h-6 w-6 text-white" />
           </div>
-          <Button
+          <div>
+            <h1 className="text-xl font-bold text-white mb-2">OmniAI</h1>
+            <p className="text-sm text-zinc-400">The Marketing OS. Create, publish, and grow — all from one place.</p>
+          </div>
+          <button
             onClick={() => { window.location.href = getLoginPageUrl(); }}
-            size="lg"
-            className="w-full shadow-lg hover:shadow-xl transition-all rounded-xl"
+            className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-semibold text-sm transition-colors"
           >
             Sign in to get started
-          </Button>
+          </button>
         </div>
       </div>
     );
@@ -263,25 +169,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 }
 
-function DashboardLayoutContent({ children, setSidebarWidth }: { children: React.ReactNode; setSidebarWidth: (w: number) => void }) {
+/* ─── Layout content ──────────────────────────────────── */
+function DashboardLayoutContent({
+  children,
+  setSidebarWidth,
+}: {
+  children: React.ReactNode;
+  setSidebarWidth: (w: number) => void;
+}) {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const { data: subStatus } = trpc.subscription.status.useQuery(undefined, { enabled: !!user });
-  const { data: featureAccess } = trpc.subscription.featureAccess.useQuery(undefined, { enabled: !!user });
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = allMenuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const activeMenuItem = allMenuItems.find(item => item.path === location);
 
   useEffect(() => {
     if (user?.email) {
-      setCrispUser({
-        name: user.name || undefined,
-        email: user.email || undefined,
-        tier: subStatus?.plan || "free",
-      });
+      setCrispUser({ name: user.name || undefined, email: user.email || undefined, tier: subStatus?.plan || "free" });
     }
   }, [user?.id, user?.email, user?.name, subStatus?.plan]);
 
@@ -292,9 +201,9 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      const sidebarLeft = sidebarRef.current?.getBoundingClientRect().left ?? 0;
-      const newWidth = e.clientX - sidebarLeft;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) setSidebarWidth(newWidth);
+      const left = sidebarRef.current?.getBoundingClientRect().left ?? 0;
+      const newW = e.clientX - left;
+      if (newW >= MIN_WIDTH && newW <= MAX_WIDTH) setSidebarWidth(newW);
     };
     const handleMouseUp = () => setIsResizing(false);
     if (isResizing) {
@@ -311,42 +220,65 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
     };
   }, [isResizing, setSidebarWidth]);
 
+  const planLabel = subStatus?.plan ?? "free";
+  const planColor: Record<string, string> = {
+    free: "badge-neutral", starter: "badge-brand", professional: "badge-brand",
+    business: "badge-cyan", enterprise: "badge-warning",
+  };
+
   return (
     <>
       <TrialCountdownBanner />
       <div className="relative" ref={sidebarRef}>
-        <Sidebar collapsible="icon" className="border-r-0" disableTransition={isResizing}>
-          <SidebarHeader className="h-14 justify-center">
-            <div className="flex items-center gap-3 px-2 transition-all w-full">
+        <Sidebar
+          collapsible="icon"
+          className="border-r-0"
+          style={{ background: "var(--sidebar)" } as CSSProperties}
+        >
+          {/* ── Header ─────────────────────────────── */}
+          <SidebarHeader className="h-14 border-b" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="flex items-center gap-2.5 px-3 h-full">
               <button
                 onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none shrink-0"
-                aria-label="Toggle navigation"
+                className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors shrink-0"
+                aria-label="Toggle sidebar"
               >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                <PanelLeft className="h-4 w-4 text-zinc-400" />
               </button>
               {!isCollapsed && (
-                <div className="flex items-center gap-2 min-w-0">
-                  <Zap className="h-5 w-5 text-primary shrink-0" />
-                  <span className="font-bold tracking-tight truncate text-sm">OTOBI AI</span>
+                <div
+                  className="flex items-center gap-2 cursor-pointer min-w-0"
+                  onClick={() => setLocation("/dashboard")}
+                >
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <span className="font-bold text-sm text-white tracking-tight truncate">OmniAI</span>
                 </div>
               )}
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0 px-2">
+          {/* ── Nav ────────────────────────────────── */}
+          <SidebarContent className="gap-0 px-2 py-2 overflow-y-auto">
+            {/* Main nav */}
             <SidebarMenu className="gap-0.5">
               {mainNavItems.map(item => {
-                const isActive = location === item.path;
+                const active = location === item.path;
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
-                      isActive={isActive}
+                      isActive={active}
                       onClick={() => setLocation(item.path)}
                       tooltip={item.label}
-                      className="h-9 transition-all font-normal text-[13px]"
+                      className={cn(
+                        "h-9 rounded-lg text-[13px] font-medium transition-all",
+                        active
+                          ? "bg-violet-600/15 text-violet-300"
+                          : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                      )}
                     >
-                      <item.icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                      <item.icon className={cn("h-4 w-4 shrink-0", active && "text-violet-400")} />
                       <span className="truncate">{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -354,43 +286,46 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
               })}
             </SidebarMenu>
 
-            <Collapsible defaultOpen={false} className="mt-4 group/tools">
+            {/* Tools collapsible */}
+            <Collapsible defaultOpen className="mt-3 group/tools">
               <CollapsibleTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 h-9 w-full rounded-md px-3 text-[13px] font-normal text-muted-foreground hover:text-foreground hover:bg-accent transition-colors group-data-[state=open]/tools:bg-accent/50"
+                  className="flex items-center gap-2 h-8 w-full rounded-md px-2 text-[11px] font-bold uppercase tracking-wider text-zinc-600 hover:text-zinc-400 transition-colors"
                 >
-                  <Wrench className="h-4 w-4 shrink-0" />
-                  <span className="truncate">Tools</span>
-                  <ChevronRight className="h-3.5 w-3.5 shrink-0 ml-auto group-data-[state=open]/tools:hidden" />
-                  <ChevronDown className="h-3.5 w-3.5 shrink-0 ml-auto hidden group-data-[state=open]/tools:block" />
+                  <Wrench className="h-3 w-3 shrink-0" />
+                  <span className="truncate">All Tools</span>
+                  <ChevronRight className="h-3 w-3 shrink-0 ml-auto group-data-[state=open]/tools:hidden" />
+                  <ChevronDown className="h-3 w-3 shrink-0 ml-auto hidden group-data-[state=open]/tools:block" />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="pl-1 mt-1 space-y-3">
+                <div className="mt-1 space-y-4">
                   {toolsNavSections.map(section => (
                     <div key={section.label}>
                       {!isCollapsed && (
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-700 px-2 mb-1">
                           {section.label}
                         </p>
                       )}
                       <SidebarMenu className="gap-0.5">
                         {section.items.map(item => {
-                          const isActive = location === item.path;
-                          const isProgrammaticAds = item.path === "/programmatic-ads";
-                          const isLocked = isProgrammaticAds && !(featureAccess?.programmatic_ads ?? true);
+                          const active = location === item.path;
                           return (
                             <SidebarMenuItem key={item.path}>
                               <SidebarMenuButton
-                                isActive={isActive}
+                                isActive={active}
                                 onClick={() => setLocation(item.path)}
-                                tooltip={isLocked ? `${item.label} (Starter+ required)` : item.label}
-                                className="h-8 transition-all font-normal text-[12px]"
+                                tooltip={item.label}
+                                className={cn(
+                                  "h-8 rounded-lg text-[12px] font-medium transition-all",
+                                  active
+                                    ? "bg-violet-600/12 text-violet-300"
+                                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/4"
+                                )}
                               >
-                                <item.icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                                <item.icon className={cn("h-3.5 w-3.5 shrink-0", active && "text-violet-400")} />
                                 <span className="truncate">{item.label}</span>
-                                {isLocked && <Lock className="h-3 w-3 shrink-0 text-amber-600 ml-auto" />}
                               </SidebarMenuButton>
                             </SidebarMenuItem>
                           );
@@ -402,22 +337,24 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
               </CollapsibleContent>
             </Collapsible>
 
+            {/* Admin */}
             {user?.role === "admin" && (
-              <div className="mt-4">
-                {!isCollapsed && (
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 px-3 mb-1">
-                    Admin
-                  </p>
-                )}
+              <div className="mt-3">
+                {!isCollapsed && <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-700 px-2 mb-1">Admin</p>}
                 <SidebarMenu className="gap-0.5">
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       isActive={location === "/admin"}
                       onClick={() => setLocation("/admin")}
                       tooltip="Admin Panel"
-                      className="h-9 transition-all font-normal text-[13px]"
+                      className={cn(
+                        "h-8 rounded-lg text-[12px] font-medium transition-all",
+                        location === "/admin"
+                          ? "bg-violet-600/12 text-violet-300"
+                          : "text-zinc-500 hover:text-zinc-300 hover:bg-white/4"
+                      )}
                     >
-                      <Shield className="h-4 w-4 shrink-0" />
+                      <Shield className="h-3.5 w-3.5 shrink-0" />
                       <span className="truncate">Admin Panel</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -426,50 +363,56 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
             )}
           </SidebarContent>
 
-          <SidebarFooter className="p-3">
+          {/* ── Footer ─────────────────────────────── */}
+          <SidebarFooter className="p-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1.5 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none">
-                  <Avatar className="h-8 w-8 border shrink-0">
-                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+                <button className="flex items-center gap-2.5 w-full rounded-lg px-2 py-2 hover:bg-white/5 transition-colors focus:outline-none">
+                  <Avatar className="h-7 w-7 shrink-0">
+                    <AvatarFallback className="text-[11px] font-bold bg-violet-600/20 text-violet-300">
                       {user?.name?.charAt(0).toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                    <p className="text-sm font-medium truncate leading-none">{user?.name || "-"}</p>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{user?.email || "-"}</p>
-                  </div>
+                  {!isCollapsed && (
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-zinc-200 truncate leading-none">{user?.name || "—"}</p>
+                      <p className="text-[10px] text-zinc-500 truncate mt-0.5">{user?.email || "—"}</p>
+                    </div>
+                  )}
+                  {!isCollapsed && (
+                    <span className={cn("agent-pill text-[10px] shrink-0", planColor[planLabel] ?? "badge-neutral")}>
+                      {planLabel}
+                    </span>
+                  )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-52" style={{ background: "#18181b", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer text-zinc-300 hover:text-white focus:text-white">
+                  {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                  <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+                </DropdownMenuItem>
                 {subStatus?.stripeCustomerId && (
                   <DropdownMenuItem
-                    className="cursor-pointer"
+                    className="cursor-pointer text-zinc-300 hover:text-white focus:text-white"
                     onClick={async () => {
                       try {
-                        const res = await fetch("/api/stripe/create-portal", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ customerId: subStatus.stripeCustomerId }),
-                        });
+                        const res = await fetch("/api/stripe/create-portal", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId: subStatus.stripeCustomerId }) });
                         const data = await res.json();
                         if (data?.url) window.open(data.url, "_blank");
-                      } catch {
-                        /* ignore */
-                      }
+                      } catch {}
                     }}
                   >
-                    <CreditCard className="mr-2 h-4 w-4" />
+                    <CreditCardIcon className="mr-2 h-4 w-4" />
                     <span>Manage billing</span>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem className="cursor-pointer" asChild>
-                  <a href="mailto:support@otobi.ai">
+                <DropdownMenuItem className="cursor-pointer text-zinc-300 hover:text-white focus:text-white" asChild>
+                  <a href="mailto:support@omni.ai">
                     <Mail className="mr-2 h-4 w-4" />
-                    <span>Contact support (support@otobi.ai)</span>
+                    <span>Contact support</span>
                   </a>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-400 hover:text-red-300 focus:text-red-300">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>
                 </DropdownMenuItem>
@@ -477,31 +420,35 @@ function DashboardLayoutContent({ children, setSidebarWidth }: { children: React
             </DropdownMenu>
           </SidebarFooter>
         </Sidebar>
+
+        {/* Resize handle */}
         <div
-          className={`absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-primary/20 transition-colors ${isCollapsed ? "hidden" : ""}`}
-          onMouseDown={() => { if (isCollapsed) return; setIsResizing(true); }}
-          style={{ zIndex: 50 }}
+          className={cn("absolute top-0 right-0 w-1 h-full cursor-col-resize hover:bg-violet-500/20 transition-colors z-50", isCollapsed && "hidden")}
+          onMouseDown={() => { if (!isCollapsed) setIsResizing(true); }}
         />
       </div>
 
-      <SidebarInset>
+      {/* ── Main content ───────────────────────────── */}
+      <SidebarInset style={{ background: "#09090b" }}>
+        {/* Mobile topbar */}
         {isMobile && (
-          <div className="flex border-b h-14 items-center justify-between bg-background/95 px-3 backdrop-blur sticky top-0 z-40">
-            <div className="flex items-center gap-2">
-              <SidebarTrigger className="h-9 w-9 rounded-lg" />
-              <span className="tracking-tight text-foreground font-medium text-sm">
-                {activeMenuItem?.label ?? "Menu"}
-              </span>
+          <div className="flex h-14 items-center justify-between px-4 border-b sticky top-0 z-40" style={{ background: "rgba(9,9,11,0.9)", backdropFilter: "blur(12px)", borderColor: "rgba(255,255,255,0.07)" }}>
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="h-8 w-8 rounded-lg" />
+              <span className="text-sm font-semibold text-zinc-200">{activeMenuItem?.label ?? "OmniAI"}</span>
             </div>
           </div>
         )}
+
+        {/* Usage bar */}
         {subStatus?.usage && subStatus.usage.aiGenerationsUsed != null && (
-          <div className="border-b bg-muted/30 px-4 py-1.5 text-center text-xs text-muted-foreground">
-            Generations: {subStatus.usage.aiGenerationsUsed} used this period
-            {subStatus.purchasedCredits != null && subStatus.purchasedCredits > 0 && ` · ${subStatus.purchasedCredits} credits in wallet`}
+          <div className="border-b px-4 py-1.5 text-center text-[11px] text-zinc-600" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+            {subStatus.usage.aiGenerationsUsed} generations used this period
+            {subStatus.purchasedCredits != null && subStatus.purchasedCredits > 0 && ` · ${subStatus.purchasedCredits} credits`}
           </div>
         )}
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+
+        <main className="flex-1 p-5 md:p-7 min-h-0">{children}</main>
       </SidebarInset>
     </>
   );
