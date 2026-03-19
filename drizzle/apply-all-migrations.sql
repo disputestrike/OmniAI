@@ -1246,3 +1246,15 @@ CREATE TABLE IF NOT EXISTS `dsp_performance_snapshots` (
 	CONSTRAINT `dsp_performance_snapshots_id` PRIMARY KEY(`id`),
 	UNIQUE KEY `uq_campaign_date` (`campaignId`,`snapshotDate`)
 );
+
+-- campaign_assets (was missing from migrations)
+CREATE TABLE IF NOT EXISTS `campaign_assets` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `campaignId` int NOT NULL,
+  `assetType` varchar(32) NOT NULL,
+  `assetId` int NOT NULL,
+  `status` enum('draft','approved','live','paused','completed') NOT NULL DEFAULT 'draft',
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_campaign_assets_campaignId` (`campaignId`)
+);
