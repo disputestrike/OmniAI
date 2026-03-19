@@ -723,11 +723,92 @@ export type AgentOutput = {
 
 const MAX_AGENT_ITERATIONS = 10;
 
+/** Full mock agent — runs when ANTHROPIC_API_KEY not set. Creates real DB records. */
+async function runMockAgentLoop(userId: number, message: string): Promise<AgentOutput> {
+  const toolResults: ToolResult[] = [];
+
+  const words = message.split(" ").filter(w => w.length > 3);
+  const productName = words.slice(0, 4).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") || "Product Launch";
+  const platforms = ["TikTok","Instagram","Facebook","LinkedIn","Twitter"].filter(p => message.toLowerCase().includes(p.toLowerCase()));
+  const usePlatforms = platforms.length > 0 ? platforms : ["Instagram","TikTok","LinkedIn"];
+  const goal = message.toLowerCase().includes("lead") ? "lead_gen" : message.toLowerCase().includes("launch") ? "product_launch" : "awareness";
+  const audience = message.toLowerCase().includes("gym") ? "fitness enthusiasts aged 18-35" : message.toLowerCase().includes("business") ? "B2B decision makers" : "consumers aged 25-44";
+
+  try {
+    const campaign = await db.createCampaign({ userId, name: `${productName} Campaign`, goal, platforms: usePlatforms, objective: "awareness", status: "active", description: `Campaign for: ${message}` });
+    const campaignId = campaign.id;
+    toolResults.push({ kind: "createCampaign", campaignId, name: `${productName} Campaign`, goal });
+    toolResults.push({ kind: "analyzeProduct", positioning: `${productName} is the premium solution for ${audience}.`, valueProps: ["Superior quality","Proven results","Community-trusted"], differentiators: { competitors: "Better formulation, cleaner ingredients" }, targetAudience: audience });
+
+    // Social posts
+    const postMap: Record<string,string> = {
+      TikTok: `🔥 Game changer alert. ${productName} is HERE. Real results for ${audience}. #fyp #gains`,
+      Instagram: `Transform your routine with ${productName}. Built for ${audience} who demand results. 💪 Link in bio.`,
+      LinkedIn: `Introducing ${productName} — designed for ${audience} who treat performance as a priority.`,
+      Facebook: `New: ${productName}! Join thousands who've switched. Special launch offer available now.`,
+      Twitter: `Just launched: ${productName} 🚀 The performance upgrade ${audience} has been waiting for.`,
+    };
+    const posts: Array<{id:number;platform:string;content:string;title:string}> = [];
+    for (const p of usePlatforms) {
+      const body = postMap[p] ?? `Check out ${productName}!`;
+      const saved = await db.createContent({ userId, type: "social_caption", platform: p.toLowerCase(), title: `${p} Post`, body, status: "draft", campaignId });
+      posts.push({ id: saved.id, platform: p, content: body, title: `${p} Post` });
+    }
+    const adBody = `${productName}: Built for ${audience}. Launch offer — 20% off with code LAUNCH20.`;
+    const adSaved = await db.createContent({ userId, type: "ad_copy_short", platform: "facebook", title: `${productName} Ad`, body: adBody, status: "draft", campaignId });
+    posts.push({ id: adSaved.id, platform: "facebook", content: adBody, title: "Launch Ad" });
+    toolResults.push({ kind: "generateSocialPosts", posts });
+
+    // Email sequence
+    const emailData = [
+      { subject: `Welcome — ${productName} is here`, preview: "Your journey starts now", sendDay: 0, body: `Hi,\n\nThank you for your interest in ${productName}. We built this for ${audience} who are serious about results.\n\nExpect: premium quality, proven results, community support.\n\nTo your success,\nThe Team` },
+      { subject: `Why ${productName} actually works`, preview: "The science, simply explained", sendDay: 2, body: `Hi,\n\nEvery ingredient in ${productName} has one purpose: results for ${audience}.\n\nNo fillers. No compromises. See the full breakdown on our site.\n\nBest,\nThe Team` },
+      { subject: `Real people, real results`, preview: "What our community says", sendDay: 4, body: `Hi,\n\n"${productName} is the only thing that actually worked for me." — verified customer\n\nJoin thousands who've made the switch. Use code LAUNCH20 for 20% off.\n\nThe Team` },
+      { subject: `Your launch offer expires in 48h`, preview: "Don't miss this", sendDay: 6, body: `Hi,\n\nYour 20% launch discount expires soon. Code: LAUNCH20.\n\nBest pricing we'll offer this year — grab it now.\n\nThe Team` },
+      { subject: `Last call — offer ends tonight`, preview: "Final hours", sendDay: 7, body: `Hi,\n\nMidnight tonight: launch offer ends. Code LAUNCH20 — 20% off ${productName}.\n\nShop now →\n\nThe Team` },
+    ];
+    const emails: Array<{index:number;subject:string;preview:string;body:string;sendDay:number;id:number}> = [];
+    for (let i = 0; i < emailData.length; i++) {
+      const t = emailData[i];
+      const saved = await db.createEmailCampaign({ userId, campaignId, name: `Email ${i+1}: ${t.subject}`, subject: t.subject, htmlBody: t.body, textBody: t.body, fromName: `${productName} Team`, status: "draft" });
+      emails.push({ index: i, ...t, id: saved.id });
+    }
+    toolResults.push({ kind: "generateEmailSequence", sequenceId: `seq_${campaignId}`, emails });
+
+    // Landing page
+    const slug = `${productName.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}-${campaignId}`;
+    const headline = `${productName}: Built for ${audience}`;
+    const lp = await db.createLandingPage({ userId, campaignId, title: headline, slug, status: "draft", components: [{ type: "hero", props: { headline, subheadline: `The #1 choice for ${audience}. Launch pricing available now.`, cta: "Shop Now — 20% Off", ctaUrl: "#" }, order: 0 }, { type: "features", props: { title: "Why choose us", items: ["Premium quality","Proven results","Free shipping","30-day guarantee"] }, order: 1 }, { type: "cta", props: { headline: "Ready to start?", cta: "Get 20% Off", code: "LAUNCH20" }, order: 2 }], metadata: { generatedFor: message } });
+    toolResults.push({ kind: "generateLandingPage", landingPageId: lp.id, headline, slug, previewUrl: `/lp/${slug}` });
+
+    // Video script
+    const hook = `If you're ${audience} tired of products that don't deliver — this changes everything.`;
+    const script = `HOOK (0-3s): ${hook}\n\nBODY (3-25s): ${productName}. Built for ${audience}. Every ingredient chosen for results. No fillers.\n\nSOCIAL PROOF (25-40s): Thousands have already switched. The reviews speak for themselves.\n\nCTA (40-45s): Code LAUNCH20 — 20% off. Link in bio.`;
+    const videoSaved = await db.createVideoAd({ userId, campaignId, platform: (usePlatforms[0] ?? "tiktok").toLowerCase(), script, voiceoverText: script, storyboard: [], status: "draft", metadata: { hook, cta: "LAUNCH20 — link in bio", style: "ugc_testimonial" } });
+    toolResults.push({ kind: "generateVideoScript", videoId: videoSaved.id, platform: usePlatforms[0] ?? "TikTok", script, hook, cta: "LAUNCH20 — link in bio" });
+
+    // Ad creative
+    const adCreativeSaved = await db.createContent({ userId, type: "ad_copy_short", platform: "instagram", title: `${productName} — Instagram Ad`, body: `${headline}\n\n${adBody}\n\nShop now → link in bio`, status: "draft", campaignId });
+    toolResults.push({ kind: "generateAdCreative", contentId: adCreativeSaved.id, headline, body: adBody, platform: "instagram" });
+
+    return { reply: `Built complete launch package for "${productName}": campaign, ${posts.length} social posts (${usePlatforms.join(", ")}), ${emails.length} emails, landing page, video script, and ad creatives. Opening your campaign workspace now.`, toolResults };
+  } catch (e) {
+    return { reply: `Error building campaign: ${(e as Error).message}. Check your database connection.`, toolResults };
+  }
+}
+
 export async function runAgentLoop(
   userId: number,
   message: string,
   history: Array<{ role: "user" | "assistant"; content: string }>
 ): Promise<AgentOutput> {
+  // ── Mock mode when no API key ─────────────────────────────────────
+  // Runs the full pipeline with realistic generated data so the
+  // workspace fills up and everything can be tested end-to-end.
+  if (!ENV.anthropicApiKey?.trim()) {
+    return runMockAgentLoop(userId, message);
+  }
+
   const toolResults: ToolResult[] = [];
   const anthropicMessages: AnthropicMessage[] = [];
   for (const h of history) {
