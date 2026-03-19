@@ -152,7 +152,17 @@ export default function AiAgents() {
       setMessages(prev => [...prev, { role: "assistant", content: result.reply }]);
       const results = (result as { toolResults?: AgentToolResult[] }).toolResults ?? [];
       setToolResults(results);
-      if (results.length > 0) { animateAgents(results); setShowAssets(true); } else { setAgents(AGENT_DEFS.map(d => ({ ...d, status: "idle" as AgentStatus }))); }
+      if (results.length > 0) {
+        animateAgents(results);
+        setShowAssets(true);
+        // Auto-navigate to campaign workspace if a campaign was created
+        const campaign = results.find((r): r is AgentToolResult & { kind: "createCampaign" } => r.kind === "createCampaign");
+        if (campaign?.campaignId) {
+          setTimeout(() => navigate(`/campaigns/${campaign.campaignId}`), 1800);
+        }
+      } else {
+        setAgents(AGENT_DEFS.map(d => ({ ...d, status: "idle" as AgentStatus })));
+      }
     } catch {
       setMessages(prev => [...prev, { role: "assistant", content: "Something went wrong. Please try again." }]);
       setAgents(AGENT_DEFS.map(d => ({ ...d, status: "idle" as AgentStatus })));

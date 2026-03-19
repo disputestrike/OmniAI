@@ -1033,6 +1033,63 @@ Provide: recommended content types per platform, posting schedule, audience targ
       const { launchWizardCampaign } = await import("./campaignWizard");
       return launchWizardCampaign(ctx.user.id, input.campaignId);
     }),
+
+    // ── Campaign Workspace: everything owned by a campaign in one call ──
+    workspace: protectedProcedure.input(z.object({ campaignId: z.number() })).query(async ({ ctx, input }) => {
+      const { campaignId } = input;
+      const campaign = await db.getCampaignById(campaignId);
+      if (!campaign || campaign.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [
+        contents,
+        creatives,
+        videoAds,
+        emailSequences,
+        landingPages,
+        scheduledPosts,
+        analytics,
+        leads,
+        assets,
+      ] = await Promise.all([
+        db.getContentsByCampaign(campaignId),
+        db.getCreativesByCampaign(campaignId),
+        db.getVideoAdsByCampaign(campaignId),
+        db.getEmailCampaignsByCampaign(campaignId),
+        db.getLandingPagesByCampaign(campaignId),
+        db.getScheduledPostsByCampaign(campaignId),
+        db.getAnalyticsByCampaign(campaignId),
+        db.getLeadsByCampaign(campaignId),
+        db.getCampaignAssetsByCampaignId(campaignId),
+      ]);
+
+      // Aggregate analytics
+      const totalImpressions = analytics.reduce((s, e) => s + Number(e.impressions || 0), 0);
+      const totalClicks      = analytics.reduce((s, e) => s + Number(e.clicks || 0), 0);
+      const totalConversions = analytics.reduce((s, e) => s + Number(e.conversions || 0), 0);
+      const totalRevenue     = analytics.reduce((s, e) => s + Number(e.revenue || 0), 0);
+
+      return {
+        campaign,
+        contents,
+        creatives,
+        videoAds,
+        emailSequences,
+        landingPages,
+        scheduledPosts,
+        leads,
+        assets,
+        analytics: { totalImpressions, totalClicks, totalConversions, totalRevenue, events: analytics },
+        summary: {
+          contentCount:  contents.length,
+          creativeCount: creatives.length,
+          videoCount:    videoAds.length,
+          emailCount:    emailSequences.length,
+          leadCount:     leads.length,
+          pageCount:     landingPages.length,
+          postCount:     scheduledPosts.length,
+        },
+      };
+    }),
   }),
 
   // ─── A/B Testing ───────────────────────────────────────────────────

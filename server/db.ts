@@ -242,6 +242,10 @@ export async function getCreativesByUser(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(creatives).where(eq(creatives.userId, userId)).orderBy(desc(creatives.createdAt));
 }
+export async function getCreativesByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(creatives).where(eq(creatives.campaignId, campaignId)).orderBy(desc(creatives.createdAt));
+}
 
 export async function getCreativeById(id: number) {
   const db = await getDb(); if (!db) return undefined;
@@ -269,6 +273,10 @@ export async function createVideoAd(data: InsertVideoAd) {
 export async function getVideoAdsByUser(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(videoAds).where(eq(videoAds.userId, userId)).orderBy(desc(videoAds.createdAt));
+}
+export async function getVideoAdsByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(videoAds).where(eq(videoAds.campaignId, campaignId)).orderBy(desc(videoAds.createdAt));
 }
 
 export async function getVideoAdById(id: number) {
@@ -382,6 +390,10 @@ export async function createScheduledPost(data: InsertScheduledPost) {
 export async function getScheduledPostsByUser(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(scheduledPosts).where(eq(scheduledPosts.userId, userId)).orderBy(desc(scheduledPosts.scheduledAt));
+}
+export async function getScheduledPostsByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(scheduledPosts).where(eq(scheduledPosts.campaignId, campaignId)).orderBy(desc(scheduledPosts.scheduledAt));
 }
 
 export async function updateScheduledPost(id: number, data: Partial<InsertScheduledPost>) {
@@ -768,6 +780,10 @@ export async function getEmailCampaignsByUser(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(emailCampaigns).where(eq(emailCampaigns.userId, userId)).orderBy(desc(emailCampaigns.createdAt));
 }
+export async function getEmailCampaignsByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(emailCampaigns).where(eq(emailCampaigns.campaignId, campaignId)).orderBy(desc(emailCampaigns.createdAt));
+}
 export async function getEmailCampaignById(id: number) {
   const db = await getDb(); if (!db) return undefined;
   const r = await db.select().from(emailCampaigns).where(eq(emailCampaigns.id, id)).limit(1);
@@ -791,6 +807,10 @@ export async function createLandingPage(data: InsertLandingPage) {
 export async function getLandingPagesByUser(userId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(landingPages).where(eq(landingPages.userId, userId)).orderBy(desc(landingPages.createdAt));
+}
+export async function getLandingPagesByCampaign(campaignId: number) {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(landingPages).where(eq(landingPages.campaignId, campaignId)).orderBy(desc(landingPages.createdAt));
 }
 export async function getLandingPageById(id: number) {
   const db = await getDb(); if (!db) return undefined;

@@ -15,6 +15,7 @@ import ContentStudio from "./pages/ContentStudio";
 import Creatives from "./pages/Creatives";
 import VideoAds from "./pages/VideoAds";
 import Campaigns from "./pages/Campaigns";
+import CampaignWorkspace from "./pages/CampaignWorkspace";
 import CampaignWizard from "./pages/CampaignWizard";
 import AbTesting from "./pages/AbTesting";
 import Scheduler from "./pages/Scheduler";
@@ -91,6 +92,7 @@ function DashboardRouter() {
         <Route path="/creatives" component={Creatives} />
         <Route path="/video-ads" component={VideoAds} />
         <Route path="/campaigns" component={Campaigns} />
+        <Route path="/campaigns/:id" component={CampaignWorkspace} />
         <Route path="/campaign-wizard" component={CampaignWizard} />
         <Route path="/programmatic-ads" component={ProgrammaticAds} />
         <Route path="/ab-testing" component={AbTesting} />

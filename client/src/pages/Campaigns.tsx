@@ -2,10 +2,10 @@ import { trpc } from "@/lib/trpc";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Megaphone, Plus, Loader2, Sparkles, Trash2, Play, Pause } from "lucide-react";
+import { Megaphone, Plus, Loader2, Trash2, Play, Pause, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { toast } from "sonner";
-import { Streamdown } from "streamdown";
 import { WhatsNextCard } from "@/components/WhatsNextCard";
 import { NEXT_STEPS_BY_PAGE } from "@/config/pathBlueprint";
 
@@ -26,12 +26,12 @@ const STATUS_STYLES: Record<string, { pill: string; badge: string }> = {
 
 export default function Campaigns() {
   const utils = trpc.useUtils();
+  const [location, setLocation] = useLocation();
   const { data: campaigns, isLoading } = trpc.campaign.list.useQuery();
   const { data: products } = trpc.product.list.useQuery();
   const createMut = trpc.campaign.create.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); setOpen(false); resetForm(); toast.success("Campaign created"); } });
   const updateMut = trpc.campaign.update.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); toast.success("Updated"); } });
   const deleteMut = trpc.campaign.delete.useMutation({ onSuccess: () => { utils.campaign.list.invalidate(); toast.success("Deleted"); } });
-  const strategyMut = trpc.campaign.generateStrategy.useMutation({ onError: e => toast.error(e.message) });
 
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -40,7 +40,6 @@ export default function Campaigns() {
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
   const [productId, setProductId] = useState("");
   const [budget, setBudget] = useState("");
-  const [strategyId, setStrategyId] = useState<number | null>(null);
 
   const resetForm = () => { setName(""); setDescription(""); setObjective("awareness"); setSelectedPlatforms([]); setProductId(""); setBudget(""); };
   const analyzedProducts = useMemo(() => products?.filter(p => p.analysisStatus === "completed") ?? [], [products]);
@@ -138,7 +137,7 @@ export default function Campaigns() {
             return (
               <div key={campaign.id} className="glass glass-hover rounded-2xl p-4 transition-all">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <button onClick={() => setLocation(`/campaigns/${campaign.id}`)} className="flex items-start gap-3 min-w-0 flex-1 text-left">
                     <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "rgba(124,58,237,0.12)" }}>
                       <Megaphone className="h-5 w-5 text-violet-400" />
                     </div>
@@ -151,46 +150,38 @@ export default function Campaigns() {
                       </div>
                       {platforms?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {platforms.slice(0, 6).map(p => <span key={p} className="platform-tag">{p}</span>)}
-                          {platforms.length > 6 && <span className="platform-tag">+{platforms.length - 6}</span>}
+                          {platforms.slice(0, 5).map((p: string) => <span key={p} className="platform-tag">{p}</span>)}
+                          {platforms.length > 5 && <span className="platform-tag">+{platforms.length - 5}</span>}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </button>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    <button onClick={() => setLocation(`/campaigns/${campaign.id}`)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-violet-400 transition-colors"
+                      style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.18)" }}>
+                      Open <ChevronRight className="h-3 w-3" />
+                    </button>
                     {campaign.status === "draft" && (
-                      <button onClick={() => updateMut.mutate({ id: campaign.id, status: "active" })}
+                      <button onClick={(e) => { e.stopPropagation(); updateMut.mutate({ id: campaign.id, status: "active" }); }}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-400 transition-colors"
                         style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.2)" }}>
                         <Play className="h-3 w-3" /> Launch
                       </button>
                     )}
                     {campaign.status === "active" && (
-                      <button onClick={() => updateMut.mutate({ id: campaign.id, status: "paused" })}
+                      <button onClick={(e) => { e.stopPropagation(); updateMut.mutate({ id: campaign.id, status: "paused" }); }}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-amber-400 transition-colors"
                         style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
                         <Pause className="h-3 w-3" /> Pause
                       </button>
                     )}
-                    <button
-                      onClick={() => { setStrategyId(strategyId === campaign.id ? null : campaign.id); if (strategyId !== campaign.id) strategyMut.mutate({ campaignId: campaign.id }); }}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-violet-400 transition-colors"
-                      style={{ background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.18)" }}>
-                      <Sparkles className="h-3 w-3" /> Strategy
-                    </button>
-                    <button onClick={() => deleteMut.mutate({ id: campaign.id })}
+                    <button onClick={(e) => { e.stopPropagation(); deleteMut.mutate({ id: campaign.id }); }}
                       className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
-                {strategyId === campaign.id && (
-                  <div className="mt-4 pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                    {strategyMut.isPending
-                      ? <div className="flex items-center gap-2 text-sm text-zinc-500"><Loader2 className="h-4 w-4 animate-spin text-violet-400" />Generating AI strategy...</div>
-                      : strategyMut.data?.strategy && <div className="prose-dark text-sm"><Streamdown content={strategyMut.data.strategy} /></div>}
-                  </div>
-                )}
               </div>
             );
           })}
