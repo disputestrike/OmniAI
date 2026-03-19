@@ -1040,6 +1040,12 @@ Provide: recommended content types per platform, posting schedule, audience targ
       const campaign = await db.getCampaignById(campaignId);
       if (!campaign || campaign.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
 
+      // Each fetch is individually guarded — a missing column on an existing table
+      // returns [] instead of crashing the whole workspace
+      const safe = async <T>(fn: () => Promise<T[]>): Promise<T[]> => {
+        try { return await fn(); } catch { return []; }
+      };
+
       const [
         contents,
         creatives,
@@ -1051,15 +1057,15 @@ Provide: recommended content types per platform, posting schedule, audience targ
         leads,
         assets,
       ] = await Promise.all([
-        db.getContentsByCampaign(campaignId),
-        db.getCreativesByCampaign(campaignId),
-        db.getVideoAdsByCampaign(campaignId),
-        db.getEmailCampaignsByCampaign(campaignId),
-        db.getLandingPagesByCampaign(campaignId),
-        db.getScheduledPostsByCampaign(campaignId),
-        db.getAnalyticsByCampaign(campaignId),
-        db.getLeadsByCampaign(campaignId),
-        db.getCampaignAssetsByCampaignId(campaignId),
+        safe(() => db.getContentsByCampaign(campaignId)),
+        safe(() => db.getCreativesByCampaign(campaignId)),
+        safe(() => db.getVideoAdsByCampaign(campaignId)),
+        safe(() => db.getEmailCampaignsByCampaign(campaignId)),
+        safe(() => db.getLandingPagesByCampaign(campaignId)),
+        safe(() => db.getScheduledPostsByCampaign(campaignId)),
+        safe(() => db.getAnalyticsByCampaign(campaignId)),
+        safe(() => db.getLeadsByCampaign(campaignId)),
+        safe(() => db.getCampaignAssetsByCampaignId(campaignId)),
       ]);
 
       // Aggregate analytics

@@ -180,6 +180,38 @@ export async function runMigrations(): Promise<void> {
       console.warn("[migrate] campaign_assets:", (e as Error).message);
     }
 
+    // campaignId columns — added later, must ALTER TABLE on existing DBs
+    const campaignIdAlters = [
+      "ALTER TABLE `contents` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `creatives` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `video_ads` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `video_renders` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `scheduled_posts` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `leads` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `analytics_events` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `deals` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `email_campaigns` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `landing_pages` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `ab_tests` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `approval_workflows` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `ad_platform_campaigns` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `customer_interactions` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `social_publish_queue` ADD COLUMN `campaignId` int NULL",
+      "ALTER TABLE `report_snapshots` ADD COLUMN `campaignId` int NULL",
+    ];
+    for (const sql of campaignIdAlters) {
+      try {
+        await connection!.query(sql);
+        const col = sql.match(/ADD COLUMN `([^`]+)`/)?.[1] ?? "";
+        const tbl = sql.match(/TABLE `([^`]+)`/)?.[1] ?? "";
+        console.log(`[migrate] Added ${tbl}.${col}`);
+      } catch (e: unknown) {
+        const err = e as { errno?: number };
+        if (err.errno !== ER_DUP_FIELD) console.warn("[migrate] campaignId alter:", (e as Error).message);
+        // ER_DUP_FIELD (1060) = column already exists, safe to ignore
+      }
+    }
+
     // Seed tier_limits_config (Spec v4) — ON DUPLICATE KEY UPDATE so safe to re-run
     const seedTierLimits = `
 INSERT INTO tier_limits_config (tier, displayName, priceMonthlyCents, priceAnnualCents, maxAiGenerations, maxAiImages, maxVideoScripts, maxVideoMinutes, maxScheduledPosts, maxAbTests, maxWebsiteAnalyses, maxProducts, maxCampaigns, maxLeads, maxTeamSeats, maxAdPlatformConnections, featureScheduling, featureAbTesting, featureVoiceInput, featureVideoGeneration, featureAvatars, featureCrm, featureCompetitorIntel, featurePredictiveAi, featureApiAccess, featureWhiteLabel, featureMusicStudio, featureDspAccess, dspMinAdSpendCents, dspMarkupRateBps, creditTopupDiscountBps, watermarkContent, aiChatModel)

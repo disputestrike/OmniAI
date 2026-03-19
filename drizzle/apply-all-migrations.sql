@@ -1258,3 +1258,22 @@ CREATE TABLE IF NOT EXISTS `campaign_assets` (
   PRIMARY KEY (`id`),
   KEY `idx_campaign_assets_campaignId` (`campaignId`)
 );
+
+-- ─── Add campaignId columns to tables that were created before this column existed ───
+-- Uses IF NOT EXISTS (MySQL 8+) so safe to run multiple times on same DB
+ALTER TABLE `contents` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `creatives` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `video_ads` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `video_renders` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `scheduled_posts` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `leads` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `analytics_events` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `deals` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `email_campaigns` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `landing_pages` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `ab_tests` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `approval_workflows` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `ad_platform_campaigns` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `customer_interactions` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `social_publish_queue` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `report_snapshots` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
