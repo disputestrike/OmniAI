@@ -1,40 +1,32 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { AlertTriangle, Home, Mail } from "lucide-react";
 import { useLocation } from "wouter";
+import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 
 export default function ServerError() {
   const [, setLocation] = useLocation();
-
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4">
-      <Card className="w-full max-w-lg shadow-lg border-0 bg-white/90 backdrop-blur-sm">
-        <CardContent className="pt-8 pb-8 text-center">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 bg-amber-100 rounded-full animate-pulse" />
-              <AlertTriangle className="relative h-16 w-16 text-amber-600" />
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">500</h1>
-          <h2 className="text-xl font-semibold text-slate-700 mb-4">Server Error</h2>
-          <p className="text-slate-600 mb-8 leading-relaxed">
-            Something went wrong on our end. We've been notified and are working on it. Please try again in a moment or contact support.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button onClick={() => setLocation("/")} className="gap-2">
-              <Home className="h-4 w-4" />
-              Go Home
-            </Button>
-            <Button variant="outline" asChild>
-              <a href="mailto:support@otobi.ai" className="gap-2">
-                <Mail className="h-4 w-4" />
-                Contact support (support@otobi.ai)
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center mesh-bg">
+      <div className="text-center space-y-6 px-5">
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}>
+          <AlertTriangle className="h-8 w-8 text-red-400" />
+        </div>
+        <div>
+          <p className="text-6xl font-black text-zinc-800 mb-3">500</p>
+          <h1 className="text-xl font-bold text-white mb-2">Server error</h1>
+          <p className="text-sm text-zinc-500 max-w-xs mx-auto">Something went wrong on our end. Please try again.</p>
+        </div>
+        <div className="flex items-center justify-center gap-3">
+          <button onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
+            style={{ background: "rgba(124,58,237,0.7)" }}>
+            <RefreshCw className="h-4 w-4" /> Try again
+          </button>
+          <button onClick={() => setLocation("/dashboard")}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-zinc-400 transition-all"
+            style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+            <ArrowLeft className="h-4 w-4" /> Dashboard
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

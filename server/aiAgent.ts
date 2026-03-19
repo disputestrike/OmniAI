@@ -52,7 +52,7 @@ CORE RULE: Never ask more than ONE clarifying question. If you have enough to st
 
 When the user gives you a product, a goal, or any description:
 1. Say "Got it. Building now."
-2. IMMEDIATELY call: analyzeProduct → createCampaign → generateLandingPage → generateEmailSequence → generateSocialPosts (call as many as make sense; landing page and campaign are high value).
+2. IMMEDIATELY call these tools in parallel where possible: analyzeProduct → createCampaign → generateLandingPage → generateEmailSequence → generateSocialPosts → generateVideoScript → generateAdCreative (call as many as make sense; campaign, landing page, email, social posts, and video script are highest value).
 3. After tools complete, write 2 sentences summarizing what was built. Nothing more.
 
 If you are TRULY missing something critical (no product described at all), ask ONE question only:
@@ -135,6 +135,34 @@ const AGENT_TOOL_DEFS = [
       required: ["productInfo", "audience", "goal"] as const,
     },
   },
+  {
+    name: "generateVideoScript",
+    description: "Generate a short-form video ad script (TikTok/Reels/YouTube Shorts style) with hook, body, and CTA. Saves to Video Ads.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        productInfo: { type: "string" as const, description: "Product description and value props" },
+        platform: { type: "string" as const, description: "tiktok, instagram_reels, youtube_shorts" },
+        style: { type: "string" as const, description: "ugc_testimonial, product_demo, problem_solution" },
+        campaignId: { type: "number" as const, description: "Optional campaign ID" },
+      },
+      required: ["productInfo", "platform"] as const,
+    },
+  },
+  {
+    name: "generateAdCreative",
+    description: "Generate ad copy (headline + body + CTA) for a platform. Saves as content draft.",
+    parameters: {
+      type: "object" as const,
+      properties: {
+        productInfo: { type: "string" as const, description: "Product description" },
+        platform: { type: "string" as const, description: "facebook, instagram, google, linkedin" },
+        adType: { type: "string" as const, description: "awareness, conversion, retargeting" },
+        campaignId: { type: "number" as const, description: "Optional campaign ID" },
+      },
+      required: ["productInfo", "platform"] as const,
+    },
+  },
 ];
 
 /** Anthropic SDK tool format (name, description, input_schema) */
@@ -150,6 +178,8 @@ export type ToolResult =
   | { kind: "generateLandingPage"; landingPageId: number; headline: string; slug: string; previewUrl: string }
   | { kind: "generateEmailSequence"; sequenceId: string; emails: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> }
   | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
+  | { kind: "generateVideoScript"; videoId: number; platform: string; script: string; hook: string; cta: string }
+  | { kind: "generateAdCreative"; contentId: number; headline: string; body: string; platform: string }
   | { kind: "error"; tool: string; message: string };
 
 /** Fetch page content from a URL for product/link analysis. */
@@ -534,8 +564,151 @@ export async function executeTool(
         String(args.goal ?? "sales"),
         typeof args.campaignId === "number" ? args.campaignId : undefined
       );
+    case "generateVideoScript":
+      return runGenerateVideoScript(
+        userId,
+        String(args.productInfo ?? ""),
+        String(args.platform ?? "tiktok"),
+        String(args.style ?? "ugc_testimonial"),
+        typeof args.campaignId === "number" ? args.campaignId : undefined
+      );
+    case "generateAdCreative":
+      return runGenerateAdCreative(
+        userId,
+        String(args.productInfo ?? ""),
+        String(args.platform ?? "facebook"),
+        String(args.adType ?? "conversion"),
+        typeof args.campaignId === "number" ? args.campaignId : undefined
+      );
     default:
       return { kind: "error", tool: name, message: "Unknown tool" };
+  }
+}
+
+async function runGenerateVideoScript(
+  userId: number,
+  productInfo: string,
+  platform: string,
+  style: string,
+  campaignId?: number
+): Promise<ToolResult> {
+  try {
+    const platformLabels: Record<string, string> = {
+      tiktok: "TikTok", instagram_reels: "Instagram Reels",
+      youtube_shorts: "YouTube Shorts", youtube: "YouTube",
+    };
+    const styleLabels: Record<string, string> = {
+      ugc_testimonial: "UGC testimonial style", product_demo: "product demonstration",
+      problem_solution: "problem → solution narrative", before_after: "before and after story",
+    };
+    const res = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: `You are a viral video scriptwriter. Return only valid JSON with: hook (opening 3 seconds, max 15 words), script (full spoken script, 150-200 words), cta (call-to-action, max 10 words), platform (string). Write in ${styleLabels[style] ?? style} style optimized for ${platformLabels[platform] ?? platform}.`,
+        },
+        { role: "user", content: `Product: ${productInfo}` },
+      ],
+      response_format: {
+        type: "json_schema" as const,
+        json_schema: {
+          name: "video_script",
+          schema: {
+            type: "object" as const,
+            properties: {
+              hook: { type: "string" as const },
+              script: { type: "string" as const },
+              cta: { type: "string" as const },
+              platform: { type: "string" as const },
+            },
+            required: ["hook", "script", "cta"],
+          },
+        },
+      },
+    });
+    const raw = typeof res.content === "string" ? res.content : JSON.stringify(res.content);
+    const data = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const saved = await db.createVideoAd({
+      userId,
+      platform,
+      script: `HOOK: ${data.hook}\n\n${data.script}\n\nCTA: ${data.cta}`,
+      voiceoverText: data.script,
+      storyboard: [],
+      status: "draft",
+      campaignId: campaignId ?? null,
+      metadata: { hook: data.hook, cta: data.cta, style },
+    });
+    return {
+      kind: "generateVideoScript",
+      videoId: saved.id,
+      platform,
+      script: data.script,
+      hook: data.hook,
+      cta: data.cta,
+    };
+  } catch (e) {
+    return { kind: "error", tool: "generateVideoScript", message: (e as Error).message };
+  }
+}
+
+async function runGenerateAdCreative(
+  userId: number,
+  productInfo: string,
+  platform: string,
+  adType: string,
+  campaignId?: number
+): Promise<ToolResult> {
+  try {
+    const platformSpecs: Record<string, string> = {
+      facebook: "Facebook Feed ad (max 125 chars primary text, 40 chars headline)",
+      instagram: "Instagram Feed ad (max 125 chars caption, punchy headline)",
+      google: "Google Search ad (3 headlines max 30 chars each, 2 descriptions max 90 chars)",
+      linkedin: "LinkedIn Sponsored Content (max 150 chars intro, 70 chars headline)",
+    };
+    const res = await invokeLLM({
+      messages: [
+        {
+          role: "system",
+          content: `You are a high-converting ad copywriter. Write a ${adType} ad for ${platformSpecs[platform] ?? platform}. Return only valid JSON with: headline (string), body (string), cta (string).`,
+        },
+        { role: "user", content: `Product: ${productInfo}` },
+      ],
+      response_format: {
+        type: "json_schema" as const,
+        json_schema: {
+          name: "ad_creative",
+          schema: {
+            type: "object" as const,
+            properties: {
+              headline: { type: "string" as const },
+              body: { type: "string" as const },
+              cta: { type: "string" as const },
+            },
+            required: ["headline", "body", "cta"],
+          },
+        },
+      },
+    });
+    const raw = typeof res.content === "string" ? res.content : JSON.stringify(res.content);
+    const data = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const saved = await db.createContent({
+      userId,
+      type: "ad_copy_short",
+      platform,
+      title: data.headline,
+      body: `${data.headline}\n\n${data.body}\n\n${data.cta}`,
+      status: "draft",
+      ...(campaignId ? { campaignId } : {}),
+    });
+    return {
+      kind: "generateAdCreative",
+      contentId: saved.id,
+      headline: data.headline,
+      body: data.body,
+      platform,
+    };
+  } catch (e) {
+    return { kind: "error", tool: "generateAdCreative", message: (e as Error).message };
   }
 }
 

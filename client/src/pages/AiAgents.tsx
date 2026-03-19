@@ -21,6 +21,8 @@ type AgentToolResult =
   | { kind: "generateLandingPage"; landingPageId: number; headline: string; slug: string; previewUrl: string }
   | { kind: "generateEmailSequence"; sequenceId: string; emails: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> }
   | { kind: "generateSocialPosts"; posts: Array<{ id: number; platform: string; content: string; title: string }> }
+  | { kind: "generateVideoScript"; videoId: number; platform: string; script: string; hook: string; cta: string }
+  | { kind: "generateAdCreative"; contentId: number; headline: string; body: string; platform: string }
   | { kind: "error"; tool: string; message: string };
 
 interface SubAgent { id: string; name: string; icon: string; color: string; status: AgentStatus; output?: string; }
@@ -42,6 +44,8 @@ const ASSET_CFG: Record<string, { icon: typeof Mail; color: string; label: strin
   generateLandingPage:   { icon: Layout,    color: "#8b5cf6", label: "Landing Page",     path: "/landing-pages" },
   generateEmailSequence: { icon: Mail,      color: "#3b82f6", label: "Email Sequence",   path: "/email-marketing" },
   generateSocialPosts:   { icon: Share2,    color: "#10b981", label: "Social Posts",     path: "/content" },
+  generateVideoScript:   { icon: Video,     color: "#ef4444", label: "Video Script",     path: "/video-ads" },
+  generateAdCreative:    { icon: Target,    color: "#f59e0b", label: "Ad Creative",      path: "/content" },
 };
 
 const QUICK_PROMPTS = [
@@ -107,9 +111,9 @@ export default function AiAgents() {
     const kinds = new Set(results.map(r => r.kind));
     const mapping: Record<string, string[]> = {
       strategy: ["analyzeProduct", "createCampaign"],
-      content: ["generateSocialPosts"],
-      creative: [],
-      video: [],
+      content: ["generateSocialPosts","generateAdCreative"],
+      creative: ["generateAdCreative"],
+      video: ["generateVideoScript"],
       email: ["generateEmailSequence"],
       social: ["generateSocialPosts"],
       seo: [],
@@ -124,8 +128,8 @@ export default function AiAgents() {
         email: `${results.filter(r => r.kind === "generateEmailSequence").flatMap(r => (r as { emails?: unknown[] }).emails ?? []).length} emails written`,
         social: `${results.filter(r => r.kind === "generateSocialPosts").flatMap(r => (r as { posts?: unknown[] }).posts ?? []).length} posts drafted`,
         landing: "Page published",
-        creative: "Assets in library",
-        video: "Script delivered",
+        creative: `${results.filter(r => r.kind === 'generateAdCreative').length} ad creatives`,
+        video: `${results.filter(r => r.kind === 'generateVideoScript').length} video script`,
         seo: "Brief complete",
       };
       return { ...d, status: matched ? "done" : relevant.length > 0 ? "skipped" : "idle" as AgentStatus, output: matched ? outputs[d.id] : undefined };
@@ -389,6 +393,8 @@ export default function AiAgents() {
                     {r.kind === "generateLandingPage" && <p className="text-[10px] text-zinc-500 line-clamp-1">{r.headline}</p>}
                     {r.kind === "generateEmailSequence" && <p className="text-[10px] text-zinc-500">{r.emails?.length ?? 0} emails</p>}
                     {r.kind === "generateSocialPosts" && <p className="text-[10px] text-zinc-500">{r.posts?.length ?? 0} posts</p>}
+                    {r.kind === "generateVideoScript" && <p className="text-[10px] text-zinc-500 line-clamp-2">"{r.hook}"</p>}
+                    {r.kind === "generateAdCreative" && <p className="text-[10px] text-zinc-500 line-clamp-1">{r.headline}</p>}
                     <button onClick={() => navigate(cfg.path)} className="flex items-center gap-1 mt-1.5 text-[10px] font-bold hover:opacity-70 transition-opacity" style={{ color: cfg.color }}>
                       Open <ExternalLink className="h-2.5 w-2.5" />
                     </button>
