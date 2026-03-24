@@ -194,10 +194,10 @@ CREATE TABLE IF NOT EXISTS `subscriptions` (
 	CONSTRAINT `subscriptions_id` PRIMARY KEY(`id`)
 );
 ;
-ALTER TABLE `users` ADD `stripeCustomerId` varchar(128);;
-ALTER TABLE `users` ADD `subscriptionPlan` enum('free','pro','enterprise') DEFAULT 'free' NOT NULL;;
-ALTER TABLE `users` ADD `stripeSubscriptionId` varchar(128);
-ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL;
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `stripeCustomerId` varchar(128);
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `subscriptionPlan` enum('free','pro','enterprise') DEFAULT 'free' NOT NULL;
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `stripeSubscriptionId` varchar(128);
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `passwordHash` varchar(255) NULL;
 CREATE TABLE IF NOT EXISTS `activities` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`userId` int NOT NULL,
@@ -1277,3 +1277,25 @@ ALTER TABLE `ad_platform_campaigns` ADD COLUMN IF NOT EXISTS `campaignId` int NU
 ALTER TABLE `customer_interactions` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
 ALTER TABLE `social_publish_queue` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
 ALTER TABLE `report_snapshots` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+
+-- ─── Add columns missing from initial CREATE TABLE definitions ───
+-- Safe to run multiple times (IF NOT EXISTS, MySQL 8+)
+
+-- users: trialUsed column added in later schema revision
+ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `trialUsed` boolean DEFAULT false;
+
+-- campaigns: extra analytics/budget columns added in later schema revision
+ALTER TABLE `campaigns` ADD COLUMN IF NOT EXISTS `goal` varchar(64) NULL;
+ALTER TABLE `campaigns` ADD COLUMN IF NOT EXISTS `totalBudget` decimal(12,2) NULL;
+ALTER TABLE `campaigns` ADD COLUMN IF NOT EXISTS `totalSpend` decimal(12,2) NULL;
+ALTER TABLE `campaigns` ADD COLUMN IF NOT EXISTS `totalLeads` int DEFAULT 0;
+ALTER TABLE `campaigns` ADD COLUMN IF NOT EXISTS `totalRevenue` decimal(12,2) NULL;
+
+-- subscriptions: extra lifecycle columns added in later schema revision
+ALTER TABLE `subscriptions` ADD COLUMN IF NOT EXISTS `currentPeriodStart` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN IF NOT EXISTS `trialEndsAt` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN IF NOT EXISTS `pastDueAt` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN IF NOT EXISTS `canceledAt` timestamp NULL;
+
+-- user_monthly_usage: usage80EmailSent flag added in later schema revision
+ALTER TABLE `user_monthly_usage` ADD COLUMN IF NOT EXISTS `usage80EmailSent` boolean DEFAULT false;
