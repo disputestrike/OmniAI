@@ -194,9 +194,9 @@ CREATE TABLE IF NOT EXISTS `subscriptions` (
 	CONSTRAINT `subscriptions_id` PRIMARY KEY(`id`)
 );
 ;
-ALTER TABLE `users` ADD `stripeCustomerId` varchar(128);;
-ALTER TABLE `users` ADD `subscriptionPlan` enum('free','pro','enterprise') DEFAULT 'free' NOT NULL;;
-ALTER TABLE `users` ADD `stripeSubscriptionId` varchar(128);
+ALTER TABLE `users` ADD COLUMN `stripeCustomerId` varchar(128);
+ALTER TABLE `users` ADD COLUMN `subscriptionPlan` enum('free','pro','enterprise') DEFAULT 'free' NOT NULL;
+ALTER TABLE `users` ADD COLUMN `stripeSubscriptionId` varchar(128);
 ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL;
 CREATE TABLE IF NOT EXISTS `activities` (
 	`id` int AUTO_INCREMENT NOT NULL,
