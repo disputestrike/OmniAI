@@ -14,6 +14,7 @@ import { registerLandingRoutes } from "../landing-routes";
 import path from "path";
 import fs from "fs/promises";
 import { securityHeaders, rateLimit } from "../security";
+import { runMigrations } from "./migrate";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +36,7 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 }
 
 async function startServer() {
+  await runMigrations();
   const { ENV } = await import("./env");
   if (ENV.sentryDsn) {
     try {

@@ -85,7 +85,7 @@ export const realVideoRouter = router({
         },
       },
     });
-    const { scenes } = JSON.parse(String(sceneResponse.choices[0].message.content));
+    const { scenes } = JSON.parse(String(sceneResponse.choices[0].message.content).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
 
     // Step 2: Generate video/image for each scene
     const generatedScenes: Array<{
@@ -352,7 +352,7 @@ export const memeRouter = router({
         },
       },
     });
-    const concept = JSON.parse(String(conceptResponse.choices[0].message.content));
+    const concept = JSON.parse(String(conceptResponse.choices[0].message.content).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
     await consumeLimit(ctx.user.id, "ai_generation", limitGen);
 
     // Step 2: Generate the meme image
@@ -410,7 +410,7 @@ export const memeRouter = router({
         },
       },
     });
-    const { memes } = JSON.parse(String(batchResponse.choices[0].message.content));
+    const { memes } = JSON.parse(String(batchResponse.choices[0].message.content).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
     await consumeLimit(ctx.user.id, "ai_generation", limitGen);
 
     // Generate images for each meme
@@ -476,7 +476,7 @@ export const creativeEngineRouter = router({
           },
         },
       });
-      const copy = JSON.parse(String(copyResponse.choices[0].message.content));
+      const copy = JSON.parse(String(copyResponse.choices[0].message.content).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
       headline = headline || copy.headline;
       cta = cta || copy.cta;
       await consumeLimit(ctx.user.id, "ai_generation", limitGen);

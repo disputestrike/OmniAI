@@ -11,8 +11,15 @@ import { checkLimit, consumeLimit } from "./creditsAndUsage";
 import { checkTierAccess, getFeatureAccess } from "./tierAccess";
 
 const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
+
+/** Strip markdown code fences the LLM sometimes wraps around JSON responses. */
+function parseJsonResponse(content: string): unknown {
+  const clean = content.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  return JSON.parse(clean);
+}
 import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
 import { transcribeAudio } from "./_core/voiceTranscription";
+import { generateVoiceover, getVoiceoverProviders } from "./voiceover";
 import { storagePut } from "./storage";
 import { users, teamMembers, subscriptions } from "../drizzle/schema";
 import { eq, desc, count } from "drizzle-orm";
@@ -192,6 +199,12 @@ Return ONLY a JSON object with: features, benefits, targetAudience, positioning,
         }
       }
 
+      const defaultVoice = await db.getDefaultBrandVoice(ctx.user.id);
+      const brandVoiceContext = db.buildBrandVoiceContext(defaultVoice);
+      const defaultKit = await db.getDefaultBrandKit(ctx.user.id);
+      const brandKitCtx = db.buildBrandKitContext(defaultKit);
+      const brandContext = [brandVoiceContext, brandKitCtx].filter(Boolean).join("\n\n");
+
       const typePrompts: Record<string, string> = {
         ad_copy_short: "Write a compelling short ad copy (under 90 characters) that drives clicks. Include a strong CTA.",
         ad_copy_long: "Write a detailed long-form ad copy (200-400 words) with headline, body, and CTA. Make it persuasive and benefit-focused.",
@@ -217,7 +230,7 @@ Return ONLY a JSON object with: features, benefits, targetAudience, positioning,
         landing_page: "Write complete landing page copy: hero headline + subheadline, 3 feature sections with icons, testimonial placeholders, pricing section, FAQ (5 questions), and final CTA section.",
       };
 
-      const systemPrompt = `You are an expert marketing copywriter and content strategist. Create high-converting marketing content. Always be specific, benefit-focused, and action-oriented.`;
+      const systemPrompt = `You are an expert marketing copywriter and content strategist. Create high-converting marketing content. Always be specific, benefit-focused, and action-oriented.${brandContext ? `\n\n${brandContext}` : ""}`;
       const userPrompt = `${typePrompts[input.type]}\n\n${productContext}\n\n${input.customPrompt ? `Additional instructions: ${input.customPrompt}` : ""}`;
 
       const response = await invokeLLM({
@@ -330,7 +343,7 @@ Return ONLY a JSON object with: features, benefits, targetAudience, positioning,
           },
         },
       });
-      const { pieces } = JSON.parse(response.choices[0].message.content as string);
+      const { pieces } = parseJsonResponse(response.choices[0].message.content as string);
       const created = [];
       for (const piece of pieces) {
         const r = await db.createContent({
@@ -432,7 +445,8 @@ Return ONLY a JSON object with: features, benefits, targetAudience, positioning,
         return { id: creativeRecord.id, imageUrl: url, status: "completed" };
       } catch (error) {
         await db.updateCreative(creativeRecord.id, { status: "failed" });
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Image generation failed" });
+        const msg = error instanceof Error ? error.message : String(error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Image generation failed: ${msg}` });
       }
     }),
     delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
@@ -631,7 +645,7 @@ Return JSON with:
       });
 
       await consumeLimit(ctx.user.id, "website_analysis", limit);
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
     generateHookVariations: protectedProcedure.input(z.object({
       topic: z.string().min(1),
@@ -662,7 +676,7 @@ Return JSON with:
           },
         },
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
   }),
 
@@ -770,7 +784,7 @@ Return JSON with:
         },
       });
 
-      const videoData = JSON.parse(response.choices[0].message.content as string);
+      const videoData = parseJsonResponse(response.choices[0].message.content as string);
 
       // Generate thumbnail
       let thumbnailUrl: string | undefined;
@@ -892,7 +906,7 @@ Return JSON with:
         },
       });
 
-      const localized = JSON.parse(response.choices[0].message.content as string);
+      const localized = parseJsonResponse(response.choices[0].message.content as string);
       const result = await db.createVideoAd({
         userId: ctx.user.id,
         productId: original.productId,
@@ -905,10 +919,49 @@ Return JSON with:
         duration: original.duration,
         thumbnailUrl: original.thumbnailUrl,
         status: "completed",
-        metadata: { language: input.targetLanguage, culturalNotes: localized.culturalNotes, originalId: input.videoAdId },
+        metadata: {
+          language: input.targetLanguage,
+          culturalNotes: localized.culturalNotes,
+          originalId: input.videoAdId,
+          hook: (original.metadata as Record<string, unknown>)?.hook ?? null,
+          cta: (original.metadata as Record<string, unknown>)?.cta ?? null,
+        },
       });
       return { id: result.id, ...localized };
     }),
+    generateVoiceover: protectedProcedure
+      .input(z.object({ id: z.number(), actorId: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const ACTOR_VOICE_MAP: Record<string, { openai: string; elevenlabs: string }> = {
+          actor_1:  { openai: "nova",    elevenlabs: "21m00Tcm4TlvDq8ikWAM" }, // Sarah  — professional female
+          actor_2:  { openai: "echo",    elevenlabs: "yoZ06aMxZJJ28mfd3POQ" }, // Marcus — casual male
+          actor_3:  { openai: "shimmer", elevenlabs: "MF3mGyEYCl7XYWbV9V6O" }, // Yuki   — energetic female
+          actor_4:  { openai: "onyx",    elevenlabs: "TxGEqnHWrfWFTfGW9XjX" }, // Diego  — authoritative male
+          actor_5:  { openai: "shimmer", elevenlabs: "ThT5KcBeYPX3keUQqHPh" }, // Priya  — warm female
+          actor_6:  { openai: "alloy",   elevenlabs: "EXAVITQu4vr4xnSDxMaL" }, // Alex   — gen_z non_binary
+          actor_7:  { openai: "nova",    elevenlabs: "21m00Tcm4TlvDq8ikWAM" }, // Fatima — elegant female
+          actor_8:  { openai: "fable",   elevenlabs: "VR6AewLTigWG4xSOukaG" }, // James  — corporate male
+          actor_9:  { openai: "nova",    elevenlabs: "AZnzlk1XvdvUeBnXmlld" }, // Amara  — influencer female
+          actor_10: { openai: "echo",    elevenlabs: "ErXwobaYiN019PkySvjV" }, // Chen   — tech_savvy male
+        };
+        const ad = await db.getVideoAdById(input.id);
+        if (!ad || ad.userId !== ctx.user.id) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!ad.voiceoverText) throw new TRPCError({ code: "BAD_REQUEST", message: "No voiceover text on this video ad" });
+
+        let voice: string | undefined;
+        if (input.actorId) {
+          const actorVoices = ACTOR_VOICE_MAP[input.actorId];
+          if (actorVoices) {
+            const { activeProvider } = getVoiceoverProviders();
+            voice = activeProvider === "elevenlabs" ? actorVoices.elevenlabs : actorVoices.openai;
+          }
+        }
+
+        const result = await generateVoiceover({ text: ad.voiceoverText, voice });
+        if (result.status === "failed") throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: result.error });
+        await db.updateVideoAd(input.id, { voiceoverUrl: result.audioUrl });
+        return { voiceoverUrl: result.audioUrl! };
+      }),
     delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ input }) => {
       await db.deleteVideoAd(input.id);
       return { success: true };
@@ -1022,11 +1075,17 @@ Provide: recommended content types per platform, posting schedule, audience targ
       }),
     })).mutation(async ({ ctx, input }) => {
       const { generateCampaignFromWizard } = await import("./campaignWizard");
+      const wizVoice = await db.getDefaultBrandVoice(ctx.user.id);
+      const wizVoiceCtx = db.buildBrandVoiceContext(wizVoice);
+      const wizKit = await db.getDefaultBrandKit(ctx.user.id);
+      const wizKitCtx = db.buildBrandKitContext(wizKit);
+      const wizBrandContext = [wizVoiceCtx, wizKitCtx].filter(Boolean).join("\n\n");
       return generateCampaignFromWizard(
         ctx.user.id,
         input.goals,
         input.businessContext || {},
-        input.details
+        input.details,
+        wizBrandContext
       );
     }),
     wizardLaunch: protectedProcedure.input(z.object({ campaignId: z.number() })).mutation(async ({ ctx, input }) => {
@@ -1093,10 +1152,11 @@ Provide: recommended content types per platform, posting schedule, audience targ
           return Math.abs(t - campaignCreatedAt) < windowMs;
         };
 
-        fallbackContents = allContents.filter(inWindow).slice(0, 20) as typeof contents;
-        fallbackVideoAds = allVideos.filter(inWindow).slice(0, 10) as typeof videoAds;
-        fallbackEmailSeqs = allEmails.filter(inWindow).slice(0, 5) as typeof emailSequences;
-        fallbackPages = allPages.filter(inWindow).slice(0, 3) as typeof landingPages;
+        const hasNoCampaign = (item: any) => !item.campaignId;
+        fallbackContents  = allContents.filter(c => inWindow(c) && hasNoCampaign(c)).slice(0, 20) as typeof contents;
+        fallbackVideoAds  = allVideos.filter(v => inWindow(v) && hasNoCampaign(v)).slice(0, 10) as typeof videoAds;
+        fallbackEmailSeqs = allEmails.filter(e => inWindow(e) && hasNoCampaign(e)).slice(0, 5) as typeof emailSequences;
+        fallbackPages     = allPages.filter(p => inWindow(p) && hasNoCampaign(p)).slice(0, 3) as typeof landingPages;
 
         // Backfill campaignId on these orphaned assets so they're linked going forward
         const updatePromises: Promise<unknown>[] = [];
@@ -1248,7 +1308,7 @@ Return JSON array of objects with: { name: "Variant A/B/C...", content: "the cop
         },
       });
 
-      const { variations } = JSON.parse(response.choices[0].message.content as string);
+      const { variations } = parseJsonResponse(response.choices[0].message.content as string);
       const createdVariants = [];
 
       for (const v of variations) {
@@ -1361,7 +1421,7 @@ Return JSON array of objects with: { name: "Variant A/B/C...", content: "the cop
           },
         },
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
   }),
 
@@ -1817,7 +1877,7 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
         ],
         response_format: { type: "json_schema", json_schema: { name: "forecast", strict: true, schema: { type: "object", properties: { forecast30d: { type: "string" }, forecast90d: { type: "string" }, winRate: { type: "string" }, avgDealSize: { type: "string" }, bottlenecks: { type: "array", items: { type: "string" } }, recommendations: { type: "array", items: { type: "string" } }, riskDeals: { type: "array", items: { type: "string" } } }, required: ["forecast30d", "forecast90d", "winRate", "avgDealSize", "bottlenecks", "recommendations", "riskDeals"], additionalProperties: false } } }
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
   }),
 
@@ -2036,7 +2096,7 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
         response_format: { type: "json_schema", json_schema: { name: "prediction", strict: true, schema: { type: "object", properties: { predictedCtr: { type: "string" }, predictedConversionRate: { type: "string" }, predictedRoas: { type: "string" }, engagementScore: { type: "integer" }, viralityScore: { type: "integer" }, qualityScore: { type: "integer" }, recommendations: { type: "array", items: { type: "string" } }, confidence: { type: "string" } }, required: ["predictedCtr", "predictedConversionRate", "predictedRoas", "engagementScore", "viralityScore", "qualityScore", "recommendations", "confidence"], additionalProperties: false } } }
       });
 
-      const prediction = JSON.parse(response.choices[0].message.content as string);
+      const prediction = parseJsonResponse(response.choices[0].message.content as string);
       const saved = await db.createPredictiveScore({
         userId: ctx.user.id,
         entityType: input.entityType,
@@ -2066,7 +2126,7 @@ Provide: performance summary, top recommendations, areas for improvement, and pr
         ],
         response_format: { type: "json_schema", json_schema: { name: "budget", strict: true, schema: { type: "object", properties: { allocations: { type: "array", items: { type: "object", properties: { platform: { type: "string" }, percentage: { type: "number" }, amount: { type: "string" }, expectedRoi: { type: "string" }, risk: { type: "string" } }, required: ["platform", "percentage", "amount", "expectedRoi", "risk"], additionalProperties: false } }, overallExpectedRoi: { type: "string" }, optimizationTips: { type: "array", items: { type: "string" } }, riskAssessment: { type: "string" } }, required: ["allocations", "overallExpectedRoi", "optimizationTips", "riskAssessment"], additionalProperties: false } } }
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
   }),
 
@@ -2267,7 +2327,7 @@ Provide:
         },
       });
 
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
 
     // Generate a full content calendar for campaign continuity
@@ -2356,7 +2416,7 @@ For each day, specify: platform, content type, topic/brief, optimal posting time
         },
       });
 
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
 
     // Double down on what works — analyze top performers and create variations
@@ -2420,7 +2480,7 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
         },
       });
 
-      const result = JSON.parse(response.choices[0].message.content as string);
+      const result = parseJsonResponse(response.choices[0].message.content as string);
 
       // Save each variation as new content
       const savedVariations = [];
@@ -2468,7 +2528,8 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
       const { url } = await storagePut(key, buffer, input.mimeType);
       const result = await transcribeAudio({ audioUrl: url, language: input.language });
       if ('error' in result) {
-        throw new TRPCError({ code: 'BAD_REQUEST', message: (result as any).error });
+        const r = result as any;
+        throw new TRPCError({ code: 'BAD_REQUEST', message: `${r.error}${r.details ? ` — ${r.details}` : ''}` });
       }
       return result;
     }),
@@ -2576,7 +2637,7 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
         response_format: { type: "json_schema", json_schema: { name: "seo_audit", strict: true, schema: { type: "object", properties: { overallScore: { type: "integer" }, technicalScore: { type: "integer" }, contentScore: { type: "integer" }, authorityScore: { type: "integer" }, keywords: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, volume: { type: "string" }, difficulty: { type: "string" }, position: { type: "string" } }, required: ["keyword", "volume", "difficulty", "position"], additionalProperties: false } }, issues: { type: "array", items: { type: "object", properties: { severity: { type: "string" }, description: { type: "string" }, fix: { type: "string" } }, required: ["severity", "description", "fix"], additionalProperties: false } }, backlinks: { type: "array", items: { type: "object", properties: { domain: { type: "string" }, authority: { type: "integer" }, type: { type: "string" } }, required: ["domain", "authority", "type"], additionalProperties: false } }, competitors: { type: "array", items: { type: "object", properties: { domain: { type: "string" }, overlap: { type: "integer" }, ranking: { type: "string" } }, required: ["domain", "overlap", "ranking"], additionalProperties: false } }, recommendations: { type: "array", items: { type: "string" } } }, required: ["overallScore", "technicalScore", "contentScore", "authorityScore", "keywords", "issues", "backlinks", "competitors", "recommendations"], additionalProperties: false } } }
       });
 
-      const audit = JSON.parse(response.choices[0].message.content as string);
+      const audit = parseJsonResponse(response.choices[0].message.content as string);
       const saved = await db.createSeoAudit({
         userId: ctx.user.id,
         url: input.url,
@@ -2604,7 +2665,7 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
         ],
         response_format: { type: "json_schema", json_schema: { name: "keywords", strict: true, schema: { type: "object", properties: { keywords: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, volume: { type: "string" }, difficulty: { type: "integer" }, cpc: { type: "string" }, intent: { type: "string" }, contentAngle: { type: "string" } }, required: ["keyword", "volume", "difficulty", "cpc", "intent", "contentAngle"], additionalProperties: false } }, summary: { type: "string" }, topOpportunities: { type: "array", items: { type: "string" } } }, required: ["keywords", "summary", "topOpportunities"], additionalProperties: false } } }
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
     rankTracker: protectedProcedure.input(z.object({
       url: z.string().url(),
@@ -2617,7 +2678,7 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
         ],
         response_format: { type: "json_schema", json_schema: { name: "rankings", strict: true, schema: { type: "object", properties: { rankings: { type: "array", items: { type: "object", properties: { keyword: { type: "string" }, estimatedPosition: { type: "integer" }, trend: { type: "string" }, suggestion: { type: "string" } }, required: ["keyword", "estimatedPosition", "trend", "suggestion"], additionalProperties: false } }, overallVisibility: { type: "string" }, topRecommendation: { type: "string" } }, required: ["rankings", "overallVisibility", "topRecommendation"], additionalProperties: false } } }
       });
-      return JSON.parse(response.choices[0].message.content as string);
+      return parseJsonResponse(response.choices[0].message.content as string);
     }),
   }),
 
@@ -2774,8 +2835,8 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
           },
         },
       });
-      const content = response.choices[0]?.message?.content ?? "{}";
-      return JSON.parse(typeof content === "string" ? content : JSON.stringify(content));
+      const content = (typeof response.choices[0]?.message?.content === "string" ? response.choices[0].message.content : "{}").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+      return JSON.parse(content || "{}");
     }),
   }),
   musicStudio: router({

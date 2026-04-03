@@ -7,6 +7,7 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  forgeStorageUrl: process.env.BUILT_IN_FORGE_STORAGE_URL ?? "",
   forgeModel: process.env.BUILT_IN_FORGE_MODEL ?? "",
   /** Local uploads when not using Forge storage (Railway: set UPLOAD_DIR or use default ./uploads). */
   uploadDir: process.env.UPLOAD_DIR ?? "./uploads",

@@ -96,6 +96,7 @@ export const videoAds = mysqlTable("video_ads", {
   avatarStyle: varchar("avatarStyle", { length: 64 }),
   duration: int("duration"),
   thumbnailUrl: text("thumbnailUrl"),
+  voiceoverUrl: text("voiceoverUrl"),
   status: mysqlEnum("status", ["draft", "generating", "completed", "failed"]).default("draft").notNull(),
   metadata: json("metadata"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

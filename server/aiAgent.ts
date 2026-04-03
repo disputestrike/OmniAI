@@ -10,13 +10,32 @@ import * as db from "./db";
 
 const CLAUDE_HAIKU_MODEL = "claude-haiku-4-5-20251001";
 
+function getLLMText(res: unknown): string {
+  return (res as any)?.choices?.[0]?.message?.content ?? "";
+}
+
+function safeParseJSON(raw: unknown, fallback: Record<string, unknown> = {}): Record<string, unknown> {
+  try {
+    const str =
+      typeof raw === "string" ? raw
+      : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "")
+      : typeof raw === "object" && raw !== null ? JSON.stringify(raw)
+      : "";
+    const cleaned = str.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    return JSON.parse(cleaned || "{}");
+  } catch {
+    return fallback;
+  }
+}
+
 type AnthropicMessage = { role: "user" | "assistant"; content: string | Array<Record<string, unknown>> };
 
 /** Call Anthropic Messages API with tools; returns text content and optional tool_use blocks. */
 async function chatWithTools(
   system: string,
   messages: AnthropicMessage[],
-  tools: Array<{ name: string; description: string; input_schema: Record<string, unknown> }>
+  tools: Array<{ name: string; description: string; input_schema: Record<string, unknown> }>,
+  forceTools = false
 ): Promise<{ content: string; tool_calls?: Array<{ id: string; name: string; input: Record<string, unknown> }> }> {
   if (!ENV.anthropicApiKey?.trim()) throw new Error("ANTHROPIC_API_KEY required for agent tools.");
   const client = new Anthropic({ apiKey: ENV.anthropicApiKey });
@@ -27,7 +46,8 @@ async function chatWithTools(
     system,
     messages: messages as any,
     tools: tools as any,
-  });
+    tool_choice: forceTools ? { type: "any" } : { type: "auto" },
+  } as any);
   const blocks = (response.content ?? []) as Array<{ type: string; text?: string; id?: string; name?: string; input?: unknown }>;
   const text = blocks
     .filter((b) => b.type === "text" && "text" in b)
@@ -249,9 +269,7 @@ async function runAnalyzeProduct(
         },
       },
     });
-    const raw = (res as any).choices?.[0]?.message?.content;
-    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "{}") : "{}";
-    const parsed = JSON.parse(text || "{}");
+    const parsed = safeParseJSON(getLLMText(res));
     return {
       kind: "analyzeProduct",
       positioning: parsed.positioning || "",
@@ -260,6 +278,7 @@ async function runAnalyzeProduct(
       targetAudience: parsed.targetAudience || "",
     };
   } catch (e) {
+    console.error("[Agent] tool analyzeProduct failed:", (e as Error).message);
     return { kind: "error", tool: "analyzeProduct", message: (e as Error).message };
   }
 }
@@ -269,14 +288,15 @@ async function runGenerateLandingPage(
   productInfo: string,
   audience: string,
   goal: string,
-  campaignId?: number
+  campaignId?: number,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   try {
     const res = await invokeLLM({
       messages: [
         {
           role: "system",
-          content: `You write high-converting landing page copy. Return only valid JSON with: headline (string), subheadline (string), heroSection (string), benefitsSections (array of 3 strings), ctaText (string), slug (url-friendly, lowercase, hyphens only, no spaces).`,
+          content: `You write high-converting landing page copy. Return only valid JSON with: headline (string), subheadline (string), heroSection (string), benefitsSections (array of 3 strings), ctaText (string), slug (url-friendly, lowercase, hyphens only, no spaces).${brandVoiceContext ? `\n\n${brandVoiceContext}` : ""}`,
         },
         {
           role: "user",
@@ -304,9 +324,7 @@ async function runGenerateLandingPage(
         },
       },
     });
-    const raw = (res as any).choices?.[0]?.message?.content;
-    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "{}") : "{}";
-    const parsed = JSON.parse(text || "{}");
+    const parsed = safeParseJSON(getLLMText(res));
     const headline = parsed.headline || "Welcome";
     const subheadline = parsed.subheadline || "";
     const heroSection = parsed.heroSection || "";
@@ -338,6 +356,7 @@ async function runGenerateLandingPage(
       previewUrl: `/lp/${slug}`,
     };
   } catch (e) {
+    console.error("[Agent] tool generateLandingPage failed:", (e as Error).message);
     return { kind: "error", tool: "generateLandingPage", message: (e as Error).message };
   }
 }
@@ -364,14 +383,15 @@ async function runGenerateEmailSequence(
   goal: string,
   audience: string,
   sequenceLength: number = 5,
-  campaignId?: number
+  campaignId?: number,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   try {
     const res = await invokeLLM({
       messages: [
         {
           role: "system",
-          content: `You write marketing email sequences. Return only valid JSON: { "emails": [ { "subject": "...", "preview": "...", "body": "HTML or plain text", "sendDay": 0 } ] }. sendDay: 0 = immediate, 3 = day 3, etc. Generate exactly ${sequenceLength} emails.`,
+          content: `You write marketing email sequences. Return only valid JSON: { "emails": [ { "subject": "...", "preview": "...", "body": "HTML or plain text", "sendDay": 0 } ] }. sendDay: 0 = immediate, 3 = day 3, etc. Generate exactly ${sequenceLength} emails.${brandVoiceContext ? `\n\n${brandVoiceContext}` : ""}`,
         },
         {
           role: "user",
@@ -407,9 +427,7 @@ async function runGenerateEmailSequence(
         },
       },
     });
-    const raw = (res as any).choices?.[0]?.message?.content;
-    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "{}") : "{}";
-    const parsed = JSON.parse(text || "{}");
+    const parsed = safeParseJSON(getLLMText(res));
     const emails = Array.isArray(parsed.emails) ? parsed.emails.slice(0, sequenceLength) : [];
     const created: Array<{ index: number; subject: string; preview: string; body: string; sendDay: number; id: number }> = [];
     for (let i = 0; i < emails.length; i++) {
@@ -442,6 +460,7 @@ async function runGenerateEmailSequence(
       emails: created,
     };
   } catch (e) {
+    console.error("[Agent] tool generateEmailSequence failed:", (e as Error).message);
     return { kind: "error", tool: "generateEmailSequence", message: (e as Error).message };
   }
 }
@@ -452,7 +471,8 @@ async function runGenerateSocialPosts(
   audience: string,
   platforms: string[],
   count: number = 5,
-  campaignId?: number
+  campaignId?: number,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   try {
     const platformList = platforms.length ? platforms.join(", ") : "instagram, linkedin, twitter";
@@ -460,7 +480,7 @@ async function runGenerateSocialPosts(
       messages: [
         {
           role: "system",
-          content: `You write platform-native social posts. Return only valid JSON: { "posts": [ { "platform": "instagram", "content": "...", "title": "short title" } ] }. Generate up to ${count} posts across ${platformList}. Each post should match the platform's tone.`,
+          content: `You write platform-native social posts. Return only valid JSON: { "posts": [ { "platform": "instagram", "content": "...", "title": "short title" } ] }. Generate up to ${count} posts across ${platformList}. Each post should match the platform's tone.${brandVoiceContext ? `\n\n${brandVoiceContext}` : ""}`,
         },
         {
           role: "user",
@@ -495,9 +515,7 @@ async function runGenerateSocialPosts(
         },
       },
     });
-    const raw = (res as any).choices?.[0]?.message?.content;
-    const text = typeof raw === "string" ? raw : Array.isArray(raw) ? (raw.find((r: any) => r?.type === "text")?.text ?? "{}") : "{}";
-    const parsed = JSON.parse(text || "{}");
+    const parsed = safeParseJSON(getLLMText(res));
     const posts = Array.isArray(parsed.posts) ? parsed.posts.slice(0, count) : [];
     const created: Array<{ id: number; platform: string; content: string; title: string }> = [];
     for (const p of posts) {
@@ -520,6 +538,7 @@ async function runGenerateSocialPosts(
     }
     return { kind: "generateSocialPosts", posts: created };
   } catch (e) {
+    console.error("[Agent] tool generateSocialPosts failed:", (e as Error).message);
     return { kind: "error", tool: "generateSocialPosts", message: (e as Error).message };
   }
 }
@@ -527,7 +546,8 @@ async function runGenerateSocialPosts(
 export async function executeTool(
   userId: number,
   name: string,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   switch (name) {
     case "analyzeProduct":
@@ -549,7 +569,8 @@ export async function executeTool(
         String(args.goal ?? ""),
         String(args.audience ?? ""),
         typeof args.sequenceLength === "number" ? args.sequenceLength : 5,
-        typeof args.campaignId === "number" ? args.campaignId : undefined
+        typeof args.campaignId === "number" ? args.campaignId : undefined,
+        brandVoiceContext
       );
     case "generateSocialPosts":
       return runGenerateSocialPosts(
@@ -558,7 +579,8 @@ export async function executeTool(
         String(args.audience ?? ""),
         Array.isArray(args.platforms) ? args.platforms.map(String) : ["instagram", "linkedin", "twitter"],
         typeof args.count === "number" ? args.count : 5,
-        typeof args.campaignId === "number" ? args.campaignId : undefined
+        typeof args.campaignId === "number" ? args.campaignId : undefined,
+        brandVoiceContext
       );
     case "generateLandingPage":
       return runGenerateLandingPage(
@@ -566,7 +588,8 @@ export async function executeTool(
         String(args.productInfo ?? ""),
         String(args.audience ?? ""),
         String(args.goal ?? "sales"),
-        typeof args.campaignId === "number" ? args.campaignId : undefined
+        typeof args.campaignId === "number" ? args.campaignId : undefined,
+        brandVoiceContext
       );
     case "generateVideoScript":
       return runGenerateVideoScript(
@@ -574,7 +597,8 @@ export async function executeTool(
         String(args.productInfo ?? ""),
         String(args.platform ?? "tiktok"),
         String(args.style ?? "ugc_testimonial"),
-        typeof args.campaignId === "number" ? args.campaignId : undefined
+        typeof args.campaignId === "number" ? args.campaignId : undefined,
+        brandVoiceContext
       );
     case "generateAdCreative":
       return runGenerateAdCreative(
@@ -582,7 +606,8 @@ export async function executeTool(
         String(args.productInfo ?? ""),
         String(args.platform ?? "facebook"),
         String(args.adType ?? "conversion"),
-        typeof args.campaignId === "number" ? args.campaignId : undefined
+        typeof args.campaignId === "number" ? args.campaignId : undefined,
+        brandVoiceContext
       );
     default:
       return { kind: "error", tool: name, message: "Unknown tool" };
@@ -594,7 +619,8 @@ async function runGenerateVideoScript(
   productInfo: string,
   platform: string,
   style: string,
-  campaignId?: number
+  campaignId?: number,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   try {
     const platformLabels: Record<string, string> = {
@@ -609,7 +635,7 @@ async function runGenerateVideoScript(
       messages: [
         {
           role: "system",
-          content: `You are a viral video scriptwriter. Return only valid JSON with: hook (opening 3 seconds, max 15 words), script (full spoken script, 150-200 words), cta (call-to-action, max 10 words), platform (string). Write in ${styleLabels[style] ?? style} style optimized for ${platformLabels[platform] ?? platform}.`,
+          content: `You are a viral video scriptwriter. Return only valid JSON with: hook (opening 3 seconds, max 15 words), script (full spoken script, 150-200 words), cta (call-to-action, max 10 words), platform (string). Write in ${styleLabels[style] ?? style} style optimized for ${platformLabels[platform] ?? platform}.${brandVoiceContext ? `\n\n${brandVoiceContext}` : ""}`,
         },
         { role: "user", content: `Product: ${productInfo}` },
       ],
@@ -630,8 +656,7 @@ async function runGenerateVideoScript(
         },
       },
     });
-    const raw = typeof res.content === "string" ? res.content : JSON.stringify(res.content);
-    const data = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const data = safeParseJSON(getLLMText(res));
     const saved = await db.createVideoAd({
       userId,
       platform,
@@ -651,6 +676,7 @@ async function runGenerateVideoScript(
       cta: data.cta,
     };
   } catch (e) {
+    console.error("[Agent] tool generateVideoScript failed:", (e as Error).message);
     return { kind: "error", tool: "generateVideoScript", message: (e as Error).message };
   }
 }
@@ -660,7 +686,8 @@ async function runGenerateAdCreative(
   productInfo: string,
   platform: string,
   adType: string,
-  campaignId?: number
+  campaignId?: number,
+  brandVoiceContext = ""
 ): Promise<ToolResult> {
   try {
     const platformSpecs: Record<string, string> = {
@@ -673,7 +700,7 @@ async function runGenerateAdCreative(
       messages: [
         {
           role: "system",
-          content: `You are a high-converting ad copywriter. Write a ${adType} ad for ${platformSpecs[platform] ?? platform}. Return only valid JSON with: headline (string), body (string), cta (string).`,
+          content: `You are a high-converting ad copywriter. Write a ${adType} ad for ${platformSpecs[platform] ?? platform}. Return only valid JSON with: headline (string), body (string), cta (string).${brandVoiceContext ? `\n\n${brandVoiceContext}` : ""}`,
         },
         { role: "user", content: `Product: ${productInfo}` },
       ],
@@ -693,8 +720,7 @@ async function runGenerateAdCreative(
         },
       },
     });
-    const raw = typeof res.content === "string" ? res.content : JSON.stringify(res.content);
-    const data = JSON.parse(raw.replace(/```json|```/g, "").trim());
+    const data = safeParseJSON(getLLMText(res));
     const saved = await db.createContent({
       userId,
       type: "ad_copy_short",
@@ -712,6 +738,7 @@ async function runGenerateAdCreative(
       platform,
     };
   } catch (e) {
+    console.error("[Agent] tool generateAdCreative failed:", (e as Error).message);
     return { kind: "error", tool: "generateAdCreative", message: (e as Error).message };
   }
 }
@@ -816,10 +843,17 @@ export async function runAgentLoop(
   }
   anthropicMessages.push({ role: "user", content: message });
 
+  const defaultVoice = await db.getDefaultBrandVoice(userId);
+  const brandVoiceContext = db.buildBrandVoiceContext(defaultVoice);
+  const defaultKit = await db.getDefaultBrandKit(userId);
+  const brandKitCtx = db.buildBrandKitContext(defaultKit);
+  const brandContext = [brandVoiceContext, brandKitCtx].filter(Boolean).join("\n\n");
+
   const isSubstantive = history.length >= 2 && message.length > 20;
-  const systemPrompt = isSubstantive
+  const voiceNote = brandContext ? `\n\nDefault brand identity is set. All generated content must follow it.\n${brandContext}` : "";
+  const systemPrompt = (isSubstantive
     ? AGENT_SYSTEM_PROMPT + "\n\nIMPORTANT: The user has provided enough context. Call your tools NOW. Do not ask any questions."
-    : AGENT_SYSTEM_PROMPT;
+    : AGENT_SYSTEM_PROMPT) + voiceNote;
 
   // Track campaignId across tool calls — inject it into every asset tool
   // even if Claude forgets to pass it
@@ -827,7 +861,7 @@ export async function runAgentLoop(
   const ASSET_TOOLS = new Set(["generateEmailSequence","generateSocialPosts","generateLandingPage","generateVideoScript","generateAdCreative"]);
 
   for (let iter = 0; iter < MAX_AGENT_ITERATIONS; iter++) {
-    const { content: text, tool_calls } = await chatWithTools(systemPrompt, anthropicMessages, ANTHROPIC_AGENT_TOOLS);
+    const { content: text, tool_calls } = await chatWithTools(systemPrompt, anthropicMessages, ANTHROPIC_AGENT_TOOLS, iter === 0);
 
     if (tool_calls && tool_calls.length > 0) {
       const assistantContent: Array<Record<string, unknown>> = [];
@@ -844,7 +878,7 @@ export async function runAgentLoop(
         if (ASSET_TOOLS.has(tc.name) && activeCampaignId && !args.campaignId) {
           args.campaignId = activeCampaignId;
         }
-        const result = await executeTool(userId, tc.name, args);
+        const result = await executeTool(userId, tc.name, args, brandContext);
         // Capture campaignId as soon as createCampaign succeeds
         if (result.kind === "createCampaign" && result.campaignId) {
           activeCampaignId = result.campaignId;

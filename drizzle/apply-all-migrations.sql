@@ -1261,19 +1261,58 @@ CREATE TABLE IF NOT EXISTS `campaign_assets` (
 
 -- ─── Add campaignId columns to tables that were created before this column existed ───
 -- Uses IF NOT EXISTS (MySQL 8+) so safe to run multiple times on same DB
-ALTER TABLE `contents` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `creatives` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `video_ads` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `video_renders` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `scheduled_posts` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `leads` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `analytics_events` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `deals` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `email_campaigns` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `landing_pages` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `ab_tests` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `approval_workflows` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `ad_platform_campaigns` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `customer_interactions` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `social_publish_queue` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
-ALTER TABLE `report_snapshots` ADD COLUMN IF NOT EXISTS `campaignId` int NULL;
+ALTER TABLE `contents` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `creatives` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `video_ads` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `video_renders` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `scheduled_posts` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `leads` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `analytics_events` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `deals` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `email_campaigns` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `landing_pages` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `ab_tests` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `approval_workflows` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `ad_platform_campaigns` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `customer_interactions` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `social_publish_queue` ADD COLUMN `campaignId` int NULL;
+ALTER TABLE `report_snapshots` ADD COLUMN `campaignId` int NULL;
+
+ALTER TABLE `video_ads` ADD COLUMN `voiceoverUrl` text NULL;
+
+-- ─── users: columns added in later migrations ─────────────────────────────
+ALTER TABLE `users` ADD COLUMN `stripeCustomerId` varchar(128) NULL;
+ALTER TABLE `users` ADD COLUMN `stripeSubscriptionId` varchar(128) NULL;
+ALTER TABLE `users` ADD COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free';
+ALTER TABLE `users` ADD COLUMN `passwordHash` varchar(255) NULL;
+ALTER TABLE `users` ADD COLUMN `trialUsed` boolean DEFAULT false;
+ALTER TABLE `users` MODIFY COLUMN `subscriptionPlan` enum('free','starter','professional','business','enterprise') NOT NULL DEFAULT 'free';
+
+-- ─── subscriptions: columns added in later migrations ─────────────────────
+ALTER TABLE `subscriptions` ADD COLUMN `currentPeriodStart` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN `trialEndsAt` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN `pastDueAt` timestamp NULL;
+ALTER TABLE `subscriptions` ADD COLUMN `canceledAt` timestamp NULL;
+
+-- ─── user_monthly_usage ────────────────────────────────────────────────────
+ALTER TABLE `user_monthly_usage` ADD COLUMN `usage80EmailSent` boolean DEFAULT false;
+
+-- ─── campaigns: totals + goal ─────────────────────────────────────────────
+ALTER TABLE `campaigns` ADD COLUMN `goal` varchar(64) NULL;
+ALTER TABLE `campaigns` ADD COLUMN `totalBudget` decimal(12,2) NULL;
+ALTER TABLE `campaigns` ADD COLUMN `totalSpend` decimal(12,2) NULL;
+ALTER TABLE `campaigns` ADD COLUMN `totalLeads` int DEFAULT 0;
+ALTER TABLE `campaigns` ADD COLUMN `totalRevenue` decimal(12,2) NULL;
+
+-- ─── leads: assignment ────────────────────────────────────────────────────
+ALTER TABLE `leads` ADD COLUMN `assignedToUserId` int NULL;
+
+-- ─── tier_limits_config seed (Spec v4) ────────────────────────────────────
+INSERT INTO `tier_limits_config` (tier, displayName, priceMonthlyCents, priceAnnualCents, maxAiGenerations, maxAiImages, maxVideoScripts, maxVideoMinutes, maxScheduledPosts, maxAbTests, maxWebsiteAnalyses, maxProducts, maxCampaigns, maxLeads, maxTeamSeats, maxAdPlatformConnections, featureScheduling, featureAbTesting, featureVoiceInput, featureVideoGeneration, featureAvatars, featureCrm, featureCompetitorIntel, featurePredictiveAi, featureApiAccess, featureWhiteLabel, featureMusicStudio, featureDspAccess, dspMinAdSpendCents, dspMarkupRateBps, creditTopupDiscountBps, watermarkContent, aiChatModel)
+VALUES
+('free','Free',0,0,5,2,1,0,0,0,0,1,2,25,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,'forge'),
+('starter','Starter',4900,49200,50,15,5,0,25,3,3,5,10,500,1,0,1,1,0,0,0,0,1,0,0,0,0,1,10000,4000,0,0,'forge'),
+('professional','Professional',9700,97200,200,50,20,2,-1,-1,10,25,-1,-1,5,3,1,1,1,1,1,1,1,1,0,0,0,1,25000,3500,0,0,'claude_haiku'),
+('business','Business',19700,195600,800,200,-1,8,-1,-1,-1,-1,-1,-1,15,-1,1,1,1,1,1,1,1,1,1,1,1,1,50000,3000,1000,0,'claude_haiku'),
+('agency','Agency',49700,495600,3000,500,-1,30,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,1,1,100000,2500,1500,0,'claude_haiku')
+ON DUPLICATE KEY UPDATE updatedAt = CURRENT_TIMESTAMP;

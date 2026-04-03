@@ -123,50 +123,59 @@ export async function transcribeAudio(
       };
     }
 
-    // Step 3: Create FormData for multipart upload to Whisper API
-    const formData = new FormData();
-    
-    // Create a Blob from the buffer and append to form
+    // Step 3: Prepare shared FormData fields
+    // Normalize mimeType — strip codec params (e.g. "audio/webm;codecs=opus" → "audio/webm")
+    const baseMime = mimeType.split(";")[0].trim();
     const filename = `audio.${getFileExtension(mimeType)}`;
-    const audioBlob = new Blob([new Uint8Array(audioBuffer)], { type: mimeType });
-    formData.append("file", audioBlob, filename);
-    
-    formData.append("model", "whisper-1");
-    formData.append("response_format", "verbose_json");
-    
-    // Add prompt - use custom prompt if provided, otherwise generate based on language
     const prompt = options.prompt || (
-      options.language 
+      options.language
         ? `Transcribe the user's voice to text, the user's working language is ${getLanguageName(options.language)}`
         : "Transcribe the user's voice to text"
     );
-    formData.append("prompt", prompt);
 
-    // Step 4: Call the transcription service
-    const baseUrl = ENV.forgeApiUrl.endsWith("/")
-      ? ENV.forgeApiUrl
-      : `${ENV.forgeApiUrl}/`;
-    
-    const fullUrl = new URL(
-      "v1/audio/transcriptions",
-      baseUrl
-    ).toString();
+    // Step 4: Call the transcription service (Forge first, OpenAI as fallback)
+    let response: Response | null = null;
 
-    const response = await fetch(fullUrl, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${ENV.forgeApiKey}`,
-        "Accept-Encoding": "identity",
-      },
-      body: formData,
-    });
+    if (ENV.forgeApiUrl && ENV.forgeApiKey) {
+      const baseUrl = ENV.forgeApiUrl.endsWith("/") ? ENV.forgeApiUrl : `${ENV.forgeApiUrl}/`;
+      const fullUrl = new URL("v1/audio/transcriptions", baseUrl).toString();
+      const forgeForm = new FormData();
+      forgeForm.append("file", new Blob([new Uint8Array(audioBuffer)], { type: baseMime }), filename);
+      forgeForm.append("model", "whisper-1");
+      forgeForm.append("response_format", "verbose_json");
+      forgeForm.append("prompt", prompt);
+      const forgeResp = await fetch(fullUrl, {
+        method: "POST",
+        headers: { authorization: `Bearer ${ENV.forgeApiKey}`, "Accept-Encoding": "identity" },
+        body: forgeForm,
+      });
+      if (forgeResp.ok) {
+        response = forgeResp;
+      } else {
+        const errText = await forgeResp.text().catch(() => "");
+        console.warn(`[transcribe] Forge failed (${forgeResp.status}): ${errText.substring(0, 200)} — trying OpenAI fallback`);
+      }
+    }
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => "");
+    if (!response && ENV.openaiApiKey) {
+      const openaiForm = new FormData();
+      openaiForm.append("file", new Blob([new Uint8Array(audioBuffer)], { type: baseMime }), filename);
+      openaiForm.append("model", "whisper-1");
+      openaiForm.append("response_format", "verbose_json");
+      openaiForm.append("prompt", prompt);
+      response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: { authorization: `Bearer ${ENV.openaiApiKey}`, "Accept-Encoding": "identity" },
+        body: openaiForm,
+      });
+    }
+
+    if (!response || !response.ok) {
+      const errorText = response ? await response.text().catch(() => "") : "No transcription provider available";
       return {
         error: "Transcription service request failed",
         code: "TRANSCRIPTION_FAILED",
-        details: `${response.status} ${response.statusText}${errorText ? `: ${errorText}` : ""}`
+        details: response ? `${response.status} ${response.statusText}${errorText ? `: ${errorText}` : ""}` : errorText,
       };
     }
 
@@ -198,6 +207,8 @@ export async function transcribeAudio(
  * Helper function to get file extension from MIME type
  */
 function getFileExtension(mimeType: string): string {
+  // Strip codec params — browsers often send "audio/webm;codecs=opus"
+  const baseType = mimeType.split(";")[0].trim().toLowerCase();
   const mimeToExt: Record<string, string> = {
     'audio/webm': 'webm',
     'audio/mp3': 'mp3',
@@ -208,8 +219,7 @@ function getFileExtension(mimeType: string): string {
     'audio/m4a': 'm4a',
     'audio/mp4': 'm4a',
   };
-  
-  return mimeToExt[mimeType] || 'audio';
+  return mimeToExt[baseType] ?? 'webm';
 }
 
 /**

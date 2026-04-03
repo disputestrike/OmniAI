@@ -30,7 +30,7 @@ export default function AiAvatars() {
   const [script, setScript] = useState("");
   const [avatarStyle, setAvatarStyle] = useState("professional");
   const [language, setLanguage] = useState("en");
-  const [voiceGender, setVoiceGender] = useState<"male" | "female">("female");
+  const [voiceGender, setVoiceGender] = useState<string>("female");
   const [aspectRatio, setAspectRatio] = useState<"16:9" | "9:16" | "1:1">("9:16");
   const [generatedVideo, setGeneratedVideo] = useState<any>(null);
   const [generatedVoiceover, setGeneratedVoiceover] = useState<any>(null);
@@ -199,11 +199,18 @@ export default function AiAvatars() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>Voice</Label>
-                    <Select value={voiceGender} onValueChange={(v: any) => setVoiceGender(v)}>
+                    <Select value={voiceGender} onValueChange={setVoiceGender}>
                       <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="female">Female (Rachel)</SelectItem>
-                        <SelectItem value="male">Male (Adam)</SelectItem>
+                        <SelectItem value="female">Female (Nova)</SelectItem>
+                        <SelectItem value="male">Male (Onyx)</SelectItem>
+                        <SelectItem value="nova">Nova</SelectItem>
+                        <SelectItem value="shimmer">Shimmer</SelectItem>
+                        <SelectItem value="coral">Coral</SelectItem>
+                        <SelectItem value="alloy">Alloy</SelectItem>
+                        <SelectItem value="echo">Echo</SelectItem>
+                        <SelectItem value="onyx">Onyx</SelectItem>
+                        <SelectItem value="fable">Fable</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -218,7 +225,7 @@ export default function AiAvatars() {
                   </div>
                 </div>
                 <Button className="w-full" disabled={!script || voiceoverMut.isPending}
-                  onClick={() => voiceoverMut.mutate({ text: script, voice: voiceGender === "female" ? "rachel" : "adam" })}>
+                  onClick={() => voiceoverMut.mutate({ text: script, voice: voiceGender, language })}>
                   {voiceoverMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Generating...</> : <><Mic className="h-4 w-4 mr-2" />Generate Voiceover</>}
                 </Button>
               </CardContent>
@@ -227,12 +234,26 @@ export default function AiAvatars() {
             <Card className="glass rounded-2xl">
               <CardHeader><CardTitle className="text-base">Audio Preview</CardTitle></CardHeader>
               <CardContent>
-                {generatedVoiceover?.audioUrl ? (
+                {voiceoverMut.isPending ? (
+                  <div className="h-64 bg-zinc-900/40 rounded-lg flex items-center justify-center">
+                    <div className="text-center p-6">
+                      <Loader2 className="h-10 w-10 mx-auto text-primary animate-spin mb-3" />
+                      <p className="text-sm text-zinc-500">Generating voiceover...</p>
+                    </div>
+                  </div>
+                ) : generatedVoiceover?.status === "failed" ? (
+                  <div className="h-64 bg-zinc-900/40 rounded-lg flex items-center justify-center">
+                    <div className="text-center p-6">
+                      <p className="text-sm text-red-400 font-medium mb-2">Generation failed</p>
+                      <p className="text-xs text-zinc-500 max-w-xs">{generatedVoiceover.error || "Unknown error"}</p>
+                    </div>
+                  </div>
+                ) : generatedVoiceover?.audioUrl ? (
                   <div className="space-y-4">
                     <audio src={generatedVoiceover.audioUrl} controls className="w-full" />
                     <div className="grid grid-cols-2 gap-2 text-xs text-zinc-500">
                       <div>Duration: {generatedVoiceover.durationMs ? `${(generatedVoiceover.durationMs / 1000).toFixed(1)}s` : "N/A"}</div>
-                      <div>Provider: {generatedVoiceover.provider || "ElevenLabs"}</div>
+                      <div>Provider: {generatedVoiceover.provider || "OpenAI"}</div>
                     </div>
                     <Button variant="outline" className="w-full" onClick={() => window.open(generatedVoiceover.audioUrl, "_blank")}>
                       <Download className="h-4 w-4 mr-2" />Download Audio

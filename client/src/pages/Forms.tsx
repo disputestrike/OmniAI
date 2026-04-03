@@ -73,7 +73,10 @@ export default function Forms() {
   };
 
   const shareUrl = typeof window !== "undefined" && formDetail?.slug && formDetail?.status === "active" ? `${window.location.origin}/form/${formDetail.slug}` : "";
-  const responses: { id: number; data: Record<string, string>; createdAt: string }[] = [];
+  const { data: responses } = trpc.forms.getResponses.useQuery(
+    { formId: selectedId! },
+    { enabled: !!selectedId && showResponses }
+  );
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -172,7 +175,7 @@ export default function Forms() {
                   </div>
                 </div>
                 <div className="mt-3">
-                  <Button variant="outline" size="sm" onClick={() => setShowResponses(!showResponses)}><ListChecks className="h-3.5 w-3.5 mr-1" />{showResponses ? "Hide" : "View"} responses ({(responses?.length ?? formDetail.submissionCount) ?? 0})</Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowResponses(!showResponses)}><ListChecks className="h-3.5 w-3.5 mr-1" />{showResponses ? "Hide" : "View"} responses ({formDetail.submissionCount ?? 0})</Button>
                 </div>
                 {showResponses && (
                   <div className="mt-4 pt-4 border-t">

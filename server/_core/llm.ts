@@ -260,14 +260,11 @@ async function tryClaudeHaiku(params: InvokeParams): Promise<InvokeResult | null
     messages: anthropicMessages,
   };
   if (responseFormat?.type === "json_schema" && responseFormat.json_schema?.schema) {
-    (createParams as Record<string, unknown>).response_format = {
-      type: "json_schema",
-      json_schema: {
-        name: responseFormat.json_schema.name ?? "response",
-        schema: responseFormat.json_schema.schema,
-        strict: responseFormat.json_schema.strict ?? true,
-      },
-    };
+    const schemaStr = JSON.stringify(responseFormat.json_schema.schema, null, 2);
+    const jsonInstruction = `Respond with valid JSON only — no markdown, no code fences, no explanation. Your response must match this schema:\n${schemaStr}`;
+    createParams.system = createParams.system
+      ? `${createParams.system}\n\n${jsonInstruction}`
+      : jsonInstruction;
   }
   const response = await client.messages.create(createParams);
   const block = response.content[0];

@@ -37,7 +37,7 @@ export default function Contact() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-                OTOBI AI
+                OmniAI
               </span>
             </button>
             <div className="flex items-center gap-3">
@@ -239,7 +239,7 @@ export default function Contact() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-[#e8e0d4] bg-amber-50/30 text-center text-sm text-[#9b8e7e]">
-        &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved.
+        &copy; {new Date().getFullYear()} OmniAI. All rights reserved.
         <span className="mx-2">·</span>
         <a href="/about" className="hover:text-[#1a1a1a]">About</a>
         <span className="mx-2">·</span>

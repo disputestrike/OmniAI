@@ -120,7 +120,7 @@ ${input.body}`,
         },
       });
 
-      const raw = response.choices[0].message.content as string;
+      const raw = (response.choices[0].message.content as string).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
       const result = JSON.parse(raw);
       return result;
     }),
@@ -148,7 +148,7 @@ ${input.body}`,
         ],
       });
 
-      const raw = response.choices[0].message.content as string;
+      const raw = (response.choices[0].message.content as string).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
       let result;
       try {
         result = JSON.parse(raw);
@@ -207,7 +207,7 @@ Based on the URL and domain, infer their industry, content strategy, and provide
         ],
       });
 
-      const raw = response.choices[0].message.content as string;
+      const raw = (response.choices[0].message.content as string).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
       let result;
       try {
         result = JSON.parse(raw);
@@ -268,7 +268,7 @@ Angle: ${input.angle.replace(/_/g, " ")}`,
         ],
       });
 
-      const raw = response.choices[0].message.content as string;
+      const raw = (response.choices[0].message.content as string).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
       let result;
       try {
         result = JSON.parse(raw);
@@ -356,7 +356,7 @@ Angle: ${input.angle.replace(/_/g, " ")}`,
             ],
           });
 
-          const raw = response.choices[0].message.content as string;
+          const raw = (response.choices[0].message.content as string).trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
           let parsed;
           try {
             parsed = JSON.parse(raw);

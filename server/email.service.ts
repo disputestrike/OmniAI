@@ -5,7 +5,7 @@
 import { Resend } from "resend";
 import { ENV } from "./_core/env";
 
-const FROM = "OTOBI AI <hello@otobi.ai>";
+const FROM = "OTOBI AI <hello@nationalsolaracademy.com>";
 const resend = ENV.resendApiKey ? new Resend(ENV.resendApiKey) : null;
 
 export function getBaseUrl(): string {

@@ -9,7 +9,6 @@ import {
 import { useState, useRef, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { checkMediaSupport } from "@/lib/mediaPermissions";
-import { Streamdown } from "streamdown";
 import { useLocation, useSearch } from "wouter";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -207,7 +206,7 @@ export default function AiAgents() {
         stream.getTracks().forEach(t => t.stop());
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const base64 = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res((r.result as string).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(blob); });
-        try { const result = await voiceMut.mutateAsync({ base64, mimeType }); if (result.text) { setInput(result.text); inputRef.current?.focus(); } } catch { toast.error("Transcription failed"); }
+        try { const result = await voiceMut.mutateAsync({ audioBase64: base64, mimeType }); if (result.text) { setInput(result.text); inputRef.current?.focus(); } } catch { toast.error("Transcription failed"); }
       };
       recorder.start(1000);
       mediaRecorderRef.current = recorder;
@@ -335,7 +334,7 @@ export default function AiAgents() {
                   : { background: "#111113", border: "1px solid rgba(255,255,255,0.07)", borderTopLeftRadius: "4px" }
                 }>
                 {msg.role === "assistant"
-                  ? <div className="prose-dark text-sm"><Streamdown content={msg.content} /></div>
+                  ? <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "#a1a1aa" }}>{msg.content}</p>
                   : <p className="text-sm text-white leading-relaxed">{msg.content}</p>
                 }
                 <div className="flex items-center gap-1 mt-2 pt-2" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>

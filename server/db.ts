@@ -1,5 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2";
 import {
   InsertUser, users,
   products, InsertProduct, Product,
@@ -14,6 +15,7 @@ import {
   leads, InsertLead, Lead,
   analyticsEvents, InsertAnalyticsEvent, AnalyticsEvent,
   brandVoices, InsertBrandVoice, BrandVoice,
+  brandKits, BrandKit,
   emailCampaigns, InsertEmailCampaign, EmailCampaign,
   emailLists, InsertEmailList, EmailList,
   emailContacts, InsertEmailContact, EmailContact,
@@ -67,7 +69,13 @@ export async function getDb() {
   const url = getDatabaseUrl();
   if (!_db && url) {
     try {
-      _db = drizzle(url);
+      const pool = mysql.createPool({
+        uri: url,
+        ssl: { rejectUnauthorized: false },
+        waitForConnections: true,
+        connectionLimit: 10,
+      });
+      _db = drizzle(pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -728,6 +736,42 @@ export async function getDefaultBrandVoice(userId: number) {
   const db = await getDb(); if (!db) return undefined;
   const r = await db.select().from(brandVoices).where(and(eq(brandVoices.userId, userId), eq(brandVoices.isDefault, true))).limit(1);
   return r[0];
+}
+
+export function buildBrandVoiceContext(voice: BrandVoice | undefined): string {
+  if (!voice?.voiceProfile || voice.status !== "ready") return "";
+  const v = voice.voiceProfile;
+  return [
+    `Brand voice (${voice.name}):`,
+    `- Tone: ${v.tone}`,
+    `- Style: ${v.style}`,
+    `- Personality: ${v.personality}`,
+    `- Formality: ${v.formality}`,
+    v.vocabulary?.length ? `- Preferred words: ${v.vocabulary.join(", ")}` : "",
+    v.avoidWords?.length ? `- Avoid these words: ${v.avoidWords.join(", ")}` : "",
+    v.samplePhrases?.length ? `- Example phrases: ${v.samplePhrases.slice(0, 3).join(" | ")}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+export async function getDefaultBrandKit(userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(brandKits)
+    .where(and(eq(brandKits.userId, userId), eq(brandKits.isDefault, true))).limit(1);
+  return r[0];
+}
+
+export function buildBrandKitContext(kit: BrandKit | undefined): string {
+  if (!kit) return "";
+  const lines: string[] = [`Brand kit (${kit.name}):`];
+  if (kit.toneOfVoice)              lines.push(`- Tone of voice: ${kit.toneOfVoice}`);
+  if (kit.toneDescription)          lines.push(`- Tone description: ${kit.toneDescription}`);
+  if (kit.brandPersonality?.length) lines.push(`- Brand personality: ${kit.brandPersonality.join(", ")}`);
+  if (kit.tagline)                  lines.push(`- Tagline: ${kit.tagline}`);
+  if (kit.missionStatement)         lines.push(`- Mission: ${kit.missionStatement}`);
+  if (kit.targetAudience)           lines.push(`- Target audience: ${kit.targetAudience}`);
+  if (kit.doList?.length)           lines.push(`- Always do: ${kit.doList.join("; ")}`);
+  if (kit.dontList?.length)         lines.push(`- Never do: ${kit.dontList.join("; ")}`);
+  return lines.length > 1 ? lines.join("\n") : "";
 }
 
 // ─── Email Lists ───────────────────────────────────────────────────

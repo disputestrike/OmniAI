@@ -11,7 +11,10 @@ import { ENV } from "./_core/env";
 type StorageConfig = { baseUrl: string; apiKey: string };
 
 function getStorageConfig(): StorageConfig | null {
-  const baseUrl = ENV.forgeApiUrl?.trim();
+  // Only use the Forge storage proxy if a dedicated storage URL is configured.
+  // BUILT_IN_FORGE_API_URL is now used for image generation (OpenAI) and must
+  // not be mistaken for a Forge storage endpoint.
+  const baseUrl = ENV.forgeStorageUrl?.trim();
   const apiKey = ENV.forgeApiKey?.trim();
   if (baseUrl && apiKey) return { baseUrl: baseUrl.replace(/\/+$/, ""), apiKey };
   return null;

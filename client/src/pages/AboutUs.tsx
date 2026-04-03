@@ -17,7 +17,7 @@ export default function AboutUs() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-                OTOBI AI
+                OmniAI
               </span>
             </button>
             <div className="flex items-center gap-3">
@@ -46,7 +46,7 @@ export default function AboutUs() {
             </span>
           </h1>
           <p className="text-xl text-[#6b5e4f] max-w-2xl mx-auto leading-relaxed">
-            OTOBI AI was born from a simple frustration: great products were losing to inferior ones because of bad marketing. We built the solution.
+            OmniAI was born from a simple frustration: great products were losing to inferior ones because of bad marketing. We built the solution.
           </p>
         </div>
       </section>
@@ -54,7 +54,7 @@ export default function AboutUs() {
       {/* The Name */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-amber-50 to-orange-50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-black text-center mb-12">What Does OTOBI Mean?</h2>
+          <h2 className="text-3xl font-black text-center mb-12">What Does OmniAI Mean?</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
@@ -117,7 +117,7 @@ export default function AboutUs() {
                 We believe every business — from solo founders to global enterprises — deserves access to world-class marketing intelligence. Not just tools, but a complete operating system that thinks, creates, and optimizes on your behalf.
               </p>
               <p className="text-lg text-[#6b5e4f] leading-relaxed mb-4">
-                The marketing landscape has fractured across 21+ platforms, each with its own algorithm, format, and audience behavior. Keeping up requires an army. OTOBI AI is that army — available to everyone.
+                The marketing landscape has fractured across 21+ platforms, each with its own algorithm, format, and audience behavior. Keeping up requires an army. OmniAI is that army — available to everyone.
               </p>
               <p className="text-lg text-[#6b5e4f] leading-relaxed">
                 We're not just automating marketing. We're democratizing it.
@@ -128,7 +128,7 @@ export default function AboutUs() {
                 { icon: Rocket, title: "Speed Without Sacrifice", desc: "From product description to full campaign in minutes, not weeks." },
                 { icon: Brain, title: "Intelligence at Scale", desc: "AI that learns your brand voice and continuously improves." },
                 { icon: Shield, title: "Built for Real Results", desc: "Every feature is designed to drive measurable business outcomes." },
-                { icon: Users, title: "For Every Team Size", desc: "Solo founder or 500-person marketing department — OTOBI scales with you." },
+                { icon: Users, title: "For Every Team Size", desc: "Solo founder or 500-person marketing department — OmniAI scales with you." },
               ].map((item) => (
                 <div key={item.title} className="flex items-start gap-4 p-4 bg-amber-50/50 rounded-xl border border-amber-100/50">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white flex-shrink-0">
@@ -169,7 +169,7 @@ export default function AboutUs() {
       {/* CTA */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-black mb-4">Ready to See What OTOBI Can Do?</h2>
+          <h2 className="text-3xl font-black mb-4">Ready to See What OmniAI Can Do?</h2>
           <p className="text-[#6b5e4f] mb-8 text-lg">Start free. No credit card required. Your first campaign in minutes.</p>
           <Button
             size="lg"
@@ -183,7 +183,7 @@ export default function AboutUs() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-[#e8e0d4] bg-amber-50/30 text-center text-sm text-[#9b8e7e]">
-        &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved.
+        &copy; {new Date().getFullYear()} OmniAI. All rights reserved.
         <span className="mx-2">·</span>
         <a href="/privacy" className="hover:text-[#1a1a1a]">Privacy</a>
         <span className="mx-2">·</span>

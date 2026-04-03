@@ -50,7 +50,7 @@ export default function ReportView() {
       <div className="max-w-3xl mx-auto space-y-6">
         <div className="flex items-center gap-2 text-zinc-500 text-sm">
           <FileText className="h-4 w-4" />
-          <span>OTOBI AI — Shared report</span>
+          <span>OmniAI — Shared report</span>
         </div>
         <Card>
           <CardHeader>
@@ -94,7 +94,7 @@ export default function ReportView() {
         <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <p className="font-medium">Create reports like this with OTOBI AI</p>
+              <p className="font-medium">Create reports like this with OmniAI</p>
               <p className="text-sm text-zinc-500">One platform for content, campaigns, analytics, and more.</p>
             </div>
             <Button onClick={() => { window.location.href = getLoginPageUrl(); }}>

@@ -31,6 +31,7 @@ export default function VideoStudio() {
   const [showTeleprompter, setShowTeleprompter] = useState(false);
   const [teleprompterSpeed, setTeleprompterSpeed] = useState(2);
   const [teleprompterPosition, setTeleprompterPosition] = useState(0);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [shareData, setShareData] = useState<{ shareUrl: string; embedCode: string } | null>(null);
@@ -41,6 +42,7 @@ export default function VideoStudio() {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const teleprompterRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mimeTypeRef = useRef<string>("video/webm");
 
   const { data: videos, refetch } = trpc.personalVideo.list.useQuery();
   const generateScriptMut = trpc.personalVideo.generateScript.useMutation({ onSuccess: (d) => { setScript((d.script as string) || ""); toast.success("Script generated!"); }, onError: () => toast.error("Failed to generate script") });
@@ -61,6 +63,7 @@ export default function VideoStudio() {
       const constraints: MediaStreamConstraints = { video: cameraOn ? { width: 1280, height: 720, facingMode: "user" } : false, audio: micOn };
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
+      setIsStreaming(true);
       if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play(); }
     } catch (err) {
       toast.error(getMediaErrorMessage(err));
@@ -70,16 +73,35 @@ export default function VideoStudio() {
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach(t => t.stop());
     streamRef.current = null;
+    setIsStreaming(false);
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
   const startRecording = useCallback(() => {
     if (!streamRef.current) { toast.error("Start camera first"); return; }
     chunksRef.current = [];
-    const mr = new MediaRecorder(streamRef.current, { mimeType: "video/webm;codecs=vp9,opus" });
+
+    const mimeTypes = [
+      "video/webm;codecs=vp9,opus",
+      "video/webm;codecs=vp8,opus",
+      "video/webm",
+      "video/mp4",
+      "",
+    ];
+    const mimeType = mimeTypes.find(t => t === "" || MediaRecorder.isTypeSupported(t)) ?? "";
+    mimeTypeRef.current = mimeType || "video/webm";
+
+    let mr: MediaRecorder;
+    try {
+      mr = new MediaRecorder(streamRef.current, mimeType ? { mimeType } : undefined);
+    } catch (err) {
+      toast.error("Recording not supported in this browser");
+      return;
+    }
+
     mr.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
     mr.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: "video/webm" });
+      const blob = new Blob(chunksRef.current, { type: mimeTypeRef.current });
       setRecordedBlob(blob);
       setRecordedUrl(URL.createObjectURL(blob));
       setIsPreviewing(true);
@@ -104,14 +126,22 @@ export default function VideoStudio() {
 
   const saveRecording = useCallback(async () => {
     if (!recordedBlob || !title.trim()) { toast.error("Enter a title first"); return; }
-    const result = await createVideoMut.mutateAsync({ title, script, aspectRatio, platform: scriptPlatform });
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = (reader.result as string).split(",")[1];
-      await uploadMut.mutateAsync({ id: result.id, videoBase64: base64, mimeType: "video/webm", duration: recordingTime });
-      setRecordedBlob(null); setRecordedUrl(null); setIsPreviewing(false); setTitle("");
-    };
-    reader.readAsDataURL(recordedBlob);
+    try {
+      const result = await createVideoMut.mutateAsync({ title, script, aspectRatio, platform: scriptPlatform });
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64 = (reader.result as string).split(",")[1];
+          await uploadMut.mutateAsync({ id: result.id, videoBase64: base64, mimeType: mimeTypeRef.current, duration: recordingTime });
+          setRecordedBlob(null); setRecordedUrl(null); setIsPreviewing(false); setTitle("");
+        } catch (err: any) {
+          toast.error(err?.message || "Upload failed");
+        }
+      };
+      reader.readAsDataURL(recordedBlob);
+    } catch {
+      // createVideoMut.onError already shows toast
+    }
   }, [recordedBlob, title, script, aspectRatio, scriptPlatform, recordingTime, createVideoMut, uploadMut]);
 
   const downloadRecording = useCallback(() => {
@@ -148,9 +178,9 @@ export default function VideoStudio() {
                 <CardContent className="p-0 relative">
                   <div className={`bg-black rounded-lg overflow-hidden relative ${aspectRatio === "9:16" ? "aspect-[9/16] max-h-[500px] mx-auto" : aspectRatio === "1:1" ? "aspect-square max-h-[500px] mx-auto" : "aspect-video"}`}>
                     {isPreviewing && recordedUrl ? (
-                      <video src={recordedUrl} controls className="w-full h-full object-contain" />
+                      <video key="preview" src={recordedUrl} controls autoPlay className="w-full h-full object-contain" />
                     ) : (
-                      <video ref={videoRef} muted playsInline className="w-full h-full object-cover mirror" style={{ transform: "scaleX(-1)" }} />
+                      <video key="live" ref={videoRef} muted playsInline className="w-full h-full object-cover mirror" style={{ transform: "scaleX(-1)" }} />
                     )}
                     {/* Teleprompter overlay */}
                     {showTeleprompter && script && isRecording && (
@@ -182,7 +212,7 @@ export default function VideoStudio() {
                 <Button variant={micOn ? "default" : "outline"} size="icon" onClick={() => setMicOn(!micOn)} title="Toggle Mic">
                   {micOn ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                 </Button>
-                {!streamRef.current && !isPreviewing && (
+                {!isStreaming && !isPreviewing && (
                   <>
                     <Button onClick={startCamera}><Camera className="w-4 h-4 mr-2" /> Start Camera</Button>
                     {typeof window !== "undefined" && !window.isSecureContext && (
@@ -190,7 +220,7 @@ export default function VideoStudio() {
                     )}
                   </>
                 )}
-                {streamRef.current && !isRecording && !isPreviewing && (
+                {isStreaming && !isRecording && !isPreviewing && (
                   <Button onClick={startRecording} className="bg-red-600 hover:bg-red-700"><div className="w-3 h-3 bg-white rounded-full mr-2" /> Record</Button>
                 )}
                 {isRecording && (

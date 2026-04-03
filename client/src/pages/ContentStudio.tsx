@@ -130,6 +130,12 @@ export default function ContentStudio() {
     }
   }, [urlSearch, products]);
 
+  // Auto-open dialog when arriving from Product Hub with ?productId
+  useEffect(() => {
+    const params = new URLSearchParams(typeof urlSearch === "string" ? urlSearch : "");
+    if (params.get("productId")) setOpen(true);
+  }, [urlSearch]);
+
   const filtered = useMemo(() => {
     if (!contents) return [];
     return contents.filter(c => {

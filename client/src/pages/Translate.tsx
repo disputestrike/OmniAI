@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Languages, Copy, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, Languages, Copy, ArrowRight } from "lucide-react";
 
 const LANGUAGES = [
   { code: "en", name: "English" }, { code: "es", name: "Spanish" }, { code: "fr", name: "French" },
@@ -18,25 +19,38 @@ const LANGUAGES = [
   { code: "id", name: "Indonesian" }, { code: "ms", name: "Malay" }, { code: "he", name: "Hebrew" },
 ];
 
+const TOP_5_LANGS = ["Spanish", "French", "Arabic", "Portuguese", "Chinese (Simplified)"];
+
+type BulkResult = { language: string; translated: string };
+
 export default function Translate() {
   const [sourceText, setSourceText] = useState("");
   const [sourceLang, setSourceLang] = useState<string>("en");
   const [targetLang, setTargetLang] = useState<string>("es");
-  const [result, setResult] = useState<string | null>(null);
+  const [singleResult, setSingleResult] = useState<string | null>(null);
+  const [bulkResults, setBulkResults] = useState<BulkResult[] | null>(null);
   const [adaptForMarketing, setAdaptForMarketing] = useState(true);
 
   const translateMut = trpc.multiLanguage.translate.useMutation({
-    onSuccess: (data: any) => { setResult(data.translated); toast.success("Translation complete"); },
-    onError: (e: any) => toast.error(e.message),
-  });
-
-  const bulkTranslateMut = trpc.multiLanguage.translate.useMutation({
     onSuccess: (data: any) => {
-      setResult(data.translated || '');
-      toast.success('Translation complete');
+      setSingleResult(data.translated);
+      setBulkResults(null);
+      toast.success("Translation complete");
     },
     onError: (e: any) => toast.error(e.message),
   });
+
+  const bulkTranslateMut = trpc.multiLanguage.translateBulk.useMutation({
+    onSuccess: (data: any) => {
+      setBulkResults(data.results);
+      setSingleResult(null);
+      toast.success(`Translated to ${TOP_5_LANGS.length} languages`);
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const isLoading = translateMut.isPending || bulkTranslateMut.isPending;
+  const sourceLangName = LANGUAGES.find(l => l.code === sourceLang)?.name;
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -60,7 +74,12 @@ export default function Translate() {
             </div>
           </CardHeader>
           <CardContent>
-            <Textarea value={sourceText} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)} placeholder="Enter your marketing content to translate..." rows={8} />
+            <Textarea
+              value={sourceText}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)}
+              placeholder="Enter your marketing content to translate..."
+              rows={8}
+            />
             <p className="text-xs text-zinc-500 mt-2">{sourceText.length} characters</p>
 
             <div className="flex items-center gap-3 mt-4">
@@ -79,43 +98,86 @@ export default function Translate() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={() => translateMut.mutate({ text: sourceText, targetLanguage: LANGUAGES.find(l => l.code === targetLang)?.name || targetLang, sourceLanguage: LANGUAGES.find(l => l.code === sourceLang)?.name })} disabled={!sourceText || translateMut.isPending}>
+              <Button
+                onClick={() => translateMut.mutate({ text: sourceText, targetLanguage: LANGUAGES.find(l => l.code === targetLang)?.name || targetLang, sourceLanguage: sourceLangName })}
+                disabled={!sourceText || isLoading}
+              >
                 {translateMut.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ArrowRight className="w-4 h-4 mr-1" /> Translate</>}
               </Button>
             </div>
 
             <div className="mt-3">
-              <Button variant="outline" className="w-full" onClick={() => {
-                // Translate to first non-source language from top 5
-                const topLangs = LANGUAGES.filter(l => l.code !== sourceLang).slice(0, 1);
-                bulkTranslateMut.mutate({ text: sourceText, targetLanguage: topLangs[0]?.name || 'Spanish', sourceLanguage: LANGUAGES.find(l => l.code === sourceLang)?.name });
-              }} disabled={!sourceText || bulkTranslateMut.isPending}>
-                {bulkTranslateMut.isPending ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Translating...</> : <><Languages className="w-4 h-4 mr-2" /> Translate to Top 5 Languages</>}
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => bulkTranslateMut.mutate({ text: sourceText, sourceLanguage: sourceLangName })}
+                disabled={!sourceText || isLoading}
+              >
+                {bulkTranslateMut.isPending
+                  ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Translating to 5 languages...</>
+                  : <><Languages className="w-4 h-4 mr-2" /> Translate to Top 5 Languages</>}
               </Button>
+              <p className="text-xs text-zinc-500 mt-1 text-center">{TOP_5_LANGS.join(" · ")}</p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Result */}
+        {/* Result panel */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Translation</CardTitle>
-              {result && (
-                <Button variant="ghost" size="sm" onClick={() => { navigator.clipboard.writeText(result); toast.success("Copied"); }}>
-                  <Copy className="w-4 h-4 mr-1" /> Copy
-                </Button>
-              )}
-            </div>
+            <CardTitle className="text-base">
+              {bulkResults ? "Top 5 Language Translations" : "Translation"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            {(translateMut.isPending || bulkTranslateMut.isPending) ? (
+            {isLoading ? (
               <div className="flex flex-col items-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary mb-3" />
-                <p className="text-zinc-500 text-sm">Translating and adapting content...</p>
+                <p className="text-zinc-500 text-sm">
+                  {bulkTranslateMut.isPending ? "Translating to 5 languages in parallel..." : "Translating and adapting content..."}
+                </p>
               </div>
-            ) : result ? (
-              <div className="whitespace-pre-wrap text-sm bg-zinc-900/50 p-4 rounded-lg min-h-[200px]">{result}</div>
+            ) : bulkResults ? (
+              <Tabs defaultValue={bulkResults[0]?.language}>
+                <TabsList className="w-full flex-wrap h-auto gap-1 mb-4">
+                  {bulkResults.map(r => (
+                    <TabsTrigger key={r.language} value={r.language} className="text-xs">
+                      {r.language}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {bulkResults.map(r => (
+                  <TabsContent key={r.language} value={r.language}>
+                    <div className="relative">
+                      <div className="whitespace-pre-wrap text-sm bg-zinc-900/50 p-4 rounded-lg min-h-[200px] pr-10">
+                        {r.translated}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-2 right-2 h-7 w-7"
+                        onClick={() => { navigator.clipboard.writeText(r.translated); toast.success(`${r.language} translation copied`); }}
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            ) : singleResult ? (
+              <div className="relative">
+                <div className="whitespace-pre-wrap text-sm bg-zinc-900/50 p-4 rounded-lg min-h-[200px] pr-10">
+                  {singleResult}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-7 w-7"
+                  onClick={() => { navigator.clipboard.writeText(singleResult); toast.success("Copied"); }}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             ) : (
               <div className="flex flex-col items-center py-12">
                 <Languages className="w-10 h-10 text-zinc-500 mb-3" />

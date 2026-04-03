@@ -37,7 +37,8 @@ export async function generateCampaignFromWizard(
   userId: number,
   goals: string[],
   businessContext: WizardBusinessContext,
-  details: WizardCampaignDetails
+  details: WizardCampaignDetails,
+  brandContext = ""
 ): Promise<{ campaignId: number; assets: GeneratedAsset[] }> {
   const limit = await checkLimit(userId, "ai_generation");
   if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
@@ -65,7 +66,7 @@ export async function generateCampaignFromWizard(
   if (details.channels.includes("landing_page")) {
     const res = await invokeLLM({
       messages: [
-        { role: "system", content: "You are a landing page designer. Generate a JSON array of landing page components. Each component has: type (hero|features|testimonials|form|cta|footer), props (object with headline, subheadline, ctaText, etc.), order (number). Return ONLY valid JSON: { \"components\": [ ... ] }." },
+        { role: "system", content: `You are a landing page designer. Generate a JSON array of landing page components. Each component has: type (hero|features|testimonials|form|cta|footer), props (object with headline, subheadline, ctaText, etc.), order (number). Return ONLY valid JSON: { "components": [ ... ] }.${brandContext ? `\n\n${brandContext}` : ""}` },
         { role: "user", content: `Goals: ${goalLabel}. ${ctx}. Create a high-converting landing page.` },
       ],
       response_format: { type: "json_schema", json_schema: { name: "lp", strict: true, schema: { type: "object", properties: { components: { type: "array", items: { type: "object", properties: { type: { type: "string" }, props: { type: "object" }, order: { type: "integer" } }, required: ["type", "props", "order"] } } }, required: ["components"] } } },
@@ -102,7 +103,7 @@ export async function generateCampaignFromWizard(
       const limitAdResult = limitAd;
       const adRes = await invokeLLM({
         messages: [
-          { role: "system", content: "You write short ad copy. Return JSON: { \"headline\": \"...\", \"body\": \"...\", \"cta\": \"...\" }." },
+          { role: "system", content: `You write short ad copy. Return JSON: { "headline": "...", "body": "...", "cta": "..." }.${brandContext ? `\n\n${brandContext}` : ""}` },
           { role: "user", content: `${ctx} Write ad variation ${i + 1}/3.` },
         ],
         response_format: { type: "json_schema", json_schema: { name: "ad", strict: true, schema: { type: "object", properties: { headline: { type: "string" }, body: { type: "string" }, cta: { type: "string" } }, required: ["headline", "body", "cta"] } } },
@@ -132,7 +133,7 @@ export async function generateCampaignFromWizard(
     if (limitEm.allowed) {
       const emailRes = await invokeLLM({
         messages: [
-          { role: "system", content: "You write a short marketing email. Return JSON: { \"subject\": \"...\", \"body\": \"...\" } (body can be HTML or plain)." },
+          { role: "system", content: `You write a short marketing email. Return JSON: { "subject": "...", "body": "..." } (body can be HTML or plain).${brandContext ? `\n\n${brandContext}` : ""}` },
           { role: "user", content: `${ctx} Write a welcome/follow-up email for this campaign.` },
         ],
         response_format: { type: "json_schema", json_schema: { name: "email", strict: true, schema: { type: "object", properties: { subject: { type: "string" }, body: { type: "string" } }, required: ["subject", "body"] } } },
@@ -166,7 +167,7 @@ export async function generateCampaignFromWizard(
       const limitSResult = limitS;
       const socialRes = await invokeLLM({
         messages: [
-          { role: "system", content: "You write a short social post (1-2 sentences). Return JSON: { \"caption\": \"...\" }." },
+          { role: "system", content: `You write a short social post (1-2 sentences). Return JSON: { "caption": "..." }.${brandContext ? `\n\n${brandContext}` : ""}` },
           { role: "user", content: `${ctx} Social post ${i + 1}.` },
         ],
         response_format: { type: "json_schema", json_schema: { name: "social", strict: true, schema: { type: "object", properties: { caption: { type: "string" } }, required: ["caption"] } } },
