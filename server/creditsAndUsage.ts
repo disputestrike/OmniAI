@@ -188,8 +188,6 @@ export async function getCurrentPeriod(userId: number): Promise<{ start: Date; e
 }
 
 export async function checkLimit(userId: number, actionType: string): Promise<CheckLimitResult> {
-  // TEMP: bypass all limits for testing — remove this line before launch
-  return { allowed: true, useMonthly: true };
   const tier = await getUserTier(userId);
   const limits = TIER_LIMITS[tier];
   const meta = USAGE_KEY_TO_ACTION[actionType];

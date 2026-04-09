@@ -25,26 +25,25 @@ export type FeatureKey =
   | "multi_brand";
 
 /** Minimum tier required for each feature. free = all logged-in; starter+ = that tier or higher. */
-// TEMP: all features unlocked for free tier for testing — restore original values from memory before launch
 export const TIER_FEATURES: Record<FeatureKey, TierKey> = {
-  programmatic_ads: "free",
+  programmatic_ads: "starter",
   ai_content_generation: "free",
   ai_image_generation: "free",
-  video_generation: "free",
-  avatar_videos: "free",
-  voice_input: "free",
-  music_studio: "free",
-  white_label: "free",
-  api_access: "free",
-  webhooks: "free",
-  scheduler: "free",
-  competitor_intelligence: "free",
-  crm_deals: "free",
-  ad_platforms: "free",
-  seo_audits: "free",
-  client_portal: "free",
-  custom_sso: "free",
-  multi_brand: "free",
+  video_generation: "professional",
+  avatar_videos: "professional",
+  voice_input: "professional",
+  music_studio: "business",
+  white_label: "business",
+  api_access: "business",
+  webhooks: "business",
+  scheduler: "starter",
+  competitor_intelligence: "starter",
+  crm_deals: "professional",
+  ad_platforms: "professional",
+  seo_audits: "professional",
+  client_portal: "enterprise",
+  custom_sso: "enterprise",
+  multi_brand: "enterprise",
 };
 
 const TIER_ORDER: TierKey[] = ["free", "starter", "professional", "business", "enterprise"];
