@@ -71,4 +71,12 @@ export const ENV = {
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   // Sentry
   sentryDsn: process.env.SENTRY_DSN ?? "",
+  // Cloudflare R2 (S3-compatible object storage)
+  r2AccountId: process.env.R2_ACCOUNT_ID ?? "",
+  r2AccessKeyId: process.env.R2_ACCESS_KEY_ID ?? "",
+  r2SecretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? "",
+  r2Bucket: process.env.R2_BUCKET ?? "",
+  /** Optional: public bucket URL (e.g. https://pub-xxx.r2.dev or custom domain).
+   *  If omitted, pre-signed URLs are generated (7-day expiry). */
+  r2PublicUrl: process.env.R2_PUBLIC_URL ?? "",
 };
