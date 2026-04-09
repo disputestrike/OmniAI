@@ -143,16 +143,15 @@ export const repurposingRouter = router({
 
     await db.updateRepurposingProject(input.projectId, { status: "generating" });
 
-    let brandContext = "";
-    if (project.brandVoiceId) {
-      const voice = await db.getBrandVoiceById(project.brandVoiceId);
-      if (voice?.voiceProfile) {
-        const v = voice.voiceProfile as { tone?: string; style?: string };
-        brandContext = `Brand voice: ${v.tone || ""} ${v.style || ""}. `;
-      }
-    }
+    const voice = project.brandVoiceId
+      ? await db.getBrandVoiceById(project.brandVoiceId)
+      : await db.getDefaultBrandVoice(project.userId);
+    const brandVoiceContext = db.buildBrandVoiceContext(voice);
+    const defaultKit = await db.getDefaultBrandKit(project.userId);
+    const brandKitCtx = db.buildBrandKitContext(defaultKit);
+    const brandContext = [brandVoiceContext, brandKitCtx].filter(Boolean).join("\n\n");
 
-    const systemPrompt = `You are an expert content repurposer. Turn the given transcript/content into the requested format. Preserve the core message and key points. Output only the content (no meta-commentary). ${brandContext}`;
+    const systemPrompt = `You are an expert content repurposer. Turn the given transcript/content into the requested format. Preserve the core message and key points. Output only the content (no meta-commentary).${brandContext ? `\n\n${brandContext}` : ""}`;
 
     for (const formatType of REPURPOSE_FORMATS) {
       try {

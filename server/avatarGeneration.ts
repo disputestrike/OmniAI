@@ -14,13 +14,15 @@ export type AvatarVideoOptions = {
   language?: string;
   aspectRatio?: "16:9" | "9:16" | "1:1";
   background?: string; // color or image URL
-  style?: "professional" | "casual" | "energetic" | "calm";
+  style?: "normal" | "closeUp" | "full" | "circle" | "voiceOnly";
 };
 
 export type AvatarVideoResult = {
   provider: string;
   videoUrl?: string;
+  videoKey?: string;
   thumbnailUrl?: string;
+  thumbnailKey?: string;
   status: "completed" | "processing" | "failed";
   taskId?: string;
   error?: string;
@@ -42,14 +44,23 @@ async function generateWithHeyGen(options: AvatarVideoOptions): Promise<AvatarVi
       video_inputs: [{
         character: {
           type: "avatar",
-          avatar_id: options.avatarId || "Angela-inblackskirt-20220820",
-          avatar_style: options.style === "casual" ? "normal" : "business",
+          avatar_id: options.avatarId || await (async () => {
+            const avatars = await listAvatars();
+            return avatars[0]?.id || "Angela-inblackskirt-20220820";
+          })(),
+          avatar_style: options.style || "normal",
         },
         voice: {
           type: "text",
           input_text: options.script,
-          voice_id: options.voiceId || "1bd001e7e50f421d891986aad5c1e1d0",
+          voice_id: options.voiceId || await (async () => {
+            const voices = await listVoices();
+            // Prefer English voice matching the style's implied gender, else first available
+            const preferred = voices.find(v => v.language?.startsWith("en")) ?? voices[0];
+            return preferred?.id ?? "1bd001e7e50f421d891986aad5c1e1d0";
+          })(),
           speed: 1.0,
+          ...(options.language ? { language: options.language } : {}),
         },
         background: options.background ? {
           type: "color",
@@ -102,24 +113,28 @@ export async function checkHeyGenStatus(videoId: string): Promise<AvatarVideoRes
   };
 
   if (result.data?.status === "completed" && result.data.video_url) {
-    // Download and store in S3
+    // Download and store locally
     const videoResponse = await fetch(result.data.video_url);
     const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
-    const { url } = await storagePut(`avatars/${Date.now()}-heygen.mp4`, videoBuffer, "video/mp4");
+    const { key: videoKey, url: videoUrl } = await storagePut(`avatars/${Date.now()}-heygen.mp4`, videoBuffer, "video/mp4");
 
     let thumbnailUrl: string | undefined;
+    let thumbnailKey: string | undefined;
     if (result.data.thumbnail_url) {
       const thumbResponse = await fetch(result.data.thumbnail_url);
       const thumbBuffer = Buffer.from(await thumbResponse.arrayBuffer());
       const thumbResult = await storagePut(`avatars/${Date.now()}-thumb.jpg`, thumbBuffer, "image/jpeg");
       thumbnailUrl = thumbResult.url;
+      thumbnailKey = thumbResult.key;
     }
 
     return {
       provider: "heygen",
       status: "completed",
-      videoUrl: url,
+      videoUrl,
+      videoKey,
       thumbnailUrl,
+      thumbnailKey,
       duration: result.data.duration,
     };
   }
@@ -129,6 +144,34 @@ export async function checkHeyGenStatus(videoId: string): Promise<AvatarVideoRes
   }
 
   return { provider: "heygen", status: "processing", taskId: videoId };
+}
+
+/**
+ * List available HeyGen voices
+ */
+export async function listVoices(): Promise<Array<{ id: string; name: string; language?: string; gender?: string; preview?: string }>> {
+  if (!ENV.heygenApiKey) return [];
+
+  try {
+    const response = await fetch("https://api.heygen.com/v2/voices", {
+      headers: { "X-Api-Key": ENV.heygenApiKey },
+    });
+
+    if (response.ok) {
+      const data = await response.json() as {
+        data?: { voices: Array<{ voice_id: string; display_name: string; language?: string; gender?: string; preview_audio?: string }> };
+      };
+      return (data.data?.voices || []).map(v => ({
+        id: v.voice_id,
+        name: v.display_name,
+        language: v.language,
+        gender: v.gender,
+        preview: v.preview_audio,
+      }));
+    }
+  } catch (e) { /* fall through */ }
+
+  return [];
 }
 
 /**

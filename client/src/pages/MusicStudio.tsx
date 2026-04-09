@@ -10,11 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
   Music, Volume2, Play, Pause, Download, Loader2, Sparkles,
-  Wand2, RefreshCw, Search, Filter, Repeat, Square, ChevronRight,
-  Mic, Headphones, Zap, Heart, Waves, Radio
+  Wand2, RefreshCw, Search, Repeat, Square, ChevronRight,
+  Mic, Headphones, Zap, Waves, Radio, Upload, Trash2
 } from "lucide-react";
 
 const GENRES = ["corporate", "motivational", "lofi", "cinematic", "pop", "electronic", "acoustic", "hiphop", "classical", "sport", "romantic", "comedy"];
@@ -132,26 +133,53 @@ function AudioPlayer({ url, title, loop = false, onDownload }: AudioPlayerProps)
   );
 }
 
+const readFileAsBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve((reader.result as string).split(",")[1] ?? "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 export default function MusicStudio() {
   const [tab, setTab] = useState("generate");
   const [sfxCategory, setSfxCategory] = useState("all");
   const [sfxSearch, setSfxSearch] = useState("");
   const [musicSearch, setMusicSearch] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState("");
-  const [selectedMood, setSelectedMood] = useState("");
-  const [generatedTrack, setGeneratedTrack] = useState<{ audioUrl?: string; title?: string; provider?: string } | null>(null);
+  const [selectedGenre, setSelectedGenre] = useState("all");
+  const [selectedMood, setSelectedMood] = useState("all");
+  const [generatedTrack, setGeneratedTrack] = useState<{ audioUrl?: string; title?: string; provider?: string; status?: string; error?: string } | null>(null);
 
   // Generate form state
   const [prompt, setPrompt] = useState("");
-  const [genre, setGenre] = useState("");
-  const [mood, setMood] = useState("");
+  const [genre, setGenre] = useState("all");
+  const [mood, setMood] = useState("all");
   const [tempo, setTempo] = useState<"slow" | "medium" | "fast" | "very-fast">("medium");
   const [duration, setDuration] = useState([60]);
   const [loop, setLoop] = useState(true);
   const [instrumental, setInstrumental] = useState(true);
 
-  const { data: musicLibrary = [] } = trpc.musicStudio.getMusicLibrary.useQuery();
-  const { data: sfxLibrary = [] } = trpc.musicStudio.getSFXLibrary.useQuery({ category: sfxCategory === "all" ? undefined : sfxCategory });
+  // Upload state
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadType, setUploadType] = useState<"music" | "sfx">("music");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadBusy, setUploadBusy] = useState(false);
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadGenre, setUploadGenre] = useState("none");
+  const [uploadMood, setUploadMood] = useState("none");
+  const [uploadName, setUploadName] = useState("");
+  const [uploadCategory, setUploadCategory] = useState("");
+  const [uploadTags, setUploadTags] = useState("");
+
+  // Queries stored in named vars for refetch
+  const musicLibraryQuery = trpc.musicStudio.getMusicLibrary.useQuery();
+  const { data: musicLibrary = [] } = musicLibraryQuery;
+
+  const sfxLibraryQuery = trpc.musicStudio.getSFXLibrary.useQuery({
+    category: sfxCategory === "all" ? undefined : sfxCategory,
+  });
+  const { data: sfxLibrary = [] } = sfxLibraryQuery;
+
   const { data: providers } = trpc.musicStudio.getProviders.useQuery();
 
   const generateMut = trpc.musicStudio.generateMusic.useMutation({
@@ -159,6 +187,8 @@ export default function MusicStudio() {
       setGeneratedTrack(data);
       if (data.status === "completed") {
         toast.success(`Music generated via ${data.provider}!`);
+      } else if (data.status === "failed") {
+        toast.error(data.error || "Music generation failed");
       } else {
         toast.info("Music generation started — check back in a moment.");
       }
@@ -166,23 +196,87 @@ export default function MusicStudio() {
     onError: () => toast.error("Music generation failed"),
   });
 
-  const filteredMusic = musicLibrary.filter((m: { title: string; tags: string[]; genre?: string; mood?: string }) => {
-    const matchSearch = !musicSearch || m.title.toLowerCase().includes(musicSearch.toLowerCase()) || m.tags.some((t: string) => t.includes(musicSearch.toLowerCase()));
-    const matchGenre = !selectedGenre || m.genre === selectedGenre;
-    const matchMood = !selectedMood || m.mood === selectedMood;
+  const uploadMusicMut = trpc.musicStudio.uploadMusicTrack.useMutation({
+    onSuccess: () => {
+      toast.success("Track uploaded");
+      setUploadOpen(false);
+      resetUploadForm();
+      musicLibraryQuery.refetch();
+    },
+    onError: (e) => toast.error(e.message || "Upload failed"),
+  });
+
+  const deleteMusicMut = trpc.musicStudio.deleteMusicTrack.useMutation({
+    onSuccess: () => { toast.success("Track deleted"); musicLibraryQuery.refetch(); },
+    onError: () => toast.error("Delete failed"),
+  });
+
+  const uploadSFXMut = trpc.musicStudio.uploadSFXTrack.useMutation({
+    onSuccess: () => {
+      toast.success("SFX uploaded");
+      setUploadOpen(false);
+      resetUploadForm();
+      sfxLibraryQuery.refetch();
+    },
+    onError: (e) => toast.error(e.message || "Upload failed"),
+  });
+
+  const deleteSFXMut = trpc.musicStudio.deleteSFXTrack.useMutation({
+    onSuccess: () => { toast.success("SFX deleted"); sfxLibraryQuery.refetch(); },
+    onError: () => toast.error("Delete failed"),
+  });
+
+  const resetUploadForm = () => {
+    setUploadFile(null);
+    setUploadTitle("");
+    setUploadGenre("none");
+    setUploadMood("none");
+    setUploadName("");
+    setUploadCategory("");
+    setUploadTags("");
+  };
+
+  const handleUploadSubmit = async () => {
+    if (!uploadFile) return;
+    if (uploadFile.size > 16 * 1024 * 1024) { toast.error("File too large (max 16MB)"); return; }
+    setUploadBusy(true);
+    try {
+      const fileBase64 = await readFileAsBase64(uploadFile);
+      const mimeType = (uploadFile.type || "audio/mpeg") as "audio/mpeg" | "audio/wav" | "audio/ogg" | "audio/mp3";
+      const tags = uploadTags ? uploadTags.split(",").map(t => t.trim()).filter(Boolean) : [];
+      if (uploadType === "music") {
+        await uploadMusicMut.mutateAsync({
+          title: uploadTitle.trim() || uploadFile.name.replace(/\.[^.]+$/, ""),
+          genre: uploadGenre !== "none" ? uploadGenre : undefined,
+          mood: uploadMood !== "none" ? uploadMood : undefined,
+          tags, fileBase64, mimeType, fileName: uploadFile.name,
+        });
+      } else {
+        await uploadSFXMut.mutateAsync({
+          name: uploadName.trim() || uploadFile.name.replace(/\.[^.]+$/, ""),
+          category: uploadCategory as any,
+          tags, fileBase64, mimeType, fileName: uploadFile.name,
+        });
+      }
+    } finally {
+      setUploadBusy(false);
+    }
+  };
+
+  const filteredMusic = musicLibrary.filter((m: any) => {
+    const matchSearch = !musicSearch || m.title.toLowerCase().includes(musicSearch.toLowerCase()) || (m.tags as string[])?.some((t: string) => t.includes(musicSearch.toLowerCase()));
+    const matchGenre = selectedGenre === "all" || m.genre === selectedGenre;
+    const matchMood = selectedMood === "all" || m.mood === selectedMood;
     return matchSearch && matchGenre && matchMood;
   });
 
-  const filteredSFX = sfxLibrary.filter((s: { name: string; tags: string[] }) =>
-    !sfxSearch || s.name.toLowerCase().includes(sfxSearch.toLowerCase()) || s.tags.some((t: string) => t.includes(sfxSearch.toLowerCase()))
+  const filteredSFX = sfxLibrary.filter((s: any) =>
+    !sfxSearch || s.name.toLowerCase().includes(sfxSearch.toLowerCase()) || (s.tags as string[])?.some((t: string) => t.includes(sfxSearch.toLowerCase()))
   );
 
   const handleDownload = (url: string, filename: string) => {
     const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.target = "_blank";
-    a.click();
+    a.href = url; a.download = filename; a.target = "_blank"; a.click();
     toast.success("Download started");
   };
 
@@ -198,7 +292,7 @@ export default function MusicStudio() {
         </div>
         {providers && (
           <div className="flex gap-2 flex-wrap justify-end">
-            {Object.entries(providers ?? {}).map(([key, p]: [string, { name?: string; available?: boolean }]) => (
+            {Object.entries(providers ?? {}).map(([key, p]: [string, any]) => (
               <Badge key={key} variant={p.available ? "default" : "secondary"} className="text-xs">
                 {p.available ? "✓" : "○"} {p.name}
               </Badge>
@@ -244,7 +338,7 @@ export default function MusicStudio() {
                           <SelectValue placeholder="Any genre" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any genre</SelectItem>
+                          <SelectItem value="all">Any genre</SelectItem>
                           {GENRES.map(g => <SelectItem key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</SelectItem>)}
                         </SelectContent>
                       </Select>
@@ -256,7 +350,7 @@ export default function MusicStudio() {
                           <SelectValue placeholder="Any mood" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any mood</SelectItem>
+                          <SelectItem value="all">Any mood</SelectItem>
                           {MOODS.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
                         </SelectContent>
                       </Select>
@@ -297,7 +391,12 @@ export default function MusicStudio() {
 
                   <Button
                     className="w-full"
-                    onClick={() => generateMut.mutate({ prompt: prompt || "background music", genre: genre || undefined, mood: mood || undefined, tempo, duration: duration[0], loop, instrumental })}
+                    onClick={() => generateMut.mutate({
+                      prompt: prompt || "background music",
+                      genre: genre === "all" ? undefined : genre,
+                      mood: mood === "all" ? undefined : mood,
+                      tempo, duration: duration[0], loop, instrumental,
+                    })}
                     disabled={generateMut.isPending}
                   >
                     {generateMut.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Generating...</> : <><Sparkles className="h-4 w-4 mr-2" /> Generate Music</>}
@@ -329,11 +428,7 @@ export default function MusicStudio() {
                         variant="outline"
                         size="sm"
                         className="justify-start text-xs h-auto py-2 px-3"
-                        onClick={() => {
-                          setPrompt(preset.prompt);
-                          setGenre(preset.genre);
-                          setMood(preset.mood);
-                        }}
+                        onClick={() => { setPrompt(preset.prompt); setGenre(preset.genre); setMood(preset.mood); }}
                       >
                         <ChevronRight className="h-3 w-3 mr-1 shrink-0" />
                         {preset.label}
@@ -353,7 +448,9 @@ export default function MusicStudio() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {generatedTrack.audioUrl ? (
+                    {generatedTrack.status === "failed" ? (
+                      <p className="text-sm text-zinc-400 text-center py-3">{generatedTrack.error}</p>
+                    ) : generatedTrack.audioUrl ? (
                       <AudioPlayer
                         url={generatedTrack.audioUrl}
                         title={generatedTrack.title || "Generated Track"}
@@ -375,6 +472,13 @@ export default function MusicStudio() {
 
         {/* ── Music Library Tab ── */}
         <TabsContent value="library" className="space-y-5 mt-5">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-zinc-400">Your Music Library</span>
+            <Button size="sm" onClick={() => { setUploadType("music"); setUploadOpen(true); }}>
+              <Upload className="h-3.5 w-3.5 mr-1.5" /> Upload Track
+            </Button>
+          </div>
+
           <div className="flex flex-wrap gap-3">
             <div className="relative flex-1 min-w-48">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
@@ -385,7 +489,7 @@ export default function MusicStudio() {
                 <SelectValue placeholder="Genre" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All genres</SelectItem>
+                <SelectItem value="all">All genres</SelectItem>
                 {GENRES.map(g => <SelectItem key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -394,12 +498,12 @@ export default function MusicStudio() {
                 <SelectValue placeholder="Mood" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All moods</SelectItem>
+                <SelectItem value="all">All moods</SelectItem>
                 {MOODS.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
               </SelectContent>
             </Select>
-            {(selectedGenre || selectedMood || musicSearch) && (
-              <Button variant="ghost" size="sm" onClick={() => { setSelectedGenre(""); setSelectedMood(""); setMusicSearch(""); }}>
+            {(selectedGenre !== "all" || selectedMood !== "all" || musicSearch) && (
+              <Button variant="ghost" size="sm" onClick={() => { setSelectedGenre("all"); setSelectedMood("all"); setMusicSearch(""); }}>
                 <RefreshCw className="h-3.5 w-3.5 mr-1" /> Clear
               </Button>
             )}
@@ -407,8 +511,19 @@ export default function MusicStudio() {
 
           <div className="grid grid-cols-1 gap-3">
             {filteredMusic.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500">No tracks match your filters</div>
-            ) : filteredMusic.map((track: { id: string; title: string; genre?: string; mood?: string; tags: string[]; duration?: number; loop?: boolean; previewUrl?: string; downloadUrl?: string }) => (
+              musicLibrary.length === 0 ? (
+                <div className="text-center py-16 space-y-3">
+                  <Music className="h-10 w-10 text-zinc-600 mx-auto" />
+                  <p className="text-zinc-400 font-medium">Your music library is empty</p>
+                  <p className="text-zinc-600 text-sm">Upload MP3, WAV, or OGG files to get started</p>
+                  <Button size="sm" onClick={() => { setUploadType("music"); setUploadOpen(true); }}>
+                    <Upload className="h-3.5 w-3.5 mr-1.5" /> Upload your first track
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-zinc-500">No tracks match your filters</div>
+              )
+            ) : filteredMusic.map((track: any) => (
               <Card key={track.id} className="hover:border-primary/30 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3 mb-3">
@@ -418,23 +533,33 @@ export default function MusicStudio() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-medium text-sm">{track.title}</h3>
-                        <Badge variant="secondary" className="text-xs">{track.genre}</Badge>
-                        <Badge variant="outline" className="text-xs">{track.mood}</Badge>
+                        {track.genre && <Badge variant="secondary" className="text-xs">{track.genre}</Badge>}
+                        {track.mood && <Badge variant="outline" className="text-xs">{track.mood}</Badge>}
                         {track.loop && <Badge variant="outline" className="text-xs"><Repeat className="h-2.5 w-2.5 mr-1" />Loop</Badge>}
                       </div>
                       <div className="flex gap-1 mt-1 flex-wrap">
-                        {track.tags.slice(0, 4).map((tag: string) => (
+                        {(track.tags as string[] | null)?.slice(0, 4).map((tag: string) => (
                           <span key={tag} className="text-xs text-zinc-500">#{tag}</span>
                         ))}
                       </div>
                     </div>
-                    <span className="text-xs text-zinc-500 shrink-0">{track.duration}s</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {track.duration && <span className="text-xs text-zinc-500">{track.duration}s</span>}
+                      <Button
+                        size="icon" variant="ghost"
+                        className="h-7 w-7 text-zinc-500 hover:text-destructive"
+                        onClick={() => { if (confirm(`Delete "${track.title}"?`)) deleteMusicMut.mutate({ id: track.id }); }}
+                        disabled={deleteMusicMut.isPending}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                   <AudioPlayer
-                    url={track.previewUrl ?? ""}
+                    url={track.fileUrl}
                     title={track.title}
-                    loop={track.loop}
-                    onDownload={() => handleDownload(track.downloadUrl ?? "", `${track.title}.mp3`)}
+                    loop={track.loop ?? false}
+                    onDownload={() => handleDownload(track.fileUrl, `${track.title}.mp3`)}
                   />
                 </CardContent>
               </Card>
@@ -444,6 +569,13 @@ export default function MusicStudio() {
 
         {/* ── Sound Effects Tab ── */}
         <TabsContent value="sfx" className="space-y-5 mt-5">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-zinc-400">Sound Effects</span>
+            <Button size="sm" onClick={() => { setUploadType("sfx"); setUploadOpen(true); }}>
+              <Upload className="h-3.5 w-3.5 mr-1.5" /> Upload SFX
+            </Button>
+          </div>
+
           {/* Category pills */}
           <div className="flex gap-2 flex-wrap">
             {SFX_CATEGORIES.map(cat => (
@@ -466,21 +598,40 @@ export default function MusicStudio() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredSFX.length === 0 ? (
-              <div className="col-span-2 text-center py-12 text-zinc-500">No sound effects match your search</div>
-            ) : filteredSFX.map((sfx: { id: string; name: string; category: string; duration: number; tags: string[]; previewUrl: string; downloadUrl: string }) => (
+              sfxLibrary.length === 0 ? (
+                <div className="col-span-2 text-center py-16 space-y-3">
+                  <Zap className="h-10 w-10 text-zinc-600 mx-auto" />
+                  <p className="text-zinc-400 font-medium">Your SFX library is empty</p>
+                  <p className="text-zinc-600 text-sm">Upload WAV, MP3, or OGG sound effect files</p>
+                  <Button size="sm" onClick={() => { setUploadType("sfx"); setUploadOpen(true); }}>
+                    <Upload className="h-3.5 w-3.5 mr-1.5" /> Upload your first SFX
+                  </Button>
+                </div>
+              ) : (
+                <div className="col-span-2 text-center py-12 text-zinc-500">No sound effects match your search</div>
+              )
+            ) : filteredSFX.map((sfx: any) => (
               <Card key={sfx.id} className="hover:border-primary/30 transition-colors">
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="secondary" className="text-xs capitalize">{sfx.category}</Badge>
-                    <span className="text-xs text-zinc-500 ml-auto">{sfx.duration}s</span>
+                    {sfx.duration && <span className="text-xs text-zinc-500 ml-auto">{sfx.duration}s</span>}
+                    <Button
+                      size="icon" variant="ghost"
+                      className="h-6 w-6 text-zinc-500 hover:text-destructive ml-auto"
+                      onClick={() => { if (confirm(`Delete "${sfx.name}"?`)) deleteSFXMut.mutate({ id: sfx.id }); }}
+                      disabled={deleteSFXMut.isPending}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                   <AudioPlayer
-                    url={sfx.previewUrl}
+                    url={sfx.fileUrl}
                     title={sfx.name}
-                    onDownload={() => handleDownload(sfx.downloadUrl, `${sfx.name}.wav`)}
+                    onDownload={() => handleDownload(sfx.fileUrl, `${sfx.name}.wav`)}
                   />
                   <div className="flex gap-1 mt-2 flex-wrap">
-                    {sfx.tags.map((tag: string) => <span key={tag} className="text-xs text-zinc-500">#{tag}</span>)}
+                    {(sfx.tags as string[] | null)?.map((tag: string) => <span key={tag} className="text-xs text-zinc-500">#{tag}</span>)}
                   </div>
                 </CardContent>
               </Card>
@@ -488,6 +639,104 @@ export default function MusicStudio() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ── Upload Dialog ── */}
+      <Dialog open={uploadOpen} onOpenChange={(open) => { setUploadOpen(open); if (!open) resetUploadForm(); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{uploadType === "music" ? "Upload Music Track" : "Upload Sound Effect"}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm">Audio File (MP3, WAV, OGG — max 16MB)</Label>
+              <input
+                type="file"
+                accept="audio/mpeg,audio/wav,audio/ogg,.mp3,.wav,.ogg"
+                className="mt-1.5 block w-full text-sm text-zinc-400 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-zinc-800 file:text-zinc-200 file:text-sm cursor-pointer"
+                onChange={e => setUploadFile(e.target.files?.[0] ?? null)}
+              />
+              {uploadFile && (
+                <p className="text-xs text-zinc-500 mt-1">
+                  {uploadFile.name} — {(uploadFile.size / 1024 / 1024).toFixed(2)}MB
+                </p>
+              )}
+            </div>
+
+            {uploadType === "music" && (
+              <>
+                <div>
+                  <Label className="text-sm">Title</Label>
+                  <Input value={uploadTitle} onChange={e => setUploadTitle(e.target.value)}
+                    placeholder="e.g. Upbeat Corporate" className="mt-1.5" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Genre (optional)</Label>
+                    <Select value={uploadGenre} onValueChange={setUploadGenre}>
+                      <SelectTrigger className="mt-1.5"><SelectValue placeholder="None" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {GENRES.map(g => <SelectItem key={g} value={g}>{g.charAt(0).toUpperCase() + g.slice(1)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-sm">Mood (optional)</Label>
+                    <Select value={uploadMood} onValueChange={setUploadMood}>
+                      <SelectTrigger className="mt-1.5"><SelectValue placeholder="None" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {MOODS.map(m => <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {uploadType === "sfx" && (
+              <>
+                <div>
+                  <Label className="text-sm">Name</Label>
+                  <Input value={uploadName} onChange={e => setUploadName(e.target.value)}
+                    placeholder="e.g. Whoosh Fast" className="mt-1.5" />
+                </div>
+                <div>
+                  <Label className="text-sm">Category</Label>
+                  <Select value={uploadCategory} onValueChange={setUploadCategory}>
+                    <SelectTrigger className="mt-1.5"><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectContent>
+                      {SFX_CATEGORIES.filter(c => c.id !== "all").map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.icon} {c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            <div>
+              <Label className="text-sm">Tags (comma-separated, optional)</Label>
+              <Input value={uploadTags} onChange={e => setUploadTags(e.target.value)}
+                placeholder="e.g. upbeat, corporate, loop" className="mt-1.5" />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" className="flex-1" onClick={() => { setUploadOpen(false); resetUploadForm(); }}>
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={!uploadFile || uploadBusy || (uploadType === "sfx" && !uploadCategory)}
+                onClick={handleUploadSubmit}
+              >
+                {uploadBusy ? <><Loader2 className="h-4 w-4 animate-spin mr-2" />Uploading...</> : "Upload"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

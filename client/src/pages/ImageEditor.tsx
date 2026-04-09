@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +13,8 @@ export default function ImageEditor() {
   const [tab, setTab] = useState("removebg");
   const [imageUrl, setImageUrl] = useState("");
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+  const [previewStatus, setPreviewStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [debouncedUrl, setDebouncedUrl] = useState("");
 
   // Resize states
   const [resizePlatform, setResizePlatform] = useState<string>("instagram-post");
@@ -39,6 +41,13 @@ export default function ImageEditor() {
 
   const isProcessing = removeBgMut.isPending || resizeMut.isPending || upscaleMut.isPending || filterMut.isPending;
 
+  useEffect(() => {
+    if (!imageUrl.trim()) { setPreviewStatus("idle"); setDebouncedUrl(""); return; }
+    setPreviewStatus("loading");
+    const t = setTimeout(() => setDebouncedUrl(imageUrl.trim()), 600);
+    return () => clearTimeout(t);
+  }, [imageUrl]);
+
   return (
     <div className="space-y-6 animate-fade-up">
       <div>
@@ -52,6 +61,23 @@ export default function ImageEditor() {
             <label className="text-sm font-medium">Image URL *</label>
             <Input value={imageUrl} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)} placeholder="Paste image URL to edit..." className="mt-1" />
           </div>
+
+          {previewStatus !== "idle" && (
+            <div className="mb-4 rounded-lg overflow-hidden border border-zinc-700 bg-zinc-900 flex items-center justify-center min-h-[180px] relative">
+              {debouncedUrl && (
+                <img
+                  key={debouncedUrl}
+                  src={debouncedUrl}
+                  alt="Source preview"
+                  className={previewStatus === "ok" ? "max-w-full max-h-64 object-contain" : "hidden"}
+                  onLoad={() => setPreviewStatus("ok")}
+                  onError={() => setPreviewStatus("error")}
+                />
+              )}
+              {previewStatus === "loading" && <p className="text-sm text-zinc-500">Loading preview...</p>}
+              {previewStatus === "error" && <p className="text-sm text-red-400">Could not load image from this URL.</p>}
+            </div>
+          )}
 
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="w-full">

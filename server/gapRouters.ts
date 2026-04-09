@@ -1,7 +1,7 @@
 import { protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
 import { invokeLLM } from "./_core/llm";
-import { generateImage } from "./_core/imageGeneration";
+import { generateImage, editImage } from "./_core/imageGeneration";
 import { storagePut } from "./storage";
 import { notifyOwner } from "./_core/notification";
 import * as db from "./db";
@@ -72,11 +72,15 @@ export const brandVoiceRouter = router({
         },
       });
 
-      const voiceProfile = JSON.parse(String(response.choices[0].message.content) || "{}");
+      const raw = String(response.choices[0].message.content || "{}").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+      const voiceProfile = JSON.parse(raw);
       await db.updateBrandVoice(result.id, { voiceProfile, status: "ready" });
       await consumeLimit(ctx.user.id, "ai_generation", limit);
     } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      console.error("[brandVoice.create] LLM analysis failed:", message);
       await db.updateBrandVoice(result.id, { status: "failed" });
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Brand voice creation failed: ${message}` });
     }
 
     return result;
@@ -379,7 +383,7 @@ export const landingPageRouter = router({
       },
     });
 
-    const parsed = JSON.parse(String(response.choices[0].message.content) || '{"components":[]}');
+    const parsed = JSON.parse((String(response.choices[0].message.content) || '{"components":[]}').trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
     return { components: parsed.components };
   }),
 
@@ -761,7 +765,9 @@ export const videoRenderRouter = router({
         },
       });
 
-      const { scenes } = JSON.parse(String(sceneResponse.choices[0].message.content) || '{"scenes":[]}');
+      const rawSceneContent = String(sceneResponse.choices[0].message.content || '{"scenes":[]}')
+        .replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+      const { scenes } = JSON.parse(rawSceneContent);
 
       // Generate images for each scene
       const frames: { imageUrl: string; duration: number; text?: string }[] = [];
@@ -885,7 +891,7 @@ export const imageEditorRouter = router({
   })).mutation(async ({ ctx, input }) => {
     const limit = await checkLimit(ctx.user.id, "ai_image");
     if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
-    const { url } = await generateImage({
+    const { url } = await editImage({
       prompt: "Remove the background completely, make it transparent/white. Keep only the main subject.",
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
@@ -917,7 +923,7 @@ export const imageEditorRouter = router({
     const size = platformSizes[input.platform] || "1080x1080";
     const [width, height] = size.split("x");
 
-    const { url } = await generateImage({
+    const { url } = await editImage({
       prompt: `Resize and recompose this image to fit ${width}x${height} pixels (${input.platform} format). Maintain the subject and visual quality. Fill any new space naturally.`,
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
@@ -930,7 +936,7 @@ export const imageEditorRouter = router({
   })).mutation(async ({ ctx, input }) => {
     const limit = await checkLimit(ctx.user.id, "ai_image");
     if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
-    const { url } = await generateImage({
+    const { url } = await editImage({
       prompt: "Upscale this image to higher resolution. Enhance details, sharpen edges, improve quality while maintaining the original composition and style.",
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
@@ -955,7 +961,7 @@ export const imageEditorRouter = router({
       hdr: "Apply HDR effect with enhanced dynamic range and detail",
     };
 
-    const { url } = await generateImage({
+    const { url } = await editImage({
       prompt: `${filterPrompts[input.filter]}. Keep the original composition and subject.`,
       originalImages: [{ url: input.imageUrl, mimeType: "image/png" }],
     });
@@ -997,6 +1003,30 @@ export const multiLanguageRouter = router({
     });
     await consumeLimit(ctx.user.id, "ai_generation", limit);
     return { translated: String(response.choices[0].message.content) || "" };
+  }),
+
+  translateBulk: protectedProcedure.input(z.object({
+    text: z.string(),
+    sourceLanguage: z.string().optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const TOP_5 = ["Spanish", "French", "Arabic", "Portuguese", "Chinese (Simplified)"];
+    const limit = await checkLimit(ctx.user.id, "ai_generation");
+    if (!limit.allowed) throw new TRPCError({ code: "FORBIDDEN", message: LIMIT_MSG });
+
+    const results = await Promise.all(
+      TOP_5.map(async (lang) => {
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: `You are a professional translator. Translate the following text to ${lang}. Maintain the tone, style, and marketing effectiveness. ${input.sourceLanguage ? `Source language: ${input.sourceLanguage}.` : "Auto-detect the source language."} Return ONLY the translated text, no explanations.` },
+            { role: "user", content: input.text },
+          ],
+        });
+        return { language: lang, translated: String(response.choices[0].message.content) || "" };
+      })
+    );
+
+    await consumeLimit(ctx.user.id, "ai_generation", limit);
+    return { results };
   }),
 
   detectLanguage: protectedProcedure.input(z.object({
@@ -1098,7 +1128,7 @@ export const competitorSpyRouter = router({
     });
 
     await consumeLimit(ctx.user.id, "ai_generation", limit);
-    return JSON.parse(String(response.choices[0].message.content) || "{}");
+    return JSON.parse((String(response.choices[0].message.content) || "{}").trim().replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim());
   }),
 });
 

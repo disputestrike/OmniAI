@@ -26,7 +26,7 @@ export default function Privacy() {
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent">
-                OTOBI AI
+                OmniAI
               </span>
             </button>
             <div className="flex items-center gap-3">
@@ -48,7 +48,7 @@ export default function Privacy() {
         </div>
 
         <p className="text-[#6b5e4f] leading-relaxed mb-10">
-          OTOBI AI ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform. Please read this policy carefully. If you disagree with its terms, please discontinue use of the service.
+          OmniAI ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform. Please read this policy carefully. If you disagree with its terms, please discontinue use of the service.
         </p>
 
         <Section title="1. Information We Collect">
@@ -123,14 +123,14 @@ export default function Privacy() {
           <p>If you have questions about this Privacy Policy, please contact us:</p>
           <ul className="list-none space-y-1">
             <li><strong>Email:</strong> privacy@otobi.ai</li>
-            <li><strong>Address:</strong> OTOBI AI, Inc. — contact us via the platform for mailing address</li>
+            <li><strong>Address:</strong> OmniAI, Inc. — contact us via the platform for mailing address</li>
           </ul>
         </Section>
       </div>
 
       {/* Footer */}
       <footer className="py-8 border-t border-[#e8e0d4] bg-amber-50/30 text-center text-sm text-[#9b8e7e]">
-        &copy; {new Date().getFullYear()} OTOBI AI. All rights reserved.
+        &copy; {new Date().getFullYear()} OmniAI. All rights reserved.
         <span className="mx-2">·</span>
         <a href="/about" className="hover:text-[#1a1a1a]">About</a>
         <span className="mx-2">·</span>

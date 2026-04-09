@@ -10,7 +10,7 @@ export interface Testimonial {
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    quote: "OTOBI AI cut our content production time by 80%. We now launch campaigns in hours, not weeks.",
+    quote: "OmniAI cut our content production time by 80%. We now launch campaigns in hours, not weeks.",
     author: "Jordan Smith",
     title: "Head of Marketing",
     company: "TechFlow Inc",

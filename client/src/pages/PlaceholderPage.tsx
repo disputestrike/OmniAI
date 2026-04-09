@@ -1,7 +1,7 @@
 /** Reusable placeholder for spec pages not yet fully built. */
 export default function PlaceholderPage({
   title,
-  description = "This section is part of the OTOBI AI platform. Full UI coming soon.",
+  description = "This section is part of the OmniAI platform. Full UI coming soon.",
 }: {
   title: string;
   description?: string;

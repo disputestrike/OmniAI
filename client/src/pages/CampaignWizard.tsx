@@ -102,7 +102,7 @@ export default function CampaignWizard() {
           <Megaphone className="w-6 h-6" />
           Create New Campaign
         </h1>
-        <p className="text-zinc-500 mt-1">Set your goal — OTOBI generates landing page, ads, emails, and social posts in one flow.</p>
+        <p className="text-zinc-500 mt-1">Set your goal — OmniAI generates landing page, ads, emails, and social posts in one flow.</p>
       </div>
 
       {step === 1 && (
@@ -192,7 +192,7 @@ export default function CampaignWizard() {
 
       {step === 4 && (
         <Card>
-          <CardHeader><CardTitle>Step 4: Generate with AI</CardTitle><CardDescription>OTOBI will create your landing page, ad copy, email, and social posts.</CardDescription></CardHeader>
+          <CardHeader><CardTitle>Step 4: Generate with AI</CardTitle><CardDescription>OmniAI will create your landing page, ad copy, email, and social posts.</CardDescription></CardHeader>
           <CardContent>
             <Button onClick={handleGenerate} disabled={wizardGenerate.isPending} className="w-full">
               {wizardGenerate.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generating...</> : <><Target className="w-4 h-4 mr-2" />Generate campaign</>}

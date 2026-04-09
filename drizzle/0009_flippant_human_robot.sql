@@ -1,0 +1,1 @@
+-- Migration 0009: applied via apply-all-migrations.sql (tables already exist)

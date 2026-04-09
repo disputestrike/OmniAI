@@ -1,0 +1,1 @@
+ALTER TABLE `video_ads` ADD `voiceoverUrl` text;

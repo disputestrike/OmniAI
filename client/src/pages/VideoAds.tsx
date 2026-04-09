@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Video, Loader2, Sparkles, Trash2, Clock, Film, MessageSquare, Globe, Users, Smile, Zap, Languages, Copy, Download, Check } from "lucide-react";
+import { Video, Loader2, Sparkles, Trash2, Clock, Film, MessageSquare, Globe, Users, Smile, Zap, Languages, Copy, Download, Check, RefreshCw } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useSearch } from "wouter";
 import { toast } from "sonner";
@@ -104,15 +104,10 @@ export default function VideoAds() {
     },
     onError: (e: any) => toast.error(e.message),
   });
-  const renderVoiceoverMut = trpc.voiceoverApi.generate.useMutation({
-    onSuccess: (data) => {
-      if (data.audioUrl) {
-        toast.success("Voiceover generated!");
-        const audio = new Audio(data.audioUrl);
-        audio.play();
-      } else {
-        toast.info("Voiceover generation started.");
-      }
+  const generateVoiceoverMut = trpc.videoAd.generateVoiceover.useMutation({
+    onSuccess: () => {
+      utils.videoAd.list.invalidate();
+      toast.success("Voiceover saved!");
     },
     onError: (e: any) => toast.error(e.message),
   });
@@ -129,6 +124,7 @@ export default function VideoAds() {
   const [adPreset, setAdPreset] = useState("ugc_testimonial");
   const [language, setLanguage] = useState("English");
   const [selectedActor, setSelectedActor] = useState("");
+  const [selectedCarouselActor, setSelectedCarouselActor] = useState("");
   const [includeSubtitles, setIncludeSubtitles] = useState(true);
   const [includeBroll, setIncludeBroll] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -168,6 +164,12 @@ export default function VideoAds() {
       }
     }
   }, [search, products]);
+
+  // Auto-open dialog when arriving from Product Hub with ?productId
+  useEffect(() => {
+    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    if (params.get("productId")) setCreateOpen(true);
+  }, [search]);
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -511,18 +513,42 @@ export default function VideoAds() {
           </CardHeader>
           <CardContent>
             <div className="flex gap-3 overflow-x-auto pb-2">
-              {actors.map(actor => (
-                <div key={actor.id} className="flex flex-col items-center gap-1 min-w-[80px]">
-                  <Avatar className="h-14 w-14">
-                    <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-lg">{actor.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs font-medium">{actor.name}</span>
-                  <span className="text-[10px] text-zinc-500 capitalize">{actor.style.replace("_", " ")}</span>
-                </div>
-              ))}
+              {actors.map(actor => {
+                const isSelected = selectedCarouselActor === actor.id;
+                return (
+                  <div
+                    key={actor.id}
+                    onClick={() => setSelectedCarouselActor(isSelected ? "" : actor.id)}
+                    className={`flex flex-col items-center gap-1 min-w-[80px] cursor-pointer rounded-lg p-1.5 transition-all ${
+                      isSelected ? "ring-2 ring-primary bg-primary/10" : "hover:bg-muted/60"
+                    }`}
+                  >
+                    <Avatar className={`h-14 w-14 ${isSelected ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}>
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-lg">
+                        {actor.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium">{actor.name}</span>
+                    <span className="text-[10px] text-zinc-500 capitalize">{actor.style.replace("_", " ")}</span>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
+
+      {selectedCarouselActor && (
+        <p className="text-xs text-muted-foreground px-1">
+          Voice:{" "}
+          <span className="font-medium text-foreground">
+            {actors.find(a => a.id === selectedCarouselActor)?.name}
+          </span>{" "}
+          will be used for voiceover generation.{" "}
+          <button className="underline hover:text-foreground" onClick={() => setSelectedCarouselActor("")}>
+            Clear
+          </button>
+        </p>
+      )}
 
       {/* Video Ads List */}
       {isLoading ? (
@@ -586,13 +612,31 @@ export default function VideoAds() {
                       Render Video
                     </Button>
                     {video.voiceoverText && (
-                      <Button size="sm" variant="secondary" disabled={renderVoiceoverMut.isPending} onClick={() => renderVoiceoverMut.mutate({
-                        text: video.voiceoverText!,
-                        voice: "alloy",
-                      })}>
-                        {renderVoiceoverMut.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <span className="mr-1">🔊</span>}
-                        Generate Voiceover
-                      </Button>
+                      video.voiceoverUrl ? (
+                        <div className="flex items-center gap-2 mt-2 p-2 rounded-md bg-muted/40">
+                          <audio controls src={video.voiceoverUrl} className="h-8 flex-1 min-w-0" />
+                          <Button size="icon" variant="ghost" asChild title="Download">
+                            <a href={video.voiceoverUrl} download>
+                              <Download className="h-3.5 w-3.5" />
+                            </a>
+                          </Button>
+                          <Button size="sm" variant="ghost" disabled={generateVoiceoverMut.isPending}
+                            onClick={() => generateVoiceoverMut.mutate({ id: video.id, ...(selectedCarouselActor ? { actorId: selectedCarouselActor } : {}) })}
+                            title="Regenerate">
+                            {generateVoiceoverMut.isPending
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <RefreshCw className="h-3.5 w-3.5" />}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="secondary"
+                          disabled={generateVoiceoverMut.isPending}
+                          onClick={() => generateVoiceoverMut.mutate({ id: video.id, ...(selectedCarouselActor ? { actorId: selectedCarouselActor } : {}) })}>
+                          {generateVoiceoverMut.isPending
+                            ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />Generating...</>
+                            : <><span className="mr-1">🔊</span>Generate Voiceover</>}
+                        </Button>
+                      )
                     )}
                     <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => deleteMut.mutate({ id: video.id })}>
                       <Trash2 className="h-3.5 w-3.5" />

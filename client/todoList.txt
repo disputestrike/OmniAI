@@ -1,0 +1,20 @@
+[ ] Set required env vars: DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, PUBLIC_URL.
+[ ] Add live feature keys as needed: ANTHROPIC_API_KEY, Forge/OpenAI image keys, Stripe keys, RESEND_API_KEY, and any optional platform keys.
+[ ] Configure Google OAuth redirect: {PUBLIC_URL}/api/auth/google/callback.
+[ ] Start the app with npm run dev and confirm there are no startup errors.
+[ ] Verify migrations complete and GET /health returns {"ok":true}.
+[ ] Test login flow: open /login, complete Google OAuth, land on /dashboard, then confirm logout clears the session.
+[ ] Confirm dashboard loads without browser console errors.
+[ ] Test the core AI flow: submit a prompt, create a campaign, auto-open /campaigns/:id, and verify workspace tabs are populated.
+[ ] Verify AI behavior in both mock mode and live mode, including correct asset creation and campaign linking.
+[ ] Test campaign CRUD and status changes: create, list, open, update, move through statuses, delete.
+[ ] Test content generation flows: create key content types, list/search, bulk generate, remix/repurpose, delete.
+[ ] Test creative and media flows: image generation, video script generation, rendering/fallbacks, and asset listing/deletion.
+[ ] Test email and landing page flows: generate sequences, send/fallback behavior, page publishing, form submit, visit tracking.
+[ ] Test CRM and analytics flows: leads CRUD, imports, scoring, deals/activities, analytics events, summaries, A/B tests.
+[ ] Test billing: pricing, checkout, webhooks, billing portal, credit packs, limits, trial flow, Stripe test card.
+[ ] Test integrations you plan to launch: social posting, SEO/intelligence, collaboration, content tools, voice/audio, avatars, reviews, reports, admin, DSP, Shopify.
+[ ] Run security checks: SQL injection, XSS, auth/role guards, CSRF on Stripe webhooks, rate limits, path traversal, JWT tampering, cross-user data access.
+[ ] Verify public routes work without auth: /, /login, /lp/:slug, /api/landing/submit, /report/:shareToken, /terms, /privacy, /refund-policy, /health.
+[ ] Re-check environment readiness before launch and confirm all required live keys are present.
+[ ] Execute tests in order: P0 infrastructure/auth/core flow, P1 campaigns/content/billing, P2 gated features, P3 remaining modules, then security and public routes.

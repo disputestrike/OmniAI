@@ -1,5 +1,6 @@
 import { eq, desc, and, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2";
 import {
   InsertUser, users,
   products, InsertProduct, Product,
@@ -14,6 +15,7 @@ import {
   leads, InsertLead, Lead,
   analyticsEvents, InsertAnalyticsEvent, AnalyticsEvent,
   brandVoices, InsertBrandVoice, BrandVoice,
+  brandKits, BrandKit,
   emailCampaigns, InsertEmailCampaign, EmailCampaign,
   emailLists, InsertEmailList, EmailList,
   emailContacts, InsertEmailContact, EmailContact,
@@ -51,6 +53,9 @@ import {
   influenceNodes, InsertInfluenceNode,
   referralCodes, InsertReferralCode,
   referralSignups, InsertReferralSignup,
+  musicTracks, InsertMusicTrack, MusicTrack,
+  sfxTracks, InsertSfxTrack, SfxTrack,
+  avatarGenerations, InsertAvatarGeneration, AvatarGeneration,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -67,7 +72,13 @@ export async function getDb() {
   const url = getDatabaseUrl();
   if (!_db && url) {
     try {
-      _db = drizzle(url);
+      const pool = mysql.createPool({
+        uri: url,
+        ssl: { rejectUnauthorized: false },
+        waitForConnections: true,
+        connectionLimit: 10,
+      });
+      _db = drizzle(pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -728,6 +739,42 @@ export async function getDefaultBrandVoice(userId: number) {
   const db = await getDb(); if (!db) return undefined;
   const r = await db.select().from(brandVoices).where(and(eq(brandVoices.userId, userId), eq(brandVoices.isDefault, true))).limit(1);
   return r[0];
+}
+
+export function buildBrandVoiceContext(voice: BrandVoice | undefined): string {
+  if (!voice?.voiceProfile || voice.status !== "ready") return "";
+  const v = voice.voiceProfile;
+  return [
+    `Brand voice (${voice.name}):`,
+    `- Tone: ${v.tone}`,
+    `- Style: ${v.style}`,
+    `- Personality: ${v.personality}`,
+    `- Formality: ${v.formality}`,
+    v.vocabulary?.length ? `- Preferred words: ${v.vocabulary.join(", ")}` : "",
+    v.avoidWords?.length ? `- Avoid these words: ${v.avoidWords.join(", ")}` : "",
+    v.samplePhrases?.length ? `- Example phrases: ${v.samplePhrases.slice(0, 3).join(" | ")}` : "",
+  ].filter(Boolean).join("\n");
+}
+
+export async function getDefaultBrandKit(userId: number) {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(brandKits)
+    .where(and(eq(brandKits.userId, userId), eq(brandKits.isDefault, true))).limit(1);
+  return r[0];
+}
+
+export function buildBrandKitContext(kit: BrandKit | undefined): string {
+  if (!kit) return "";
+  const lines: string[] = [`Brand kit (${kit.name}):`];
+  if (kit.toneOfVoice)              lines.push(`- Tone of voice: ${kit.toneOfVoice}`);
+  if (kit.toneDescription)          lines.push(`- Tone description: ${kit.toneDescription}`);
+  if (kit.brandPersonality?.length) lines.push(`- Brand personality: ${kit.brandPersonality.join(", ")}`);
+  if (kit.tagline)                  lines.push(`- Tagline: ${kit.tagline}`);
+  if (kit.missionStatement)         lines.push(`- Mission: ${kit.missionStatement}`);
+  if (kit.targetAudience)           lines.push(`- Target audience: ${kit.targetAudience}`);
+  if (kit.doList?.length)           lines.push(`- Always do: ${kit.doList.join("; ")}`);
+  if (kit.dontList?.length)         lines.push(`- Never do: ${kit.dontList.join("; ")}`);
+  return lines.length > 1 ? lines.join("\n") : "";
 }
 
 // ─── Email Lists ───────────────────────────────────────────────────
@@ -1665,4 +1712,76 @@ export async function recordReferralSignup(referrerUserId: number, referredUserI
 export async function getReferralsByReferrer(referrerUserId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(referralSignups).where(eq(referralSignups.referrerUserId, referrerUserId)).orderBy(desc(referralSignups.createdAt));
+}
+
+// ─── Music Tracks ─────────────────────────────────────────────────────────
+export async function createMusicTrack(data: InsertMusicTrack): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(musicTracks).values(data);
+  return { id: result[0].insertId };
+}
+export async function getMusicTracksByUser(userId: number): Promise<MusicTrack[]> {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(musicTracks).where(eq(musicTracks.userId, userId)).orderBy(desc(musicTracks.createdAt));
+}
+export async function getMusicTrackById(id: number, userId: number): Promise<MusicTrack | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(musicTracks).where(and(eq(musicTracks.id, id), eq(musicTracks.userId, userId))).limit(1);
+  return r[0];
+}
+export async function deleteMusicTrack(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(musicTracks).where(and(eq(musicTracks.id, id), eq(musicTracks.userId, userId)));
+}
+
+// ─── SFX Tracks ───────────────────────────────────────────────────────────
+export async function createSfxTrack(data: InsertSfxTrack): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(sfxTracks).values(data);
+  return { id: result[0].insertId };
+}
+export async function getSfxTracksByUser(userId: number, category?: string): Promise<SfxTrack[]> {
+  const db = await getDb(); if (!db) return [];
+  const where = category
+    ? and(eq(sfxTracks.userId, userId), eq(sfxTracks.category, category as SfxTrack["category"]))
+    : eq(sfxTracks.userId, userId);
+  return db.select().from(sfxTracks).where(where).orderBy(desc(sfxTracks.createdAt));
+}
+export async function getSfxTrackById(id: number, userId: number): Promise<SfxTrack | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(sfxTracks).where(and(eq(sfxTracks.id, id), eq(sfxTracks.userId, userId))).limit(1);
+  return r[0];
+}
+export async function deleteSfxTrack(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(sfxTracks).where(and(eq(sfxTracks.id, id), eq(sfxTracks.userId, userId)));
+}
+
+// ─── Avatar Generations ───────────────────────────────────────────
+export async function createAvatarGeneration(data: InsertAvatarGeneration): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(avatarGenerations).values(data);
+  return { id: result[0].insertId };
+}
+export async function getAvatarGenerationsByUser(userId: number): Promise<AvatarGeneration[]> {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(avatarGenerations).where(eq(avatarGenerations.userId, userId)).orderBy(desc(avatarGenerations.createdAt));
+}
+export async function getAvatarGenerationByTaskId(taskId: string, userId: number): Promise<AvatarGeneration | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(avatarGenerations).where(and(eq(avatarGenerations.taskId, taskId), eq(avatarGenerations.userId, userId))).limit(1);
+  return r[0];
+}
+export async function getAvatarGenerationById(id: number, userId: number): Promise<AvatarGeneration | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(avatarGenerations).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId))).limit(1);
+  return r[0];
+}
+export async function updateAvatarGeneration(id: number, userId: number, updates: Partial<InsertAvatarGeneration>): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(avatarGenerations).set(updates).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId)));
+}
+export async function deleteAvatarGeneration(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(avatarGenerations).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId)));
 }

@@ -15,25 +15,26 @@ import {
 } from "lucide-react";
 
 // Curated voice catalog (activates with ElevenLabs or OpenAI key)
+// ElevenLabs IDs are the canonical voice_id UUIDs required by the API
 const VOICES = [
   // Male voices
-  { id: "adam", name: "Adam", gender: "male", accent: "American", style: "Narration", description: "Deep, authoritative narrator voice", provider: "elevenlabs", tags: ["documentary", "narration", "professional"] },
-  { id: "josh", name: "Josh", gender: "male", accent: "American", style: "Conversational", description: "Young, energetic, casual tone", provider: "elevenlabs", tags: ["podcast", "social", "casual"] },
-  { id: "arnold", name: "Arnold", gender: "male", accent: "American", style: "Confident", description: "Strong, confident sales voice", provider: "elevenlabs", tags: ["sales", "ads", "confident"] },
-  { id: "sam", name: "Sam", gender: "male", accent: "American", style: "Friendly", description: "Warm, approachable, trustworthy", provider: "elevenlabs", tags: ["explainer", "tutorial", "friendly"] },
-  { id: "clyde", name: "Clyde", gender: "male", accent: "American", style: "War veteran", description: "Gruff, experienced, character voice", provider: "elevenlabs", tags: ["character", "storytelling", "dramatic"] },
-  { id: "fin", name: "Fin", gender: "male", accent: "Irish", style: "Sailor", description: "Warm Irish accent, storytelling tone", provider: "elevenlabs", tags: ["storytelling", "character", "accent"] },
-  { id: "callum", name: "Callum", gender: "male", accent: "Transatlantic", style: "Intense", description: "Intense, dramatic, cinematic", provider: "elevenlabs", tags: ["cinematic", "dramatic", "trailer"] },
-  { id: "daniel", name: "Daniel", gender: "male", accent: "British", style: "News presenter", description: "Professional British news anchor", provider: "elevenlabs", tags: ["news", "professional", "british"] },
+  { id: "pNInz6obpgDQGcFmaJgB", name: "Adam", gender: "male", accent: "American", style: "Narration", description: "Deep, authoritative narrator voice", provider: "elevenlabs", tags: ["documentary", "narration", "professional"] },
+  { id: "TxGEqnHWrfWFTfGW9XjX", name: "Josh", gender: "male", accent: "American", style: "Conversational", description: "Young, energetic, casual tone", provider: "elevenlabs", tags: ["podcast", "social", "casual"] },
+  { id: "VR6AewLTigWG4xSOukaG", name: "Arnold", gender: "male", accent: "American", style: "Confident", description: "Strong, confident sales voice", provider: "elevenlabs", tags: ["sales", "ads", "confident"] },
+  { id: "yoZ06aMxZJJ28mfd3POQ", name: "Sam", gender: "male", accent: "American", style: "Friendly", description: "Warm, approachable, trustworthy", provider: "elevenlabs", tags: ["explainer", "tutorial", "friendly"] },
+  { id: "2EiwWnXFnvU5JabPnv8n", name: "Clyde", gender: "male", accent: "American", style: "War veteran", description: "Gruff, experienced, character voice", provider: "elevenlabs", tags: ["character", "storytelling", "dramatic"] },
+  { id: "D38z5RcWu1voky8WS1ja", name: "Fin", gender: "male", accent: "Irish", style: "Sailor", description: "Warm Irish accent, storytelling tone", provider: "elevenlabs", tags: ["storytelling", "character", "accent"] },
+  { id: "N2lVS1w4EtoT3dr4eOWO", name: "Callum", gender: "male", accent: "Transatlantic", style: "Intense", description: "Intense, dramatic, cinematic", provider: "elevenlabs", tags: ["cinematic", "dramatic", "trailer"] },
+  { id: "onwK4e9ZLuTAKqWW03F9", name: "Daniel", gender: "male", accent: "British", style: "News presenter", description: "Professional British news anchor", provider: "elevenlabs", tags: ["news", "professional", "british"] },
   // Female voices
-  { id: "rachel", name: "Rachel", gender: "female", accent: "American", style: "Calm", description: "Calm, clear, professional narrator", provider: "elevenlabs", tags: ["narration", "professional", "calm"] },
-  { id: "domi", name: "Domi", gender: "female", accent: "American", style: "Strong", description: "Strong, confident, assertive", provider: "elevenlabs", tags: ["confident", "ads", "strong"] },
-  { id: "bella", name: "Bella", gender: "female", accent: "American", style: "Soft", description: "Soft, warm, intimate tone", provider: "elevenlabs", tags: ["intimate", "wellness", "soft"] },
-  { id: "elli", name: "Elli", gender: "female", accent: "American", style: "Emotional", description: "Expressive, emotional, engaging", provider: "elevenlabs", tags: ["emotional", "storytelling", "expressive"] },
-  { id: "grace", name: "Grace", gender: "female", accent: "Southern US", style: "Gentle", description: "Warm Southern accent, gentle tone", provider: "elevenlabs", tags: ["gentle", "warm", "accent"] },
-  { id: "charlotte", name: "Charlotte", gender: "female", accent: "Swedish", style: "Seductive", description: "Sophisticated, elegant European voice", provider: "elevenlabs", tags: ["luxury", "elegant", "european"] },
-  { id: "dorothy", name: "Dorothy", gender: "female", accent: "British", style: "Pleasant", description: "Pleasant British accent, professional", provider: "elevenlabs", tags: ["british", "professional", "pleasant"] },
-  { id: "serena", name: "Serena", gender: "female", accent: "American", style: "Pleasant", description: "Pleasant, balanced, versatile", provider: "elevenlabs", tags: ["versatile", "balanced", "pleasant"] },
+  { id: "21m00Tcm4TlvDq8ikWAM", name: "Rachel", gender: "female", accent: "American", style: "Calm", description: "Calm, clear, professional narrator", provider: "elevenlabs", tags: ["narration", "professional", "calm"] },
+  { id: "AZnzlk1XvdvUeBnXmlld", name: "Domi", gender: "female", accent: "American", style: "Strong", description: "Strong, confident, assertive", provider: "elevenlabs", tags: ["confident", "ads", "strong"] },
+  { id: "EXAVITQu4vr4xnSDxMaL", name: "Bella", gender: "female", accent: "American", style: "Soft", description: "Soft, warm, intimate tone", provider: "elevenlabs", tags: ["intimate", "wellness", "soft"] },
+  { id: "MF3mGyEYCl7XYWbV9V6O", name: "Elli", gender: "female", accent: "American", style: "Emotional", description: "Expressive, emotional, engaging", provider: "elevenlabs", tags: ["emotional", "storytelling", "expressive"] },
+  { id: "oWAxZDx7w5VEj9dCyTzz", name: "Grace", gender: "female", accent: "Southern US", style: "Gentle", description: "Warm Southern accent, gentle tone", provider: "elevenlabs", tags: ["gentle", "warm", "accent"] },
+  { id: "XB0fDUnXU5powFXDhCwa", name: "Charlotte", gender: "female", accent: "Swedish", style: "Seductive", description: "Sophisticated, elegant European voice", provider: "elevenlabs", tags: ["luxury", "elegant", "european"] },
+  { id: "ThT5KcBeYPX3keUQqHPh", name: "Dorothy", gender: "female", accent: "British", style: "Pleasant", description: "Pleasant British accent, professional", provider: "elevenlabs", tags: ["british", "professional", "pleasant"] },
+  { id: "pMsXgVXv3BLzUgSXRplE", name: "Serena", gender: "female", accent: "American", style: "Pleasant", description: "Pleasant, balanced, versatile", provider: "elevenlabs", tags: ["versatile", "balanced", "pleasant"] },
 ];
 
 const EMOTIONS = [
@@ -84,7 +85,7 @@ const SCRIPT_TEMPLATES = [
 export default function VoiceoverStudio() {
   const [tab, setTab] = useState("studio");
   const [script, setScript] = useState("");
-  const [selectedVoice, setSelectedVoice] = useState("rachel");
+  const [selectedVoice, setSelectedVoice] = useState("21m00Tcm4TlvDq8ikWAM"); // Rachel
   const [emotion, setEmotion] = useState("neutral");
   const [speed, setSpeed] = useState([1.0]);
   const [stability, setStability] = useState([75]);

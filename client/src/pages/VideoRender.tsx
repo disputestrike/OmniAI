@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, Plus, Film, Play, Download, Sparkles, Image, Clock, Trash2 } from "lucide-react";
+import { Loader2, Plus, Film, Play, Download, Sparkles, Image, Clock, Trash2, ChevronLeft, ChevronRight, Expand } from "lucide-react";
 
 export default function VideoRender() {
   const [showCreate, setShowCreate] = useState(false);
@@ -17,6 +17,8 @@ export default function VideoRender() {
   const [aspectRatio, setAspectRatio] = useState<string>("16:9");
   const [voiceGender, setVoiceGender] = useState<string>("female");
   const [selectedVideo, setSelectedVideo] = useState<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
 
   const { data: videos, refetch } = trpc.videoRender.list.useQuery();
   const { data: videoDetail } = trpc.videoRender.get.useQuery(
@@ -35,6 +37,29 @@ export default function VideoRender() {
   });
 
   // No delete procedure available - videos are permanent
+
+  const handleDownloadAll = async () => {
+    const frames = (videoDetail?.frames as any[]) || [];
+    if (!frames.length) return;
+    setDownloading(true);
+    for (let i = 0; i < frames.length; i++) {
+      const frame = frames[i];
+      try {
+        const res = await fetch(frame.imageUrl);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `scene-${i + 1}.jpg`;
+        a.click();
+        URL.revokeObjectURL(url);
+        await new Promise(r => setTimeout(r, 300));
+      } catch {
+        // Skip failed frames silently
+      }
+    }
+    setDownloading(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-up">
@@ -143,9 +168,11 @@ export default function VideoRender() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-base">Video Preview</CardTitle>
                     <div className="flex gap-2">
-                      {videoDetail.videoUrl && (
-                        <Button size="sm" variant="outline" onClick={() => window.open(videoDetail.videoUrl!, "_blank")}>
-                          <Download className="w-4 h-4 mr-1" /> Download
+                      {((videoDetail.frames as any[]) || []).length > 0 && (
+                        <Button size="sm" variant="outline" onClick={handleDownloadAll} disabled={downloading}>
+                          {downloading
+                            ? <><Loader2 className="w-4 h-4 mr-1 animate-spin" /> Downloading...</>
+                            : <><Download className="w-4 h-4 mr-1" /> Download All</>}
                         </Button>
                       )}
 
@@ -169,11 +196,14 @@ export default function VideoRender() {
                       {/* Scene frames */}
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {((videoDetail.frames as any[]) || []).map((frame: any, idx: number) => (
-                          <div key={idx} className="relative group">
+                          <div key={idx} className="relative group cursor-pointer" onClick={() => setLightboxIdx(idx)}>
                             <img src={frame.imageUrl} alt={`Scene ${idx + 1}`} className="w-full rounded-lg aspect-video object-cover" />
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 rounded-b-lg">
                               <p className="text-white text-xs">{frame.text || `Scene ${idx + 1}`}</p>
                               <p className="text-white/70 text-xs"><Clock className="w-3 h-3 inline mr-1" />{frame.duration}s</p>
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors rounded-lg flex items-center justify-center">
+                              <Expand className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                             </div>
                           </div>
                         ))}
@@ -208,6 +238,50 @@ export default function VideoRender() {
           )}
         </div>
       </div>
+
+      {/* Lightbox */}
+      {(() => {
+        const frames = (videoDetail?.frames as any[]) || [];
+        const lightboxFrame = lightboxIdx !== null ? frames[lightboxIdx] : null;
+        return (
+          <Dialog open={lightboxIdx !== null} onOpenChange={(o) => { if (!o) setLightboxIdx(null); }}>
+            <DialogContent className="max-w-4xl p-0 bg-black border-0">
+              {lightboxFrame && (
+                <div className="relative">
+                  <img
+                    src={lightboxFrame.imageUrl}
+                    alt={lightboxFrame.text || `Scene ${lightboxIdx! + 1}`}
+                    className="w-full rounded-lg object-contain max-h-[80vh]"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
+                    <p className="text-white font-medium">{lightboxFrame.text || `Scene ${lightboxIdx! + 1}`}</p>
+                    <p className="text-white/70 text-sm"><Clock className="w-3 h-3 inline mr-1" />{lightboxFrame.duration}s</p>
+                  </div>
+                  {lightboxIdx! > 0 && (
+                    <button
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2"
+                      onClick={(e) => { e.stopPropagation(); setLightboxIdx(lightboxIdx! - 1); }}
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                  )}
+                  {lightboxIdx! < frames.length - 1 && (
+                    <button
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2"
+                      onClick={(e) => { e.stopPropagation(); setLightboxIdx(lightboxIdx! + 1); }}
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  )}
+                  <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                    {lightboxIdx! + 1} / {frames.length}
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
     </div>
   );
 }

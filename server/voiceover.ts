@@ -33,8 +33,48 @@ function getVoiceProvider(): "elevenlabs" | "openai" | "none" {
  * Generate voiceover using ElevenLabs API
  * Docs: https://elevenlabs.io/docs/api-reference
  */
+const OPENAI_VOICES = new Set(["alloy", "echo", "fable", "onyx", "nova", "shimmer", "ash", "sage", "coral"]);
+
+// ElevenLabs voice ID map for semantic names
+const ELEVENLABS_VOICE_MAP: Record<string, string> = {
+  female: "21m00Tcm4TlvDq8ikWAM", // Rachel
+  male: "pNInz6obpgDQGcFmaJgB",   // Adam
+};
+
+// OpenAI voice map for semantic names
+const OPENAI_VOICE_MAP: Record<string, string> = {
+  female: "nova",
+  male: "onyx",
+};
+
+// ElevenLabs voice ID → nearest OpenAI equivalent (by gender/style)
+const ELEVENLABS_TO_OPENAI: Record<string, string> = {
+  "pNInz6obpgDQGcFmaJgB": "onyx",   // Adam — deep narrator
+  "TxGEqnHWrfWFTfGW9XjX": "echo",   // Josh — casual/conversational
+  "VR6AewLTigWG4xSOukaG": "onyx",   // Arnold — confident
+  "yoZ06aMxZJJ28mfd3POQ": "ash",    // Sam — friendly/warm
+  "2EiwWnXFnvU5JabPnv8n": "fable",  // Clyde — character/dramatic
+  "D38z5RcWu1voky8WS1ja": "fable",  // Fin — Irish storytelling
+  "N2lVS1w4EtoT3dr4eOWO": "onyx",   // Callum — intense/cinematic
+  "onwK4e9ZLuTAKqWW03F9": "fable",  // Daniel — British news
+  "21m00Tcm4TlvDq8ikWAM": "nova",   // Rachel — calm/professional
+  "AZnzlk1XvdvUeBnXmlld": "coral",  // Domi — strong/confident
+  "EXAVITQu4vr4xnSDxMaL": "shimmer",// Bella — soft/warm
+  "MF3mGyEYCl7XYWbV9V6O": "shimmer",// Elli — emotional/expressive
+  "oWAxZDx7w5VEj9dCyTzz": "shimmer",// Grace — gentle/warm
+  "XB0fDUnXU5powFXDhCwa": "sage",   // Charlotte — sophisticated
+  "ThT5KcBeYPX3keUQqHPh": "fable",  // Dorothy — British pleasant
+  "pMsXgVXv3BLzUgSXRplE": "nova",   // Serena — versatile
+};
+
 async function generateWithElevenLabs(options: VoiceoverOptions): Promise<VoiceoverResult> {
-  const voiceId = options.voice || "21m00Tcm4TlvDq8ikWAM"; // Rachel (default)
+  const isOpenAIVoice = options.voice && OPENAI_VOICES.has(options.voice);
+  const isSemantic = options.voice && ELEVENLABS_VOICE_MAP[options.voice];
+  const voiceId = isSemantic
+    ? ELEVENLABS_VOICE_MAP[options.voice!]
+    : (!options.voice || isOpenAIVoice)
+      ? "21m00Tcm4TlvDq8ikWAM"
+      : options.voice;
 
   const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
     method: "POST",
@@ -70,7 +110,11 @@ async function generateWithElevenLabs(options: VoiceoverOptions): Promise<Voiceo
  * Docs: https://platform.openai.com/docs/guides/text-to-speech
  */
 async function generateWithOpenAI(options: VoiceoverOptions): Promise<VoiceoverResult> {
-  const voice = options.voice || "alloy"; // alloy, echo, fable, onyx, nova, shimmer
+  // Map semantic names, ElevenLabs IDs, or invalid values to valid OpenAI voices
+  const rawVoice = options.voice || "nova";
+  const voice = OPENAI_VOICE_MAP[rawVoice]
+    ?? ELEVENLABS_TO_OPENAI[rawVoice]
+    ?? (OPENAI_VOICES.has(rawVoice) ? rawVoice : "nova");
 
   const response = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
@@ -125,12 +169,15 @@ export async function listVoices(): Promise<VoiceoverResult> {
       provider: "openai",
       status: "completed",
       availableVoices: [
+        { id: "nova", name: "Nova (Female)" },
+        { id: "shimmer", name: "Shimmer (Warm Female)" },
+        { id: "coral", name: "Coral (Female)" },
+        { id: "sage", name: "Sage (Female)" },
         { id: "alloy", name: "Alloy (Neutral)" },
         { id: "echo", name: "Echo (Male)" },
         { id: "fable", name: "Fable (British)" },
         { id: "onyx", name: "Onyx (Deep Male)" },
-        { id: "nova", name: "Nova (Female)" },
-        { id: "shimmer", name: "Shimmer (Warm Female)" },
+        { id: "ash", name: "Ash (Male)" },
       ],
     };
   }
