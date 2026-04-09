@@ -20,10 +20,14 @@ function parseJsonResponse(content: string): unknown {
 import { PLATFORM_SPECS, getAllPlatformSpecs, autoFormatContent, getBestPostingTime, getTodayBestTime, getRecommendedAspectRatio } from "@shared/platformSpecs";
 import { transcribeAudio } from "./_core/voiceTranscription";
 import { generateVoiceover, getVoiceoverProviders } from "./voiceover";
-import { storagePut } from "./storage";
+import { storagePut, storageDelete } from "./storage";
 import { users, teamMembers, subscriptions } from "../drizzle/schema";
 import { eq, desc, count } from "drizzle-orm";
-import { getDb } from "./db";
+import {
+  getDb,
+  createMusicTrack, getMusicTracksByUser, getMusicTrackById, deleteMusicTrack as dbDeleteMusicTrack,
+  createSfxTrack, getSfxTracksByUser, getSfxTrackById, deleteSfxTrack as dbDeleteSfxTrack,
+} from "./db";
 import { brandVoiceRouter, emailMarketingRouter, landingPageRouter, automationRouter, socialPublishRouter, videoRenderRouter, webhookRouter, imageEditorRouter, multiLanguageRouter, competitorSpyRouter, bulkImportRouter } from "./gapRouters";
 import { personalVideoRouter, competitorIntelRouter, customerIntelRouter } from "./newFeatureRouters";
 import { realVideoRouter, voiceoverRouter, avatarRouter, socialConnectionRouter, ecommerceRouter, memeRouter, creativeEngineRouter, integrationStatusRouter } from "./apiIntegrationRouters";
@@ -2840,31 +2844,106 @@ Create 5 variations: same core message, different angles/formats/platforms. Incl
     }),
   }),
   musicStudio: router({
-    getMusicLibrary: publicProcedure.query(async () => {
-      const { MUSIC_LIBRARY } = await import("./musicStudio");
-      return MUSIC_LIBRARY;
-    }),
-    getSFXLibrary: publicProcedure.input(z.object({ category: z.string().optional() })).query(async ({ input }) => {
-      const { SFX_LIBRARY } = await import("./musicStudio");
-      if (input.category) return SFX_LIBRARY.filter((s: { category: string }) => s.category === input.category);
-      return SFX_LIBRARY;
-    }),
+    getMusicLibrary: protectedProcedure.query(async ({ ctx }) =>
+      getMusicTracksByUser(ctx.user.id)),
+
+    getSFXLibrary: protectedProcedure
+      .input(z.object({ category: z.string().optional() }))
+      .query(async ({ ctx, input }) => getSfxTracksByUser(ctx.user.id, input.category)),
+
     getProviders: publicProcedure.query(async () => {
       const { getMusicProviders } = await import("./musicStudio");
       return getMusicProviders();
     }),
-    generateMusic: protectedProcedure.input(z.object({
-      prompt: z.string().min(1).max(500),
-      genre: z.string().optional(),
-      mood: z.string().optional(),
-      tempo: z.enum(["slow", "medium", "fast", "very-fast"]).optional(),
-      duration: z.number().min(15).max(120).optional(),
-      loop: z.boolean().optional(),
-      instrumental: z.boolean().optional(),
-    })).mutation(async ({ input }) => {
-      const { generateMusic } = await import("./musicStudio");
-      return generateMusic(input);
-    }),
+
+    generateMusic: protectedProcedure
+      .input(z.object({
+        prompt: z.string().min(1).max(500),
+        genre: z.string().optional(),
+        mood: z.string().optional(),
+        tempo: z.enum(["slow", "medium", "fast", "very-fast"]).optional(),
+        duration: z.number().min(15).max(120).optional(),
+        loop: z.boolean().optional(),
+        instrumental: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { generateMusic } = await import("./musicStudio");
+        return generateMusic(input, ctx.user.id);
+      }),
+
+    uploadMusicTrack: protectedProcedure
+      .input(z.object({
+        title: z.string().min(1).max(255),
+        genre: z.string().max(64).optional(),
+        mood: z.string().max(64).optional(),
+        tempo: z.enum(["slow", "medium", "fast", "very-fast"]).optional(),
+        duration: z.number().int().positive().optional(),
+        loop: z.boolean().optional(),
+        tags: z.array(z.string()).max(20).optional(),
+        fileBase64: z.string().min(1),
+        mimeType: z.enum(["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3"]),
+        fileName: z.string().max(255),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        if (buffer.byteLength > 16 * 1024 * 1024)
+          throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "File exceeds 16MB limit" });
+        const ext = input.mimeType === "audio/wav" ? "wav" : input.mimeType === "audio/ogg" ? "ogg" : "mp3";
+        const key = `music/${ctx.user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { key: fileKey, url: fileUrl } = await storagePut(key, buffer, input.mimeType);
+        const { id } = await createMusicTrack({
+          userId: ctx.user.id, title: input.title,
+          genre: input.genre ?? null, mood: input.mood ?? null, tempo: input.tempo ?? null,
+          duration: input.duration ?? null, loop: input.loop ?? false,
+          tags: input.tags ?? [], fileKey, fileUrl, mimeType: input.mimeType,
+        });
+        return { id, fileUrl };
+      }),
+
+    deleteMusicTrack: protectedProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => {
+        const track = await getMusicTrackById(input.id, ctx.user.id);
+        if (!track) throw new TRPCError({ code: "NOT_FOUND", message: "Track not found" });
+        await storageDelete(track.fileKey);
+        await dbDeleteMusicTrack(input.id, ctx.user.id);
+        return { success: true };
+      }),
+
+    uploadSFXTrack: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(255),
+        category: z.enum(["transitions", "notifications", "cinematic", "nature", "crowd",
+                          "tech", "comedy", "whoosh", "impact", "success", "error", "ambient"]),
+        duration: z.number().int().positive().optional(),
+        tags: z.array(z.string()).max(20).optional(),
+        fileBase64: z.string().min(1),
+        mimeType: z.enum(["audio/mpeg", "audio/wav", "audio/ogg", "audio/mp3"]),
+        fileName: z.string().max(255),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        if (buffer.byteLength > 16 * 1024 * 1024)
+          throw new TRPCError({ code: "PAYLOAD_TOO_LARGE", message: "File exceeds 16MB limit" });
+        const ext = input.mimeType === "audio/wav" ? "wav" : input.mimeType === "audio/ogg" ? "ogg" : "mp3";
+        const key = `sfx/${ctx.user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const { key: fileKey, url: fileUrl } = await storagePut(key, buffer, input.mimeType);
+        const { id } = await createSfxTrack({
+          userId: ctx.user.id, name: input.name, category: input.category,
+          duration: input.duration ?? null, tags: input.tags ?? [], fileKey, fileUrl, mimeType: input.mimeType,
+        });
+        return { id, fileUrl };
+      }),
+
+    deleteSFXTrack: protectedProcedure
+      .input(z.object({ id: z.number().int().positive() }))
+      .mutation(async ({ ctx, input }) => {
+        const track = await getSfxTrackById(input.id, ctx.user.id);
+        if (!track) throw new TRPCError({ code: "NOT_FOUND", message: "SFX not found" });
+        await storageDelete(track.fileKey);
+        await dbDeleteSfxTrack(input.id, ctx.user.id);
+        return { success: true };
+      }),
   }),
   funnel: funnelRouter,
   reviews: reviewsRouter,

@@ -1528,3 +1528,64 @@ export const dspPerformanceSnapshots = mysqlTable("dsp_performance_snapshots", {
 
 export type DspPerformanceSnapshot = typeof dspPerformanceSnapshots.$inferSelect;
 export type InsertDspPerformanceSnapshot = typeof dspPerformanceSnapshots.$inferInsert;
+
+// ─── Music Tracks ─────────────────────────────────────────────────────────
+export const musicTracks = mysqlTable("music_tracks", {
+  id:        int("id").autoincrement().primaryKey(),
+  userId:    int("userId").notNull(),
+  title:     varchar("title", { length: 255 }).notNull(),
+  genre:     varchar("genre", { length: 64 }),
+  mood:      varchar("mood", { length: 64 }),
+  tempo:     mysqlEnum("tempo", ["slow", "medium", "fast", "very-fast"]),
+  duration:  int("duration"),
+  loop:      boolean("loop").default(false),
+  tags:      json("tags").$type<string[]>(),
+  fileKey:   varchar("fileKey", { length: 512 }).notNull(),
+  fileUrl:   text("fileUrl").notNull(),
+  mimeType:  varchar("mimeType", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type MusicTrack = typeof musicTracks.$inferSelect;
+export type InsertMusicTrack = typeof musicTracks.$inferInsert;
+
+// ─── SFX Tracks ───────────────────────────────────────────────────────────
+export const sfxTracks = mysqlTable("sfx_tracks", {
+  id:        int("id").autoincrement().primaryKey(),
+  userId:    int("userId").notNull(),
+  name:      varchar("name", { length: 255 }).notNull(),
+  category:  mysqlEnum("category", ["transitions", "notifications", "cinematic", "nature",
+               "crowd", "tech", "comedy", "whoosh", "impact", "success", "error", "ambient"]).notNull(),
+  duration:  int("duration"),
+  tags:      json("tags").$type<string[]>(),
+  fileKey:   varchar("fileKey", { length: 512 }).notNull(),
+  fileUrl:   text("fileUrl").notNull(),
+  mimeType:  varchar("mimeType", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type SfxTrack = typeof sfxTracks.$inferSelect;
+export type InsertSfxTrack = typeof sfxTracks.$inferInsert;
+
+export const avatarGenerations = mysqlTable("avatar_generations", {
+  id:           int("id").autoincrement().primaryKey(),
+  userId:       int("userId").notNull(),
+  taskId:       varchar("taskId", { length: 255 }).notNull(),
+  status:       mysqlEnum("status", ["processing", "completed", "failed"]).notNull().default("processing"),
+  script:       text("script").notNull(),
+  avatarId:     varchar("avatarId", { length: 255 }),
+  voiceId:      varchar("voiceId", { length: 255 }),
+  style:        varchar("style", { length: 64 }),
+  aspectRatio:  varchar("aspectRatio", { length: 10 }),
+  language:     varchar("language", { length: 10 }),
+  videoUrl:     text("videoUrl"),
+  videoKey:     varchar("videoKey", { length: 512 }),
+  thumbnailUrl: text("thumbnailUrl"),
+  thumbnailKey: varchar("thumbnailKey", { length: 512 }),
+  duration:     int("duration"),
+  error:        text("error"),
+  createdAt:    timestamp("createdAt").defaultNow().notNull(),
+  updatedAt:    timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type AvatarGeneration = typeof avatarGenerations.$inferSelect;
+export type InsertAvatarGeneration = typeof avatarGenerations.$inferInsert;

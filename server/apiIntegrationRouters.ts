@@ -12,12 +12,17 @@ import { checkLimit, consumeLimit } from "./creditsAndUsage";
 const LIMIT_MSG = "Monthly limit reached. Upgrade your plan or add credits in Pricing.";
 import { generateVideo, checkVideoStatus, getVideoProviders } from "./videoGeneration";
 import { generateVoiceover, listVoices, getVoiceoverProviders } from "./voiceover";
-import { generateAvatarVideo, checkHeyGenStatus, listAvatars, getAvatarProviders } from "./avatarGeneration";
+import { generateAvatarVideo, checkHeyGenStatus, listAvatars, listVoices as listHeyGenVoices, getAvatarProviders } from "./avatarGeneration";
 import { getSocialPlatformStatus, getMetaOAuthUrl, getTwitterOAuthUrl, getLinkedInOAuthUrl, getTikTokOAuthUrl } from "./socialPosting";
 import { getEcommercePlatformStatus, syncProducts, getShopifyOAuthUrl } from "./ecommerceSync";
 import type { StoreConnection } from "./ecommerceSync";
-import { storagePut } from "./storage";
+import { storagePut, storageDelete } from "./storage";
 import * as db from "./db";
+import {
+  createAvatarGeneration, getAvatarGenerationsByUser,
+  getAvatarGenerationByTaskId, getAvatarGenerationById,
+  updateAvatarGeneration, deleteAvatarGeneration,
+} from "./db";
 
 // ─── Real Video Generation Router ────────────────────────────────
 export const realVideoRouter = router({
@@ -173,6 +178,9 @@ export const voiceoverRouter = router({
 export const avatarRouter = router({
   providers: protectedProcedure.query(() => getAvatarProviders()),
   listAvatars: protectedProcedure.query(async () => listAvatars()),
+  listVoices: protectedProcedure.query(async () => listHeyGenVoices()),
+
+  /** Submit generation to HeyGen and persist a DB record immediately */
   generate: protectedProcedure.input(z.object({
     script: z.string().min(1).max(5000),
     avatarId: z.string().optional(),
@@ -180,9 +188,9 @@ export const avatarRouter = router({
     language: z.string().optional(),
     aspectRatio: z.enum(["16:9", "9:16", "1:1"]).optional(),
     background: z.string().optional(),
-    style: z.enum(["professional", "casual", "energetic", "calm"]).optional(),
-  })).mutation(async ({ input }) => {
-    return generateAvatarVideo({
+    style: z.enum(["normal", "closeUp", "full", "circle", "voiceOnly"]).optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const result = await generateAvatarVideo({
       script: input.script,
       avatarId: input.avatarId,
       voiceId: input.voiceId,
@@ -191,12 +199,85 @@ export const avatarRouter = router({
       background: input.background,
       style: input.style,
     });
+
+    // Persist regardless of processing/completed/failed
+    const { id: generationId } = await createAvatarGeneration({
+      userId: ctx.user.id,
+      taskId: result.taskId ?? `local-${Date.now()}`,
+      status: result.status,
+      script: input.script,
+      avatarId: input.avatarId ?? null,
+      voiceId: input.voiceId ?? null,
+      style: input.style ?? null,
+      aspectRatio: input.aspectRatio ?? null,
+      language: input.language ?? null,
+      videoUrl: result.videoUrl ?? null,
+      videoKey: result.videoKey ?? null,
+      thumbnailUrl: result.thumbnailUrl ?? null,
+      thumbnailKey: result.thumbnailKey ?? null,
+      duration: result.duration ?? null,
+      error: result.error ?? null,
+    });
+
+    return { ...result, generationId };
   }),
+
+  /** Poll HeyGen for status; updates DB record when complete */
   checkStatus: protectedProcedure.input(z.object({
-    videoId: z.string(),
-  })).query(async ({ input }) => {
-    return checkHeyGenStatus(input.videoId);
+    taskId: z.string(),
+    generationId: z.number(),
+  })).query(async ({ ctx, input }) => {
+    // Short-circuit: if DB already has a terminal status, return it
+    const existing = await getAvatarGenerationById(input.generationId, ctx.user.id);
+    if (existing?.status === "completed" || existing?.status === "failed") {
+      return {
+        provider: "heygen" as const,
+        status: existing.status,
+        videoUrl: existing.videoUrl ?? undefined,
+        videoKey: existing.videoKey ?? undefined,
+        thumbnailUrl: existing.thumbnailUrl ?? undefined,
+        duration: existing.duration ?? undefined,
+        error: existing.error ?? undefined,
+        generationId: existing.id,
+      };
+    }
+
+    // Still processing — ask HeyGen
+    const result = await checkHeyGenStatus(input.taskId);
+
+    // Update DB when HeyGen finishes
+    if (result.status === "completed" || result.status === "failed") {
+      await updateAvatarGeneration(input.generationId, ctx.user.id, {
+        status: result.status,
+        videoUrl: result.videoUrl ?? null,
+        videoKey: result.videoKey ?? null,
+        thumbnailUrl: result.thumbnailUrl ?? null,
+        thumbnailKey: result.thumbnailKey ?? null,
+        duration: result.duration ?? null,
+        error: result.error ?? null,
+      });
+    }
+
+    return { ...result, generationId: input.generationId };
   }),
+
+  /** List all past generations for the logged-in user */
+  listGenerations: protectedProcedure.query(async ({ ctx }) => {
+    return getAvatarGenerationsByUser(ctx.user.id);
+  }),
+
+  /** Delete a generation and its stored files */
+  deleteGeneration: protectedProcedure.input(z.object({
+    id: z.number().int().positive(),
+  })).mutation(async ({ ctx, input }) => {
+    const gen = await getAvatarGenerationById(input.id, ctx.user.id);
+    if (!gen) throw new TRPCError({ code: "NOT_FOUND", message: "Generation not found" });
+    if (gen.videoKey) await storageDelete(gen.videoKey).catch(() => {});
+    if (gen.thumbnailKey) await storageDelete(gen.thumbnailKey).catch(() => {});
+    await deleteAvatarGeneration(input.id, ctx.user.id);
+    return { success: true };
+  }),
+
   // Generate UGC-style product review video
   generateUGC: protectedProcedure.input(z.object({
     productName: z.string(),
@@ -205,26 +286,19 @@ export const avatarRouter = router({
     duration: z.number().optional(),
     platform: z.enum(["instagram", "tiktok", "youtube", "general"]).optional(),
   })).mutation(async ({ input }) => {
-    // Generate UGC script using LLM
     const scriptResponse = await invokeLLM({
       messages: [
-        { role: "system", content: `You are a UGC content creator. Write a natural, authentic-sounding product review script for a ${input.platform || "social media"} video. The script should sound like a real person talking to camera, not an ad. Include natural pauses, reactions, and genuine enthusiasm. Keep it under ${input.duration || 30} seconds when spoken.` },
+        { role: "system", content: `You are a UGC content creator. Write a natural, authentic-sounding product review script for a ${input.platform || "social media"} video. The script should sound like a real person talking to camera, not an ad. Keep it under ${input.duration || 30} seconds when spoken.` },
         { role: "user", content: `Product: ${input.productName}\nDescription: ${input.productDescription || "No description provided"}\nTone: ${input.tone || "enthusiastic"}` },
       ],
     });
     const script = String(scriptResponse.choices[0].message.content);
-
-    // Generate avatar video with the script
     const videoResult = await generateAvatarVideo({
       script,
-      style: input.tone === "professional" ? "professional" : "casual",
+      style: "normal",
       aspectRatio: input.platform === "tiktok" || input.platform === "instagram" ? "9:16" : "16:9",
     });
-
-    return {
-      script,
-      ...videoResult,
-    };
+    return { script, ...videoResult };
   }),
 });
 

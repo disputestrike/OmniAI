@@ -53,6 +53,9 @@ import {
   influenceNodes, InsertInfluenceNode,
   referralCodes, InsertReferralCode,
   referralSignups, InsertReferralSignup,
+  musicTracks, InsertMusicTrack, MusicTrack,
+  sfxTracks, InsertSfxTrack, SfxTrack,
+  avatarGenerations, InsertAvatarGeneration, AvatarGeneration,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -1709,4 +1712,76 @@ export async function recordReferralSignup(referrerUserId: number, referredUserI
 export async function getReferralsByReferrer(referrerUserId: number) {
   const db = await getDb(); if (!db) return [];
   return db.select().from(referralSignups).where(eq(referralSignups.referrerUserId, referrerUserId)).orderBy(desc(referralSignups.createdAt));
+}
+
+// ─── Music Tracks ─────────────────────────────────────────────────────────
+export async function createMusicTrack(data: InsertMusicTrack): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(musicTracks).values(data);
+  return { id: result[0].insertId };
+}
+export async function getMusicTracksByUser(userId: number): Promise<MusicTrack[]> {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(musicTracks).where(eq(musicTracks.userId, userId)).orderBy(desc(musicTracks.createdAt));
+}
+export async function getMusicTrackById(id: number, userId: number): Promise<MusicTrack | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(musicTracks).where(and(eq(musicTracks.id, id), eq(musicTracks.userId, userId))).limit(1);
+  return r[0];
+}
+export async function deleteMusicTrack(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(musicTracks).where(and(eq(musicTracks.id, id), eq(musicTracks.userId, userId)));
+}
+
+// ─── SFX Tracks ───────────────────────────────────────────────────────────
+export async function createSfxTrack(data: InsertSfxTrack): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(sfxTracks).values(data);
+  return { id: result[0].insertId };
+}
+export async function getSfxTracksByUser(userId: number, category?: string): Promise<SfxTrack[]> {
+  const db = await getDb(); if (!db) return [];
+  const where = category
+    ? and(eq(sfxTracks.userId, userId), eq(sfxTracks.category, category as SfxTrack["category"]))
+    : eq(sfxTracks.userId, userId);
+  return db.select().from(sfxTracks).where(where).orderBy(desc(sfxTracks.createdAt));
+}
+export async function getSfxTrackById(id: number, userId: number): Promise<SfxTrack | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(sfxTracks).where(and(eq(sfxTracks.id, id), eq(sfxTracks.userId, userId))).limit(1);
+  return r[0];
+}
+export async function deleteSfxTrack(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(sfxTracks).where(and(eq(sfxTracks.id, id), eq(sfxTracks.userId, userId)));
+}
+
+// ─── Avatar Generations ───────────────────────────────────────────
+export async function createAvatarGeneration(data: InsertAvatarGeneration): Promise<{ id: number }> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  const result = await db.insert(avatarGenerations).values(data);
+  return { id: result[0].insertId };
+}
+export async function getAvatarGenerationsByUser(userId: number): Promise<AvatarGeneration[]> {
+  const db = await getDb(); if (!db) return [];
+  return db.select().from(avatarGenerations).where(eq(avatarGenerations.userId, userId)).orderBy(desc(avatarGenerations.createdAt));
+}
+export async function getAvatarGenerationByTaskId(taskId: string, userId: number): Promise<AvatarGeneration | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(avatarGenerations).where(and(eq(avatarGenerations.taskId, taskId), eq(avatarGenerations.userId, userId))).limit(1);
+  return r[0];
+}
+export async function getAvatarGenerationById(id: number, userId: number): Promise<AvatarGeneration | undefined> {
+  const db = await getDb(); if (!db) return undefined;
+  const r = await db.select().from(avatarGenerations).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId))).limit(1);
+  return r[0];
+}
+export async function updateAvatarGeneration(id: number, userId: number, updates: Partial<InsertAvatarGeneration>): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.update(avatarGenerations).set(updates).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId)));
+}
+export async function deleteAvatarGeneration(id: number, userId: number): Promise<void> {
+  const db = await getDb(); if (!db) throw new Error("DB unavailable");
+  await db.delete(avatarGenerations).where(and(eq(avatarGenerations.id, id), eq(avatarGenerations.userId, userId)));
 }

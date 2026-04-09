@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,8 +60,7 @@ export default function CompetitorMonitor() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -433,7 +431,6 @@ export default function CompetitorMonitor() {
             )}
           </div>
         )}
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

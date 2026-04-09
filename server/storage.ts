@@ -120,3 +120,31 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
   const url = await buildDownloadUrl(config.baseUrl, key, config.apiKey);
   return { key, url };
 }
+
+export async function storageDelete(relKey: string): Promise<void> {
+  const config = getStorageConfig();
+  const key = normalizeKey(relKey);
+
+  if (!config) {
+    const dir = ENV.uploadDir || "./uploads";
+    const fullPath = path.join(dir, key);
+    await fs.unlink(fullPath).catch((err: NodeJS.ErrnoException) => {
+      if (err.code !== "ENOENT") throw err;
+    });
+    return;
+  }
+
+  const deleteUrl = new URL(
+    "v1/storage/delete",
+    config.baseUrl.endsWith("/") ? config.baseUrl : `${config.baseUrl}/`
+  );
+  deleteUrl.searchParams.set("path", key);
+  const response = await fetch(deleteUrl, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${config.apiKey}` },
+  });
+  if (!response.ok && response.status !== 404) {
+    const message = await response.text().catch(() => response.statusText);
+    throw new Error(`Storage delete failed (${response.status}): ${message}`);
+  }
+}

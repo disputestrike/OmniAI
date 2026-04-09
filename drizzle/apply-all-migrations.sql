@@ -1316,3 +1316,60 @@ VALUES
 ('business','Business',19700,195600,800,200,-1,8,-1,-1,-1,-1,-1,-1,15,-1,1,1,1,1,1,1,1,1,1,1,1,1,50000,3000,1000,0,'claude_haiku'),
 ('agency','Agency',49700,495600,3000,500,-1,30,-1,-1,-1,-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1,1,1,1,1,100000,2500,1500,0,'claude_haiku')
 ON DUPLICATE KEY UPDATE updatedAt = CURRENT_TIMESTAMP;
+
+-- ─── Music Library ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `music_tracks` (
+  `id` int AUTO_INCREMENT NOT NULL,
+  `userId` int NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `genre` varchar(64),
+  `mood` varchar(64),
+  `tempo` enum('slow','medium','fast','very-fast'),
+  `duration` int,
+  `loop` boolean DEFAULT false,
+  `tags` json,
+  `fileKey` varchar(512) NOT NULL,
+  `fileUrl` text NOT NULL,
+  `mimeType` varchar(64) NOT NULL,
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `music_tracks_id` PRIMARY KEY(`id`)
+);
+
+-- ─── SFX Library ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `sfx_tracks` (
+  `id` int AUTO_INCREMENT NOT NULL,
+  `userId` int NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `category` enum('transitions','notifications','cinematic','nature','crowd','tech','comedy','whoosh','impact','success','error','ambient') NOT NULL,
+  `duration` int,
+  `tags` json,
+  `fileKey` varchar(512) NOT NULL,
+  `fileUrl` text NOT NULL,
+  `mimeType` varchar(64) NOT NULL,
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `sfx_tracks_id` PRIMARY KEY(`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `avatar_generations` (
+  `id` int AUTO_INCREMENT NOT NULL,
+  `userId` int NOT NULL,
+  `taskId` varchar(255) NOT NULL,
+  `status` enum('processing','completed','failed') NOT NULL DEFAULT 'processing',
+  `script` text NOT NULL,
+  `avatarId` varchar(255),
+  `voiceId` varchar(255),
+  `style` varchar(64),
+  `aspectRatio` varchar(10),
+  `language` varchar(10),
+  `videoUrl` text,
+  `videoKey` varchar(512),
+  `thumbnailUrl` text,
+  `thumbnailKey` varchar(512),
+  `duration` int,
+  `error` text,
+  `createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `avatar_generations_id` PRIMARY KEY(`id`)
+);

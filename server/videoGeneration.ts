@@ -3,6 +3,8 @@
  * Supports multiple providers: Runway ML, Luma AI, Kling AI
  * Falls back gracefully — generates video from image generation if no video API key is set
  */
+import fs from "fs/promises";
+import path from "path";
 import { ENV } from "./_core/env";
 import { generateImage } from "./_core/imageGeneration";
 import { storagePut } from "./storage";
@@ -39,7 +41,50 @@ function getAvailableProvider(): "runway" | "luma" | "kling" | "fallback" {
  * Generate video using Runway ML API (Gen-3 Alpha)
  * Docs: https://docs.runwayml.com/
  */
+/** Convert any image URL/path to a data URI acceptable by Runway (https:// or data:image/...) */
+async function toRunwayImage(imageUrl: string): Promise<string> {
+  // Already a valid https:// URL — use directly
+  if (imageUrl.startsWith("https://")) return imageUrl;
+
+  // Local /api/uploads/... path — read from disk and base64 encode
+  if (imageUrl.startsWith("/api/uploads/")) {
+    const uploadDir = ENV.uploadDir || "./uploads";
+    const relKey = imageUrl.replace("/api/uploads/", "");
+    const filePath = path.join(uploadDir, relKey);
+    const buf = await fs.readFile(filePath);
+    const ext = path.extname(relKey).toLowerCase().replace(".", "") || "png";
+    const mime = ext === "jpg" || ext === "jpeg" ? "image/jpeg" : ext === "webp" ? "image/webp" : "image/png";
+    return `data:${mime};base64,${buf.toString("base64")}`;
+  }
+
+  // Already a data URI
+  if (imageUrl.startsWith("data:image/")) return imageUrl;
+
+  // External http:// — try to fetch and encode
+  const res = await fetch(imageUrl);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const ct = res.headers.get("content-type") || "image/png";
+  return `data:${ct};base64,${buf.toString("base64")}`;
+}
+
 async function generateWithRunway(options: VideoGenerationOptions): Promise<VideoGenerationResult> {
+  // Runway image_to_video always requires promptImage — generate one if not supplied
+  let imageUrl = options.imageUrl;
+  if (!imageUrl) {
+    try {
+      const imgResult = await generateImage({
+        prompt: `${options.prompt}, cinematic still frame, high quality`,
+        aspectRatio: options.aspectRatio === "9:16" ? "9:16" : "16:9",
+      });
+      imageUrl = imgResult.url;
+    } catch (_e) {
+      return { provider: "runway", status: "failed", error: "Could not generate reference image for Runway (promptImage is required)" };
+    }
+  }
+
+  // Ensure promptImage is a format Runway accepts (https:// or data:image/...)
+  const promptImage = await toRunwayImage(imageUrl!);
+
   const response = await fetch("https://api.dev.runwayml.com/v1/image_to_video", {
     method: "POST",
     headers: {
@@ -49,10 +94,10 @@ async function generateWithRunway(options: VideoGenerationOptions): Promise<Vide
     },
     body: JSON.stringify({
       model: "gen3a_turbo",
-      promptImage: options.imageUrl || undefined,
+      promptImage,
       promptText: options.prompt,
       duration: options.duration || 5,
-      ratio: options.aspectRatio === "9:16" ? "768:1344" : options.aspectRatio === "1:1" ? "1024:1024" : "1344:768",
+      ratio: options.aspectRatio === "9:16" ? "768:1280" : "1280:768",
     }),
   });
 

@@ -24,18 +24,19 @@ export const TIER_LIMITS: Record<
   }
 > = {
   free: {
-    aiGenerationsMonthly: 5,
-    aiImagesMonthly: 2,
-    videoScriptsMonthly: 1,
-    videoGenMinutes: 0,
-    products: 1,
-    campaigns: 2,
-    leads: 25,
-    scheduledPostsMonthly: 0,
-    abTests: 0,
-    websiteAnalyses: 0,
-    teamSeats: 1,
-    creditTopupsAllowed: false,
+    // TEMP: all limits removed for testing — restore original values from memory before launch
+    aiGenerationsMonthly: -1,
+    aiImagesMonthly: -1,
+    videoScriptsMonthly: -1,
+    videoGenMinutes: -1,
+    products: -1,
+    campaigns: -1,
+    leads: -1,
+    scheduledPostsMonthly: -1,
+    abTests: -1,
+    websiteAnalyses: -1,
+    teamSeats: -1,
+    creditTopupsAllowed: true,
     creditTopupDiscountPercent: 0,
   },
   starter: {
